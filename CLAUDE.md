@@ -27,6 +27,7 @@ offline support via Room as local cache. AAOS support is a post-MVP goal.
 | AAOS | Post-MVP |
 | Language | System locale: pt-PT and en |
 | Distribution | Play Store (each user sees only their own data) |
+| Design | High-fi mockups in Pencil (pencil.dev) + Claude Design → translated to Compose theme (Checkpoint 0 first) |
 
 ---
 
@@ -87,6 +88,16 @@ offline support via Room as local cache. AAOS support is a post-MVP goal.
 > `app.*` application ID. All package declarations are `package app.drivedelta.<...>`.
 
 ```
+design/                                        # Checkpoint 0 output (design reference, not code)
+├── mockups/                                   # exported PNG/SVG per screen
+│   ├── auth.png
+│   ├── dashboard.png
+│   ├── tracking-hud.png
+│   ├── trip-detail.png
+│   ├── car-edit.png
+│   └── place-edit.png
+└── tokens.md                                  # optional: raw token export from Pencil/Claude Design
+
 app/                                           # Gradle module directory
 ├── build.gradle.kts
 ├── google-services.json                      (gitignored)
@@ -418,6 +429,126 @@ service cloud.firestore {
   }
 }
 ```
+
+---
+
+## Design System
+
+> **Source of truth for all UI.** The visual design is produced in Pencil (pencil.dev) and/or
+> Claude Design during Checkpoint 0, then translated into Jetpack Compose theme files here.
+> Both tools output web code (HTML/CSS/React), NOT Compose — so they serve as the visual +
+> token reference, and Claude Code implements the actual Compose UI from the exported mockups
+> and the token values below. Do not invent colors, spacing, or type — use these tokens.
+
+### Design assets location
+- Exported mockups (PNG/SVG) live in `/design/mockups/` in the repo.
+- Each core screen has a reference image named `design/mockups/<screen>.png`.
+- When implementing a screen, view its mockup image first, then match it using the tokens below.
+
+### Brand & aesthetic direction
+DriveDelta blends **motorsport telemetry** (precision, data density, split-timing, the "purple
+sector" fastest-time motif) with **everyday-driving calm** (clean, legible, not aggressive). The
+signature screen is the Live Tracking HUD. Think race-engineer dashboard, not arcade racer.
+
+### Design tokens (FILL IN from Pencil / Claude Design output)
+
+These are placeholder slots. Replace the values with the finalized tokens from the design phase,
+then Claude Code generates `Color.kt`, `Type.kt`, and `Theme.kt` to match exactly.
+
+**Colors — Light theme**
+| Token | Hex | Usage |
+|---|---|---|
+| `primary` | `#______` | Primary actions, active states |
+| `onPrimary` | `#______` | Text/icons on primary |
+| `secondary` | `#______` | Accents, chips |
+| `background` | `#______` | Screen background |
+| `surface` | `#______` | Cards, sheets |
+| `onSurface` | `#______` | Primary text |
+| `onSurfaceVariant` | `#______` | Secondary text |
+| `outline` | `#______` | Borders, dividers |
+| `error` | `#______` | Errors, "slower than best" delta |
+| `success` | `#______` | "Faster than best" delta (green) |
+| `deltaSlower` | `#______` | HUD delta positive (red family) |
+| `deltaFaster` | `#______` | HUD delta negative (green family) |
+| `purpleSector` | `#______` | Fastest-ever segment highlight (motorsport purple) |
+
+**Colors — Dark theme** (the HUD and map screens default to dark for glare reduction while driving)
+| Token | Hex |
+|---|---|
+| `primary` | `#______` |
+| `background` | `#______` |
+| `surface` | `#______` |
+| `onSurface` | `#______` |
+| (…mirror the light table…) | |
+
+**Fuel-type badge colors** (referenced in Cars feature F2)
+| Type | Hex |
+|---|---|
+| Electric | `#______` (green) |
+| Diesel | `#______` (blue) |
+| Petrol | `#______` (orange) |
+| Hybrid | `#______` (yellow) |
+| LPG | `#______` (grey) |
+
+**Typography** (map each to a Compose `Typography` role)
+| Role | Font family | Size (sp) | Weight | Usage |
+|---|---|---|---|---|
+| `displayLarge` | `______` | `__` | `__` | HUD speed readout (large numeric) |
+| `headlineMedium` | `______` | `__` | `__` | Screen titles |
+| `titleLarge` | `______` | `__` | `__` | Card titles, road names |
+| `bodyLarge` | `______` | `__` | `__` | Primary body text |
+| `bodyMedium` | `______` | `__` | `__` | Secondary text |
+| `labelLarge` | `______` | `__` | `__` | Buttons, chips |
+| `numericMono` | `______` (monospace) | `__` | `__` | Split times / deltas (tabular figures) |
+
+> Note: split times and deltas should use a **monospaced / tabular-figure** font so digits don't
+> jitter as they update. Consider a mono font (e.g. JetBrains Mono, Roboto Mono) for `numericMono`.
+
+**Spacing scale** (Compose `dp`)
+| Token | dp |
+|---|---|
+| `spaceXs` | `__` |
+| `spaceSm` | `__` |
+| `spaceMd` | `__` |
+| `spaceLg` | `__` |
+| `spaceXl` | `__` |
+
+**Shape / corner radius**
+| Token | dp | Usage |
+|---|---|---|
+| `radiusSm` | `__` | Chips, badges |
+| `radiusMd` | `__` | Cards, buttons |
+| `radiusLg` | `__` | Bottom sheets, dialogs |
+
+**Elevation**
+| Token | dp |
+|---|---|
+| `elevationCard` | `__` |
+| `elevationSheet` | `__` |
+
+### Core screens to design in Checkpoint 0
+
+Design these first — they define the visual language; remaining screens reuse the same components:
+
+1. **Auth screen** — logo, tagline, single Google Sign-In button. Sets brand tone.
+2. **Dashboard** — Start Ride CTA, recent trips cards, personal bests, weekly stats. Sets card/layout language.
+3. **Live Tracking HUD** — the signature screen. Map background + overlay showing speed, elapsed time,
+   distance, current road, segment split vs best, delta (colored). Design light + dark; dark is default.
+4. **Trip Detail** — tabbed (Map / Splits / Replay). Sets the split-table and data-viz language.
+5. **Car edit** — form with fuel-type segmented control + conditional fields. Sets form language.
+6. **Place edit** — map with draggable marker, radius slider, emoji picker. Sets map-interaction language.
+
+### Component styles to define (reused everywhere)
+- Primary / secondary / destructive buttons
+- Cards (trip card, car card, place card)
+- Chips (filter chips, nearby-place suggestion chip, "Default" car chip)
+- Fuel-type badge (5 color variants)
+- Bottom sheets (stop-confirm, arrival, pre-ride setup)
+- Split row (road name + time + best + delta with color) — the core data component
+- HUD overlay panel (semi-transparent, dark)
+- Segmented control (fuel type selector)
+- Text fields (with label, error state)
+- Empty states (no trips yet, no cars yet, no places yet)
 
 ---
 
@@ -917,16 +1048,56 @@ before moving to the next. Do not start checkpoint N+1 until checkpoint N is ver
 
 ---
 
-### ✅ CHECKPOINT 1 — Project Skeleton & Auth
+### ✅ CHECKPOINT 0 — Design (done by YOU in Pencil / Claude Design, before any code)
 
-**Goal:** App launches, Google Sign-In works, user is routed to an empty Dashboard.
+**Goal:** Lock the high-fi visual design and extract a concrete design-token set, so every
+subsequent checkpoint implements against approved designs instead of inventing UI.
+
+> This checkpoint is NOT for Claude Code. You do it yourself in Pencil (pencil.dev) and/or
+> Claude Design. Claude Code's only involvement is the final step: translating your finalized
+> tokens into Compose theme files (folded into Checkpoint 1). Remember both design tools emit
+> web code, not Compose — treat their output as visual reference + tokens, not as importable code.
+
+- [ ] Read the "Design System" section above for the aesthetic direction and the list of core screens.
+- [ ] (Optional) Paste the design brief (separate doc) into Claude Design / Pencil as the opening prompt.
+- [ ] Design the 6 core screens in high fidelity (light + dark for the HUD and map screens):
+  - [ ] Auth screen
+  - [ ] Dashboard
+  - [ ] Live Tracking HUD (signature screen — spend the most time here)
+  - [ ] Trip Detail (Map / Splits / Replay tabs)
+  - [ ] Car edit (segmented control + conditional fields)
+  - [ ] Place edit (map + draggable marker + radius slider + emoji picker)
+- [ ] Design the reused component styles listed under "Component styles to define".
+- [ ] Export each screen as PNG/SVG → save into `/design/mockups/<screen>.png` in the repo.
+- [ ] Extract the design tokens (colors, typography, spacing, radius, elevation) and fill in the
+      placeholder tables in the "Design System" section above with real values.
+- [ ] Commit `/design/` and the updated CLAUDE.md to the repo.
+- [ ] **Acceptance:** All 6 core screens exist as high-fi mockups in `/design/mockups/`, and every
+      token table in the Design System section is filled in with real values (no `#______` left).
+
+> Tip: save often in Pencil (it's early-stage — crashes happen, no autosave). Pencil needs Claude
+> Code installed + authenticated for its AI features. When you later hand a screen to Claude Code
+> for implementation, give it the exported image AND the token values as text.
+
+---
+
+### ✅ CHECKPOINT 1 — Project Skeleton, Theme & Auth
+
+**Goal:** App launches, the design system is implemented as a Compose theme, Google Sign-In works,
+user is routed to an empty Dashboard.
 
 - [ ] Create Android project: package `app.drivedelta`, minSdk 26, Kotlin DSL, Jetpack Compose template
 - [ ] Set up `libs.versions.toml` version catalog with all libraries listed above
 - [ ] Add `google-services.json`, configure Firebase in `build.gradle.kts`
 - [ ] `DriveDeltaApplication.kt`: `@HiltAndroidApp`, Firebase init, Places SDK init
 - [ ] `MainActivity.kt`: single-activity Compose host
-- [ ] Set up Material 3 theme (`Theme.kt`, `Color.kt`, `Type.kt`)
+- [ ] **Implement the design system from Checkpoint 0 as Compose theme files:**
+  - [ ] `Color.kt` — all color tokens (light + dark) from the filled-in Design System tables
+  - [ ] `Type.kt` — the typography scale, including the monospaced `numericMono` role for split times
+  - [ ] `Theme.kt` — Material 3 `MaterialTheme` wiring light/dark schemes; expose spacing/shape/elevation
+        tokens (e.g. via a custom `LocalDriveDeltaTokens` CompositionLocal for the non-Material tokens)
+  - [ ] Add any custom fonts to `res/font/` and reference them in `Type.kt`
+  - [ ] Add fuel-type badge colors as named values for reuse in the Cars feature
 - [ ] `AppNavGraph.kt`: define all route destinations as constants in `NavDestinations.kt`. Stub all screens except Auth and Dashboard.
 - [ ] `FirebaseAuthRepository.kt`: `signInWithGoogle()`, `signOut()`, `currentUserId`, `isSignedIn`
 - [ ] `AuthViewModel.kt` + `AuthScreen.kt`: Google button, loading, error snackbar
