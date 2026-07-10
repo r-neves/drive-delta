@@ -1169,8 +1169,8 @@ subsequent checkpoint implements against approved designs instead of inventing U
       Exported from the Claude Design UI (the `.dc.html` sources can't render offline). 14 PNGs at
       1176×2631: the 6 core screens, both HUD delta states, and 7 Ride Moments states. All verified
       to render the true dark design (`#0A0B0D` canvas, apex logo, correct deltas).
-- [ ] Commit `/design/` and the updated CLAUDE.md to the repo.
-- [ ] **Acceptance:** Every core screen exists as a PNG in `/design/mockups/`, `design/tokens.md`
+- [x] Commit `/design/` and the updated CLAUDE.md to the repo. (`d199717`, pushed to `origin/main`)
+- [x] **Acceptance:** Every core screen exists as a PNG in `/design/mockups/`, `design/tokens.md`
       is complete, and every token table in the Design System section holds real values.
 
 ---
@@ -1180,30 +1180,30 @@ subsequent checkpoint implements against approved designs instead of inventing U
 **Goal:** App launches, the design system is implemented as a Compose theme, Google Sign-In works,
 user is routed to an empty Dashboard.
 
-- [ ] Create Android project: package `app.drivedelta`, minSdk 26, Kotlin DSL, Jetpack Compose template
-- [ ] Set up `libs.versions.toml` version catalog with all libraries listed above
-- [ ] Add `google-services.json`, configure Firebase in `build.gradle.kts`
-- [ ] `DriveDeltaApplication.kt`: `@HiltAndroidApp`, Firebase init, Places SDK init
-- [ ] `MainActivity.kt`: single-activity Compose host
-- [ ] **Implement the design system from Checkpoint 0 as Compose theme files.**
-      Values come from `design/tokens.md` — it is authoritative. **Dark only.**
-  - [ ] `Color.kt` — the dark color tokens, plus the extended surfaces (`surfaceSheet`,
-        `navBackground`, `segmentActive`, …) and the purple-sector row colors
-  - [ ] `Type.kt` — the typography scale. Vendor **Geist** (400/500/600/700) and **Geist Mono**
-        (400/500/600) into `res/font/` (both OFL). Every `Geist Mono` role must set
-        `fontFeatureSettings = "tnum"` so digits don't jitter as they tick.
-  - [ ] `Theme.kt` — Material 3 `MaterialTheme` wiring a single dark `ColorScheme`. Do **not** add a
-        light scheme or an `isSystemInDarkTheme()` branch. Set `surfaceTint = Color.Transparent`:
-        the design uses hairline borders + soft shadows, not M3 tonal elevation. Expose
-        spacing/shape/elevation via a `LocalDriveDeltaTokens` CompositionLocal.
-  - [ ] Add fuel-type badge colors as named values for reuse in the Cars feature. Note Diesel ==
-        `primary` and Electric == `success`, so badges must always render their text label.
-- [ ] `AppNavGraph.kt`: define all route destinations as constants in `NavDestinations.kt`. Stub all screens except Auth and Dashboard.
-- [ ] `FirebaseAuthRepository.kt`: `signInWithGoogle()`, `signOut()`, `currentUserId`, `isSignedIn`
-- [ ] `AuthViewModel.kt` + `AuthScreen.kt`: Google button, loading, error snackbar
-- [ ] `DashboardScreen.kt` stub: "Dashboard" text + Sign Out button
-- [ ] Routing logic in `AppNavGraph`: unauthenticated → Auth, authenticated → Dashboard, back stack cleared on sign-in
-- [ ] **Acceptance test:** Cold launch → AuthScreen → sign in → DashboardScreen. Kill app → reopen → DashboardScreen directly (no auth prompt). Sign out → AuthScreen.
+- [x] Create Android project: package `app.drivedelta`, minSdk 26, Kotlin DSL, Jetpack Compose
+- [x] Set up `libs.versions.toml` version catalog with all libraries listed above
+- [~] Add `google-services.json`, configure Firebase in `build.gradle.kts` — google-services plugin
+      wired; **you must drop `app/google-services.json` in** (gitignored) before the build will sync.
+- [x] `DriveDeltaApplication.kt`: `@HiltAndroidApp`, Places SDK init (Firebase auto-inits from json)
+- [x] `MainActivity.kt`: single-activity Compose host (splash + edge-to-edge)
+- [x] **Implement the design system from Checkpoint 0 as Compose theme files.** Dark only.
+  - [x] `Color.kt` — dark tokens + extended surfaces + purple-sector row colors
+  - [x] `Type.kt` — type scale on Geist + Geist Mono (vendored to `res/font/`), `tnum` on mono roles
+  - [x] `Theme.kt` — single dark `ColorScheme`, `surfaceTint = Transparent`, tokens via
+        `LocalDdTokens` / `LocalDdType` CompositionLocals
+  - [x] Fuel-type badge colors as named values (`DdFuelElectric` … `DdFuelLpg`)
+- [x] `AppNavGraph.kt` + `NavDestinations.kt`: Auth + Dashboard routes (others added later)
+- [x] `FirebaseAuthRepository.kt`: `signInWithGoogle()`, `signOut()`, `currentUserId`, `isSignedIn`
+- [x] `AuthViewModel.kt` + `AuthScreen.kt`: Google button, loading, error snackbar
+- [x] `DashboardScreen.kt` stub: "Dashboard" text + Sign Out button
+- [x] Routing logic in `AppNavGraph`: unauthenticated → Auth, authenticated → Dashboard, back stack cleared
+- [ ] **Acceptance test (you run in Android Studio):** Cold launch → AuthScreen → sign in →
+      DashboardScreen. Kill app → reopen → DashboardScreen directly (no auth prompt). Sign out → AuthScreen.
+
+> **Before this builds** (this dev box has no JDK/SDK — authored, not compiled here):
+> 1. `app/google-services.json` from Firebase (package `app.drivedelta`), Google provider enabled.
+> 2. Debug keystore SHA-1 registered in Firebase (Google Sign-In needs it).
+> 3. Optionally API keys in `local.properties` (see `local.properties.example`) — not needed for auth.
 
 ---
 

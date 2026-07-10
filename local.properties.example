@@ -1,0 +1,10 @@
+# Copy this file to `local.properties` (which is gitignored) and fill in the values.
+# Android Studio manages `sdk.dir` automatically — you don't need to set it by hand.
+#
+# Google Cloud API keys (see SETUP.md for how to obtain them). They may all be the same key
+# if that key has Maps SDK for Android, Roads API, Places API (New), and Geocoding API enabled.
+# Leave them blank to build the app skeleton without Maps/Roads/Places features working.
+
+MAPS_API_KEY=
+ROADS_API_KEY=
+PLACES_API_KEY=

@@ -14,13 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 0 (Design) — 🟡 all work done, needs commit + push to close
-- **Last completed:** PNG mockups exported (14 screens) and renamed to kebab-case in
-  `design/mockups/`. Design import, `design/tokens.md`, and all CLAUDE.md token tables done.
-- **Next up:** Commit + push `/design/`, CLAUDE.md, PROGRESS.md → Checkpoint 0 closed. Then start
-  Checkpoint 1 (project skeleton, dark Compose theme from tokens.md, Google Sign-In).
+- **Active checkpoint:** Checkpoint 1 (Project Skeleton, Theme & Auth) — 🟡 in progress
+- **Last completed:** ✅ Checkpoint 0 (Design) — committed + pushed (`d199717`)
+- **Next up:** Scaffold the Android project, dark Compose theme from `tokens.md`, Google Sign-In.
+  **Blocked on you (per machine):** `google-services.json` in `app/`, and `MAPS_API_KEY` /
+  `ROADS_API_KEY` / `PLACES_API_KEY` in `local.properties` — the Gradle build won't sync without
+  `google-services.json`.
 - **Last updated by:** (machine / 2026-07-10)
 - **Working branch:** `main`
+- **Build note:** This dev box has no JDK / Android SDK / Gradle — code is authored here and built
+  in Android Studio. Source is written to be buildable; it is not compiler-verified locally.
 
 ---
 
@@ -28,8 +31,8 @@
 
 | # | Checkpoint | Status | Where run | Notes |
 |---|---|---|---|---|
-| 0 | Design (Claude Design) | 🟡 In progress | You (design tools) | Import, tokens, 14 PNGs done. Left: commit + push |
-| 1 | Project Skeleton, Theme & Auth | ⬜ Not started | Local | Needs google-services.json |
+| 0 | Design (Claude Design) | ✅ Done | You (design tools) | Committed + pushed `d199717` |
+| 1 | Project Skeleton, Theme & Auth | 🟡 In progress | Local | Needs google-services.json + API keys |
 | 2 | Room DB & Sync Skeleton | ⬜ Not started | Web or Local | |
 | 3 | Cars Feature (CRUD) | ⬜ Not started | Web or Local | |
 | 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
@@ -49,6 +52,21 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-10` — **Checkpoint 1 scaffold authored (not yet compiled).** Full Gradle setup (version
+  catalog, wrapper 8.9, AGP 8.6.1, Kotlin 2.0.21, KSP), Hilt, dark Compose theme from `tokens.md`
+  (Color/Type/Theme + `LocalDdTokens`/`LocalDdType`), Geist + Geist Mono vendored to `res/font/`,
+  Firebase Google Sign-In (classic `GoogleSignInClient`), Auth + Dashboard screens, nav with
+  auth-boundary back-stack clearing. **Dependency versions were bumped from the plan's mid-2024
+  numbers to a coherent Kotlin-2.0.21 set** (e.g. Compose BOM 2024.09.03, Hilt 2.52, Firebase BOM
+  33.4.0, nav 2.8.2) because the plan's originals have K2 rough edges and this box can't compile-test.
+- `2026-07-10` — **Google Sign-In uses the classic `GoogleSignInClient`** (play-services-auth), not
+  Credential Manager. It's deprecated but far lower-risk to wire correctly without a compiler, and it
+  matches the plan's dependency. Revisit if targeting newer Identity APIs. Needs
+  `R.string.default_web_client_id`, which the google-services plugin generates from
+  `google-services.json` — so the app won't build until that file is added.
+- `2026-07-10` — **Removed the `.debug` applicationIdSuffix.** The google-services plugin matches
+  `google-services.json` package_name against the full applicationId; a suffix would fail the debug
+  build unless `app.drivedelta.debug` were also registered in Firebase. POC uses one package.
 - `2026-07-10` — **Mockup PNGs exported and render-verified.** 14 full-res PNGs (1176×2631) in
   `design/mockups/`: 6 core screens + 2 HUD delta states + 6 Ride Moments states. Renamed to
   kebab-case matching the `.html` basenames; the captioned trip-detail duplicate was dropped in
@@ -85,6 +103,12 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
+- **CP1 build is not compiler-verified.** Authored on a box with no JDK/SDK/Gradle. First real
+  compile happens in Android Studio; expect to fix small issues (version resolution, an import).
+  Blockers to build at all: `app/google-services.json` + debug-keystore SHA-1 in Firebase.
+- **WorkManager + Hilt not fully wired yet.** `hilt-work` is on the classpath but the Application
+  does not yet implement `Configuration.Provider`; do that in Checkpoint 2 alongside `SyncWorker`
+  (and remove the default `WorkManagerInitializer` in the manifest then).
 - **Contrast below WCAG AA:** `#6B7178` on `#0A0B0D` is ~4.0:1 (AA needs 4.5:1). Used for dim
   captions and inactive bottom-nav labels at 10–11sp. Recommend lightening the nav labels to
   `#7E858F` (~5.2:1). See `design/tokens.md` §9.

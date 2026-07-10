@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DriveDelta</string>
+    <string name="auth_tagline">Your drive, analysed.</string>
+    <string name="auth_sign_in_google">Sign in with Google</string>
+    <string name="auth_error_generic">Sign-in failed. Please try again.</string>
+    <string name="dashboard_title">Dashboard</string>
+    <string name="action_sign_out">Sign out</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dd_background">#FF0A0B0D</color>
+    <color name="dd_surface">#FF14161A</color>
+    <color name="dd_primary">#FF5B8DEF</color>
+    <color name="dd_on_surface">#FFF2F4F7</color>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Splash screen theme (androidx.core:core-splashscreen). Applied at app launch. -->
+    <style name="Theme.DriveDelta.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/dd_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.DriveDelta</item>
+    </style>
+
+    <!-- Main app theme (dark). Compose owns the real color scheme; this covers system chrome. -->
+    <style name="Theme.DriveDelta" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/dd_background</item>
+        <item name="android:navigationBarColor">@color/dd_background</item>
+        <item name="android:windowBackground">@color/dd_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+</resources>
