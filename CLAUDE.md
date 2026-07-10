@@ -1,5 +1,11 @@
 # DriveDelta — Android App · Claude Code Master Plan
 
+> **Session start:** Before doing anything, read `PROGRESS.md` in the repo root to see which
+> checkpoint we're on, what's done, and what's next. This plan is built in strict checkpoint order
+> (see "MVP Build Checkpoints"). When a checkpoint completes: tick its boxes here, update
+> `PROGRESS.md`, then commit + push. A checkpoint isn't done until it's committed and pushed —
+> this is what lets work continue seamlessly across multiple machines.
+
 ## Product Summary
 
 Native Android app (Kotlin + Jetpack Compose) that records car drives, tracks GPS traces,
