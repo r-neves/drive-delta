@@ -1,0 +1,31 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+/.idea/
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+
+# Secrets & Firebase (must never be committed)
+google-services.json
+app/google-services.json
+*.keystore
+*.jks
+keystore.properties
+
+# Kotlin / KSP
+.kotlin/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log

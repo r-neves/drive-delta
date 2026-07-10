@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Geist', system-ui, sans-serif; }
+  a { color: #5b8def; text-decoration: none; }
+  a:hover { color: #82a8f4; }
+  .mono { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+</style>
+</helmet>
+
+<div style="position:relative;width:392px;height:844px;border-radius:48px;background:#0a0b0d;border:11px solid #2b2d31;box-shadow:0 40px 90px rgba(0,0,0,0.55);overflow:hidden;display:flex;flex-direction:column;font-family:'Geist',system-ui,sans-serif;color:#f2f4f7;">
+
+  <!-- ambient background -->
+  <div style="position:absolute;inset:0;background:radial-gradient(600px 420px at 50% 26%, rgba(91,141,239,0.14) 0%, rgba(10,11,13,0) 60%);"></div>
+  <svg viewBox="0 0 393 844" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.5;">
+    <path d="M -30 200 L 120 200 Q 160 200 160 250 L 160 420 Q 160 470 220 480 L 430 500" fill="none" stroke="#5b8def" stroke-width="2" stroke-linecap="round" opacity="0.10"></path>
+    <path d="M -30 640 L 90 640 Q 140 640 150 590 L 180 470" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.04"></path>
+  </svg>
+
+  <!-- status bar -->
+  <div style="position:relative;z-index:2;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex:none;">
+    <span class="mono" style="font-size:14px;font-weight:500;color:#e8eaed;">9:41</span>
+    <div style="display:flex;align-items:center;gap:7px;color:#e8eaed;">
+      <span style="font-size:11px;font-weight:600;letter-spacing:0.5px;">5G</span>
+      <svg width="16" height="12" viewBox="0 0 16 12"><g fill="#e8eaed"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="4.3" y="5.5" width="3" height="6.5" rx="1"></rect><rect x="8.6" y="3" width="3" height="9" rx="1"></rect><rect x="12.9" y="0.5" width="3" height="11.5" rx="1" opacity="0.35"></rect></g></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.2 L1 4.2 a9.9 9.9 0 0 1 14 0 Z" fill="#e8eaed"></path></svg>
+      <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="#e8eaed" stroke-opacity="0.5"></rect><rect x="2.5" y="2.5" width="13" height="7" rx="1.5" fill="#e8eaed"></rect><rect x="21.5" y="4" width="1.6" height="4" rx="0.8" fill="#e8eaed" opacity="0.6"></rect></svg>
+    </div>
+  </div>
+
+  <!-- content -->
+  <div style="position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:32px 32px 40px;">
+
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;">
+      <div style="width:74px;height:74px;border-radius:22px;background:linear-gradient(160deg,#1b1e24,#101216);border:1px solid rgba(255,255,255,0.08);box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;">
+        <sc-if value="{{ isWedge }}" hint-placeholder-val="{{ false }}">
+          <svg width="38" height="38" viewBox="0 0 40 40"><g transform="skewX(-10)"><path d="M21 4 L33 35 L9 35 Z" fill="{{ accent }}"></path><path d="M21 4 L33 35 L21 35 Z" fill="#000" opacity="0.20"></path></g><g stroke="#37d67a" stroke-width="2.8" stroke-linecap="round"><path d="M4 34 L13 16"></path></g></svg>
+        </sc-if>
+        <sc-if value="{{ isChevron }}" hint-placeholder-val="{{ false }}">
+          <svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 23 L20 10 L32 23" stroke="{{ accent }}" stroke-width="4.2"></path><path d="M8 33 L20 20 L32 33" stroke="#37d67a" stroke-width="4.2"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isApex }}" hint-placeholder-val="{{ false }}">
+          <svg width="38" height="38" viewBox="0 0 40 40"><path d="M20 5 L34 34 L6 34 Z" fill="none" stroke="{{ accent }}" stroke-width="3.4" stroke-linejoin="round"></path><path d="M13 33 L25 13" stroke="#37d67a" stroke-width="3.2" stroke-linecap="round"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isClassic }}" hint-placeholder-val="{{ true }}">
+          <svg width="36" height="36" viewBox="0 0 24 24"><path d="M12 2.6 L21 20 L3 20 Z" fill="none" stroke="{{ accent }}" stroke-width="2.1" stroke-linejoin="round"></path><path d="M12 2.6 L15.6 9.6 L8.4 9.6 Z" fill="#37d67a"></path></svg>
+        </sc-if>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:32px;font-weight:600;letter-spacing:-0.8px;color:#f2f4f7;">DriveDelta</div>
+        <div style="font-size:15px;color:#8a9099;margin-top:8px;letter-spacing:0.2px;">Your drive, analysed.</div>
+      </div>
+    </div>
+
+    <div style="flex:none;">
+      <button style="width:100%;height:56px;display:flex;align-items:center;justify-content:center;gap:12px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:#16181c;color:#f2f4f7;font-family:'Geist',sans-serif;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.45);">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
+        Continue with Google
+      </button>
+      <p style="text-align:center;font-size:12px;line-height:1.6;color:#6b7178;margin:18px 0 0;">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+    </div>
+
+  </div>
+
+  <!-- nav pill -->
+  <div style="position:relative;z-index:2;height:24px;display:flex;align-items:center;justify-content:center;flex:none;"><div style="width:120px;height:5px;border-radius:3px;background:#e8eaed;opacity:0.5;"></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:866},&quot;logoStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;apex&quot;,&quot;options&quot;:[&quot;classic&quot;,&quot;wedge&quot;,&quot;chevron&quot;,&quot;apex&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Logo&quot;},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#5b8def&quot;,&quot;options&quot;:[&quot;#5b8def&quot;,&quot;#37d67a&quot;,&quot;#b388ff&quot;,&quot;#ff556a&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Logo&quot;}}">class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.logoStyle ?? 'apex';
+    return {
+      isWedge: s === 'wedge',
+      isChevron: s === 'chevron',
+      isApex: s === 'apex',
+      isClassic: s === 'classic',
+      accent: this.props.accentColor ?? '#5b8def',
+    };
+  }
+}</script>
+</body>
+</html>

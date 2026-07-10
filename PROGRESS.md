@@ -14,11 +14,13 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 0 (Design) — not started
-- **Last completed:** none yet
-- **Next up:** Complete design in Pencil/Claude Design, fill in Design System tokens in CLAUDE.md
-- **Last updated by:** (machine / date)
-- **Working branch:** (e.g. `main` or `checkpoint-N`)
+- **Active checkpoint:** Checkpoint 0 (Design) — 🟡 all work done, needs commit + push to close
+- **Last completed:** PNG mockups exported (14 screens) and renamed to kebab-case in
+  `design/mockups/`. Design import, `design/tokens.md`, and all CLAUDE.md token tables done.
+- **Next up:** Commit + push `/design/`, CLAUDE.md, PROGRESS.md → Checkpoint 0 closed. Then start
+  Checkpoint 1 (project skeleton, dark Compose theme from tokens.md, Google Sign-In).
+- **Last updated by:** (machine / 2026-07-10)
+- **Working branch:** `main`
 
 ---
 
@@ -26,7 +28,7 @@
 
 | # | Checkpoint | Status | Where run | Notes |
 |---|---|---|---|---|
-| 0 | Design (Pencil / Claude Design) | ⬜ Not started | You (design tools) | Fill tokens + export 6 mockups |
+| 0 | Design (Claude Design) | 🟡 In progress | You (design tools) | Import, tokens, 14 PNGs done. Left: commit + push |
 | 1 | Project Skeleton, Theme & Auth | ⬜ Not started | Local | Needs google-services.json |
 | 2 | Room DB & Sync Skeleton | ⬜ Not started | Web or Local | |
 | 3 | Cars Feature (CRUD) | ⬜ Not started | Web or Local | |
@@ -47,7 +49,29 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
-- _(none yet)_
+- `2026-07-10` — **Mockup PNGs exported and render-verified.** 14 full-res PNGs (1176×2631) in
+  `design/mockups/`: 6 core screens + 2 HUD delta states + 6 Ride Moments states. Renamed to
+  kebab-case matching the `.html` basenames; the captioned trip-detail duplicate was dropped in
+  favour of the clean crop. The renders confirm every extracted token (dark `#0A0B0D` canvas, apex
+  logo, green/red/purple deltas) — the design app's own renderer resolves the `<sc-if>` branches
+  that reading the HTML could not.
+- `2026-07-10` — **Dark theme only for the POC.** All 8 screens are authored dark-first; light
+  variants exist only for the HUD and pre-ride sheet. Build one dark `ColorScheme`, no
+  `isSystemInDarkTheme()` branch. Light values stay recorded in `design/tokens.md` §2.2 for later.
+- `2026-07-10` — **Fuel-badge colour collisions accepted.** Diesel `#5B8DEF` == `primary`, Electric
+  `#37D67A` == `success`/`deltaFaster`. Binding consequence: fuel badges must always render their
+  text label and never signal by colour alone.
+- `2026-07-10` — **Implement from `design/tokens.md`, not the `.dc.html` mockups.** The mockups can't
+  render offline (`support.js` needs React, which none of them load), and 6 of 8 are React-templated:
+  the static markup holds every `<sc-if>` branch, and `hint-placeholder-val` is not the real default
+  (`auth.html` hints `isClassic` while `data-props` says `"apex"`). Reading them yields wrong UI.
+  Order: `tokens.md` → PNG → raw HTML only as a tiebreaker.
+- `2026-07-10` — Design imported from Claude Design project `50aaa2d0-469b-4699-aba1-25ae18291f19`
+  ("DriveDelta Live Tracking") via the `claude_design` MCP. Fonts are **Geist** + **Geist Mono**
+  (both OFL), not yet vendored into `res/font/`.
+- `2026-07-10` — Design includes a screen not in the plan: **Ride Moments**. Not a product screen —
+  a reference board for the pre-ride / stop-confirm / arrival sheets, the acquiring-GPS state, and
+  the 3 empty states. It covers F5, F6-A, F6-B and Checkpoint 10's cold-GPS requirement.
 
 Example entries you might add later:
 - `2026-07-15` — Swapped Vico for a custom Canvas chart on the compare screen; Vico beta had a
@@ -61,7 +85,17 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
-- _(none yet)_
+- **Contrast below WCAG AA:** `#6B7178` on `#0A0B0D` is ~4.0:1 (AA needs 4.5:1). Used for dim
+  captions and inactive bottom-nav labels at 10–11sp. Recommend lightening the nav labels to
+  `#7E858F` (~5.2:1). See `design/tokens.md` §9.
+- **No error state was designed for text fields.** Derive from `error #FF556A` (border + helper
+  text), reusing the focused field's 1.5dp border / 4dp ring geometry.
+- **Only the Electric fuel badge was drawn filled.** The other four colours come from
+  segmented-control icon strokes; apply the same 12% bg / 30% border composite.
+- **Geist + Geist Mono not yet vendored** into `res/font/` (Geist 400/500/600/700,
+  Geist Mono 400/500/600).
+- `design/mockups/support.js` (62 KB) is Claude Design's generated runtime. It is kept only so the
+  `.dc.html` sources stay faithful to the export. It is not used by the app and never will be.
 
 ---
 

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #1c1e22; font-family: 'Geist', system-ui, sans-serif; color: #e8eaed; -webkit-font-smoothing: antialiased; }
+  a { color: #5b8def; text-decoration: none; }
+  a:hover { color: #82a8f4; }
+  .mono { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:56px 48px 80px;background:radial-gradient(1200px 700px at 50% -10%, #26292f 0%, #1a1c20 60%, #161719 100%);">
+
+  <div style="max-width:960px;margin:0 auto 40px;">
+    <div style="font-size:13px;letter-spacing:3px;color:#6b7178;font-weight:600;">DRIVEDELTA</div>
+    <h1 style="margin:6px 0 10px;font-size:30px;font-weight:600;letter-spacing:-0.5px;color:#f2f4f7;">Live Tracking HUD</h1>
+    <p style="margin:0;font-size:15px;line-height:1.5;color:#8a9099;max-width:560px;">Full-screen map with a floating telemetry panel. Times are colour-coded like motorsport sectors — everything else stays neutral so the signal colours carry the meaning.</p>
+
+    <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:22px;">
+      <div style="display:flex;align-items:center;gap:9px;"><span style="width:11px;height:11px;border-radius:50%;background:#37d67a;box-shadow:0 0 12px #37d67a88;"></span><span style="font-size:13px;color:#a7adb5;">Faster than best</span></div>
+      <div style="display:flex;align-items:center;gap:9px;"><span style="width:11px;height:11px;border-radius:50%;background:#ff556a;box-shadow:0 0 12px #ff556a88;"></span><span style="font-size:13px;color:#a7adb5;">Slower than best</span></div>
+      <div style="display:flex;align-items:center;gap:9px;"><span style="width:11px;height:11px;border-radius:50%;background:#b388ff;box-shadow:0 0 12px #b388ff88;"></span><span style="font-size:13px;color:#a7adb5;">New personal best · purple sector</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:60px;flex-wrap:wrap;justify-content:center;align-items:flex-start;">
+
+    <!-- ══════════════ DARK (DEFAULT) ══════════════ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div style="font-size:12px;letter-spacing:2.5px;color:#6b7178;font-weight:600;">DARK · DEFAULT</div>
+      <div style="position:relative;width:392px;height:844px;border-radius:48px;background:#000;border:11px solid #2b2d31;box-shadow:0 40px 90px rgba(0,0,0,0.55);overflow:hidden;">
+
+        <!-- MAP -->
+        <svg viewBox="0 0 393 852" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block;">
+          <rect x="0" y="0" width="393" height="852" fill="#0a0b0d"></rect>
+          <rect x="-20" y="300" width="150" height="170" rx="12" fill="#0e1014"></rect>
+          <rect x="270" y="120" width="160" height="150" rx="12" fill="#0e1014"></rect>
+          <rect x="230" y="560" width="200" height="230" rx="12" fill="#0e1014"></rect>
+          <g stroke="#15171b" stroke-width="7" stroke-linecap="round">
+            <path d="M -20 180 L 420 180"></path>
+            <path d="M -20 430 L 420 430"></path>
+            <path d="M -20 660 L 420 660"></path>
+            <path d="M 90 -20 L 90 880"></path>
+            <path d="M 300 -20 L 300 880"></path>
+            <path d="M -20 720 L 210 500"></path>
+          </g>
+          <path d="M 300 -20 L 300 150 Q 300 190 260 190 L 150 190 Q 110 190 110 240 L 110 430 Q 110 480 160 495 L 196 520" fill="none" stroke="#1e2126" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M 196 520 L 250 600 L 300 700" fill="none" stroke="#3a4048" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 13" opacity="0.85"></path>
+          <path d="M 300 -20 L 300 150 Q 300 190 260 190 L 150 190 Q 110 190 110 240 L 110 430 Q 110 480 160 495 L 196 520" fill="none" stroke="#5b8def" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="196" cy="520" r="23" fill="#5b8def" opacity="0.15"></circle>
+          <circle cx="196" cy="520" r="9" fill="#5b8def" stroke="#0a0b0d" stroke-width="3.5"></circle>
+        </svg>
+
+        <!-- status bar -->
+        <div style="position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:5;">
+          <span class="mono" style="font-size:14px;font-weight:500;color:#e8eaed;">9:41</span>
+          <div style="display:flex;align-items:center;gap:7px;color:#e8eaed;">
+            <span style="font-size:11px;font-weight:600;letter-spacing:0.5px;">5G</span>
+            <svg width="16" height="12" viewBox="0 0 16 12"><g fill="#e8eaed"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="4.3" y="5.5" width="3" height="6.5" rx="1"></rect><rect x="8.6" y="3" width="3" height="9" rx="1"></rect><rect x="12.9" y="0.5" width="3" height="11.5" rx="1" opacity="0.35"></rect></g></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.2 L1 4.2 a9.9 9.9 0 0 1 14 0 Z" fill="#e8eaed"></path></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="#e8eaed" stroke-opacity="0.5"></rect><rect x="2.5" y="2.5" width="13" height="7" rx="1.5" fill="#e8eaed"></rect><rect x="21.5" y="4" width="1.6" height="4" rx="0.8" fill="#e8eaed" opacity="0.6"></rect></svg>
+          </div>
+        </div>
+
+        <!-- top chips -->
+        <div style="position:absolute;top:60px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:5;">
+          <sc-if value="{{ showRemaining }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 15px;border-radius:19px;background:rgba(14,16,20,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.09);">
+              <span style="width:8px;height:8px;border-radius:2px;transform:rotate(45deg);background:#5b8def;"></span>
+              <span class="mono" style="font-size:14px;font-weight:500;color:#e8eaed;">18.4 km left</span>
+            </div>
+          </sc-if>
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(14,16,20,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4.5" fill="none" stroke="#e8eaed" stroke-width="1.6"></circle><circle cx="10" cy="10" r="1.4" fill="#5b8def"></circle><g stroke="#e8eaed" stroke-width="1.6" stroke-linecap="round"><path d="M10 1.5 L10 4"></path><path d="M10 16 L10 18.5"></path><path d="M1.5 10 L4 10"></path><path d="M16 10 L18.5 10"></path></g></svg>
+          </div>
+        </div>
+
+        <!-- TELEMETRY PANEL -->
+        <div style="position:absolute;left:12px;right:12px;bottom:40px;padding:22px 22px 20px;border-radius:30px;background:rgba(15,17,21,0.74);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.55);z-index:6;">
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 10px #ff4d4d;"></span>
+            <span style="font-size:11px;letter-spacing:2px;font-weight:600;color:#7e858f;">RECORDING</span>
+            <span style="flex:1;"></span>
+            <span style="font-size:12px;letter-spacing:1.5px;font-weight:500;color:#9aa0a8;">RIVERSIDE DRIVE</span>
+          </div>
+
+          <!-- hero row -->
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+            <div>
+              <div class="mono" style="font-size:88px;font-weight:600;line-height:0.82;letter-spacing:-3px;color:#f2f4f7;">72</div>
+              <div style="font-size:12px;letter-spacing:3px;font-weight:600;color:#7e858f;margin-top:8px;">KM/H</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="mono" style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:{{ deltaColorDark }};">{{ segLabel }}</div>
+              <div class="mono" style="font-size:34px;font-weight:600;line-height:1;letter-spacing:-1px;color:#f2f4f7;margin-top:6px;">{{ segTime }}</div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:6px;">
+                <span class="mono" style="font-size:15px;font-weight:600;color:{{ deltaColorDark }};">{{ deltaCaret }}</span>
+                <span class="mono" style="font-size:21px;font-weight:600;letter-spacing:-0.5px;color:{{ deltaColorDark }};">{{ deltaText }}</span>
+              </div>
+              <div class="mono" style="font-size:11px;letter-spacing:0.5px;color:#6b7178;margin-top:5px;">{{ bestText }} · SECTOR 3</div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,0.07);margin:18px 0 16px;"></div>
+
+          <!-- stats -->
+          <div style="display:flex;gap:12px;">
+            <div style="flex:1;">
+              <div style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:#7e858f;">ELAPSED</div>
+              <div class="mono" style="font-size:24px;font-weight:500;color:#e8eaed;margin-top:4px;">24:18</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:#7e858f;">DISTANCE</div>
+              <div class="mono" style="font-size:24px;font-weight:500;color:#e8eaed;margin-top:4px;white-space:nowrap;">31.2<span style="font-size:14px;color:#7e858f;"> km</span></div>
+            </div>
+            <button style="flex:0 0 116px;display:flex;align-items:center;justify-content:center;gap:9px;border-radius:16px;border:1px solid rgba(255,85,106,0.38);background:rgba(255,85,106,0.13);color:#ff7a88;font-family:'Geist',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;cursor:pointer;">
+              <span style="width:12px;height:12px;border-radius:3px;background:#ff556a;"></span>STOP
+            </button>
+          </div>
+        </div>
+
+        <!-- nav pill -->
+        <div style="position:absolute;bottom:11px;left:0;right:0;display:flex;justify-content:center;z-index:7;"><div style="width:120px;height:5px;border-radius:3px;background:#e8eaed;opacity:0.5;"></div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LIGHT ══════════════ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div style="font-size:12px;letter-spacing:2.5px;color:#6b7178;font-weight:600;">LIGHT</div>
+      <div style="position:relative;width:392px;height:844px;border-radius:48px;background:#fff;border:11px solid #d3d6da;box-shadow:0 40px 90px rgba(0,0,0,0.4);overflow:hidden;">
+
+        <!-- MAP -->
+        <svg viewBox="0 0 393 852" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block;">
+          <rect x="0" y="0" width="393" height="852" fill="#e7ecf1"></rect>
+          <rect x="-20" y="300" width="150" height="170" rx="12" fill="#dee4eb"></rect>
+          <rect x="270" y="120" width="160" height="150" rx="12" fill="#dee4eb"></rect>
+          <rect x="230" y="560" width="200" height="230" rx="12" fill="#dee4eb"></rect>
+          <g stroke="#ffffff" stroke-width="7" stroke-linecap="round">
+            <path d="M -20 180 L 420 180"></path>
+            <path d="M -20 430 L 420 430"></path>
+            <path d="M -20 660 L 420 660"></path>
+            <path d="M 90 -20 L 90 880"></path>
+            <path d="M 300 -20 L 300 880"></path>
+            <path d="M -20 720 L 210 500"></path>
+          </g>
+          <path d="M 300 -20 L 300 150 Q 300 190 260 190 L 150 190 Q 110 190 110 240 L 110 430 Q 110 480 160 495 L 196 520" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M 196 520 L 250 600 L 300 700" fill="none" stroke="#b7c0cb" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 13" opacity="0.9"></path>
+          <path d="M 300 -20 L 300 150 Q 300 190 260 190 L 150 190 Q 110 190 110 240 L 110 430 Q 110 480 160 495 L 196 520" fill="none" stroke="#2f6be0" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="196" cy="520" r="23" fill="#2f6be0" opacity="0.14"></circle>
+          <circle cx="196" cy="520" r="9" fill="#2f6be0" stroke="#ffffff" stroke-width="3.5"></circle>
+        </svg>
+
+        <!-- status bar -->
+        <div style="position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:5;">
+          <span class="mono" style="font-size:14px;font-weight:500;color:#14181d;">9:41</span>
+          <div style="display:flex;align-items:center;gap:7px;color:#14181d;">
+            <span style="font-size:11px;font-weight:600;letter-spacing:0.5px;">5G</span>
+            <svg width="16" height="12" viewBox="0 0 16 12"><g fill="#14181d"><rect x="0" y="8" width="3" height="4" rx="1"></rect><rect x="4.3" y="5.5" width="3" height="6.5" rx="1"></rect><rect x="8.6" y="3" width="3" height="9" rx="1"></rect><rect x="12.9" y="0.5" width="3" height="11.5" rx="1" opacity="0.35"></rect></g></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.2 L1 4.2 a9.9 9.9 0 0 1 14 0 Z" fill="#14181d"></path></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="#14181d" stroke-opacity="0.5"></rect><rect x="2.5" y="2.5" width="13" height="7" rx="1.5" fill="#14181d"></rect><rect x="21.5" y="4" width="1.6" height="4" rx="0.8" fill="#14181d" opacity="0.6"></rect></svg>
+          </div>
+        </div>
+
+        <!-- top chips -->
+        <div style="position:absolute;top:60px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;z-index:5;">
+          <sc-if value="{{ showRemaining }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 15px;border-radius:19px;background:rgba(255,255,255,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+              <span style="width:8px;height:8px;border-radius:2px;transform:rotate(45deg);background:#2f6be0;"></span>
+              <span class="mono" style="font-size:14px;font-weight:500;color:#14181d;">18.4 km left</span>
+            </div>
+          </sc-if>
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4.5" fill="none" stroke="#14181d" stroke-width="1.6"></circle><circle cx="10" cy="10" r="1.4" fill="#2f6be0"></circle><g stroke="#14181d" stroke-width="1.6" stroke-linecap="round"><path d="M10 1.5 L10 4"></path><path d="M10 16 L10 18.5"></path><path d="M1.5 10 L4 10"></path><path d="M16 10 L18.5 10"></path></g></svg>
+          </div>
+        </div>
+
+        <!-- TELEMETRY PANEL -->
+        <div style="position:absolute;left:12px;right:12px;bottom:40px;padding:22px 22px 20px;border-radius:30px;background:rgba(255,255,255,0.78);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(0,0,0,0.05);box-shadow:0 24px 60px rgba(20,30,50,0.18);z-index:6;">
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#e0263f;box-shadow:0 0 10px #e0263f;"></span>
+            <span style="font-size:11px;letter-spacing:2px;font-weight:600;color:#8a929c;">RECORDING</span>
+            <span style="flex:1;"></span>
+            <span style="font-size:12px;letter-spacing:1.5px;font-weight:500;color:#5a626b;">RIVERSIDE DRIVE</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+            <div>
+              <div class="mono" style="font-size:88px;font-weight:600;line-height:0.82;letter-spacing:-3px;color:#14181d;">72</div>
+              <div style="font-size:12px;letter-spacing:3px;font-weight:600;color:#8a929c;margin-top:8px;">KM/H</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="mono" style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:{{ deltaColorLight }};">{{ segLabel }}</div>
+              <div class="mono" style="font-size:34px;font-weight:600;line-height:1;letter-spacing:-1px;color:#14181d;margin-top:6px;">{{ segTime }}</div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:6px;">
+                <span class="mono" style="font-size:15px;font-weight:600;color:{{ deltaColorLight }};">{{ deltaCaret }}</span>
+                <span class="mono" style="font-size:21px;font-weight:600;letter-spacing:-0.5px;color:{{ deltaColorLight }};">{{ deltaText }}</span>
+              </div>
+              <div class="mono" style="font-size:11px;letter-spacing:0.5px;color:#98a0aa;margin-top:5px;">{{ bestText }} · SECTOR 3</div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(0,0,0,0.07);margin:18px 0 16px;"></div>
+
+          <div style="display:flex;gap:12px;">
+            <div style="flex:1;">
+              <div style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:#8a929c;">ELAPSED</div>
+              <div class="mono" style="font-size:24px;font-weight:500;color:#14181d;margin-top:4px;">24:18</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px;letter-spacing:1.5px;font-weight:600;color:#8a929c;">DISTANCE</div>
+              <div class="mono" style="font-size:24px;font-weight:500;color:#14181d;margin-top:4px;white-space:nowrap;">31.2<span style="font-size:14px;color:#98a0aa;"> km</span></div>
+            </div>
+            <button style="flex:0 0 116px;display:flex;align-items:center;justify-content:center;gap:9px;border-radius:16px;border:1px solid rgba(217,45,74,0.35);background:rgba(217,45,74,0.10);color:#d92d4a;font-family:'Geist',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;cursor:pointer;">
+              <span style="width:12px;height:12px;border-radius:3px;background:#d92d4a;"></span>STOP
+            </button>
+          </div>
+        </div>
+
+        <!-- nav pill -->
+        <div style="position:absolute;bottom:11px;left:0;right:0;display:flex;justify-content:center;z-index:7;"><div style="width:120px;height:5px;border-radius:3px;background:#14181d;opacity:0.35;"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1000, &quot;height&quot;: 1040 },
+  &quot;deltaState&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;ahead&quot;, &quot;options&quot;: [&quot;ahead&quot;, &quot;behind&quot;, &quot;pb&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Telemetry&quot; },
+  &quot;showRemaining&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Telemetry&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.deltaState ?? 'ahead';
+    const map = {
+      ahead:  { segTime: '0:42.6', best: '0:45.0', delta: '−2.4s', caret: '▾', dark: '#37d67a', light: '#0e9f55', label: 'AHEAD OF BEST' },
+      behind: { segTime: '0:47.1', best: '0:45.2', delta: '+1.9s',        caret: '▴', dark: '#ff556a', light: '#d92d4a', label: 'BEHIND BEST' },
+      pb:     { segTime: '0:41.8', best: '0:41.8', delta: 'NEW BEST',      caret: '★', dark: '#b388ff', light: '#7c4dff', label: 'PURPLE SECTOR' },
+    };
+    const d = map[state] || map.ahead;
+    return {
+      segTime: d.segTime,
+      bestText: 'BEST ' + d.best,
+      deltaText: d.delta,
+      deltaCaret: d.caret,
+      deltaColorDark: d.dark,
+      deltaColorLight: d.light,
+      segLabel: d.label,
+      showRemaining: this.props.showRemaining ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

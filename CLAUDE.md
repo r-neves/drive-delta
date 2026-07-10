@@ -33,7 +33,7 @@ offline support via Room as local cache. AAOS support is a post-MVP goal.
 | AAOS | Post-MVP |
 | Language | System locale: pt-PT and en |
 | Distribution | Play Store (each user sees only their own data) |
-| Design | High-fi mockups in Pencil (pencil.dev) + Claude Design → translated to Compose theme (Checkpoint 0 first) |
+| Design | High-fi mockups in Claude Design → imported to `/design/` → translated to Compose theme. **Dark theme only** for the POC. |
 
 ---
 
@@ -95,14 +95,30 @@ offline support via Room as local cache. AAOS support is a post-MVP goal.
 
 ```
 design/                                        # Checkpoint 0 output (design reference, not code)
-├── mockups/                                   # exported PNG/SVG per screen
+├── mockups/
+│   │                                          # PNG exports — the visual reference to view per screen:
 │   ├── auth.png
 │   ├── dashboard.png
-│   ├── tracking-hud.png
-│   ├── trip-detail.png
 │   ├── car-edit.png
-│   └── place-edit.png
-└── tokens.md                                  # optional: raw token export from Pencil/Claude Design
+│   ├── place-edit.png
+│   ├── trip-detail.png                        # Splits tab, incl. the purple-sector PB row
+│   ├── tracking-hud-ahead.png                 # HUD, green "ahead of best" delta state
+│   ├── tracking-hud-behind.png                # HUD, red "behind best" delta state
+│   ├── ride-moments-pre-ride.png              # pre-ride setup sheet (F5)
+│   ├── ride-moments-stop-confirm.png          # StopConfirmSheet (F6-A)
+│   ├── ride-moments-auto-finish.png           # ArrivalSheet w/ 30s countdown (F6-B)
+│   ├── ride-moments-acquiring-gps.png         # cold-GPS-start HUD state (Checkpoint 10)
+│   ├── ride-moments-no-trips.png              # empty states ↓
+│   ├── ride-moments-no-cars.png
+│   ├── ride-moments-no-places.png
+│   │                                          # source docs — React-templated, DO NOT read as spec:
+│   ├── auth.html  dashboard.html  tracking-hud.html  trip-detail.html
+│   ├── car-edit.html  place-edit.html  ride-moments.html
+│   ├── app-shell.html                         # canvas index; imports the others by doc name
+│   └── support.js                             # Claude Design runtime (needs React; won't run offline)
+├── frames/
+│   └── android-frame.jsx                      # M3 device chrome — NOT DriveDelta brand, ignore
+└── tokens.md                                  # ← SOURCE OF TRUTH for all colors/type/spacing/specs
 
 app/                                           # Gradle module directory
 ├── build.gradle.kts
@@ -440,97 +456,167 @@ service cloud.firestore {
 
 ## Design System
 
-> **Source of truth for all UI.** The visual design is produced in Pencil (pencil.dev) and/or
-> Claude Design during Checkpoint 0, then translated into Jetpack Compose theme files here.
-> Both tools output web code (HTML/CSS/React), NOT Compose — so they serve as the visual +
-> token reference, and Claude Code implements the actual Compose UI from the exported mockups
-> and the token values below. Do not invent colors, spacing, or type — use these tokens.
+> **Source of truth for all UI.** The design was produced in Claude Design (project
+> "DriveDelta Live Tracking") and imported into `/design/`. It outputs web code (HTML/CSS/React),
+> NOT Compose — it is a visual + token reference, and Claude Code implements the actual Compose UI
+> from it. Do not invent colors, spacing, or type — use these tokens.
 
 ### Design assets location
-- Exported mockups (PNG/SVG) live in `/design/mockups/` in the repo.
-- Each core screen has a reference image named `design/mockups/<screen>.png`.
-- When implementing a screen, view its mockup image first, then match it using the tokens below.
+
+Read them in this order. Each answers a different question:
+
+| Read | For | Cost |
+|---|---|---|
+| **`design/tokens.md`** | Every exact value: colors, type scale, spacing, radii, shadows, and per-component specs (§7). **This is authoritative** — and the values are confirmed against the rendered PNGs. | cheap |
+| `design/mockups/<screen>.png` | Layout, proportion, hierarchy, density — what a token table can't encode. 14 full-res exports (see the tree above); view the one for the screen you're building. | cheap |
+| `design/mockups/<screen>.html` | Last resort, to settle what neither answers. | expensive |
+
+**Do not implement from the raw `.dc.html`.** Three reasons, all verified:
+
+1. **They don't render.** `support.js` needs `window.React`/`window.ReactDOM`; no mockup loads React.
+   Opening one throws `dc-runtime: window.React is not available yet`. Claude Design injects it.
+2. **Six of eight are React-templated** (`data-dc-script` + `<sc-if>` + `{{ }}`). The static markup
+   contains *every* conditional branch, not the one that renders, and the `hint-placeholder-val`
+   attribute is **not** the real default. `auth.html` carries four logo variants: the placeholder
+   hint says `isClassic`, while `data-props` declares the default is `"apex"`. Trust `data-props`.
+3. **They're mostly SVG noise.** `ride-moments.html` is 345 lines, 258 inline styles, 58 hand-drawn
+   SVG paths. Reading all eight costs ~50k tokens to recover values already extracted in `tokens.md`.
+
+`design/frames/android-frame.jsx` is a generic Material 3 device-chrome scaffold (teal `#006a60`).
+It is **not** DriveDelta brand. Ignore it.
+
+### Scope: dark theme only
+
+The POC ships **dark only**. All eight screens are authored dark-first; light variants exist only
+for the HUD and the pre-ride sheet, and are out of scope. Build a single dark `ColorScheme`; do not
+wire a light scheme or a `isSystemInDarkTheme()` branch. The light table below is recorded for
+future reference, not for implementation.
+
+The two color collisions are **accepted for now**: Diesel's badge equals `primary` (`#5B8DEF`), and
+Electric's equals `success`/`deltaFaster` (`#37D67A`). Consequence: a fuel-type badge must always
+carry its text label and never signal by color alone.
 
 ### Brand & aesthetic direction
 DriveDelta blends **motorsport telemetry** (precision, data density, split-timing, the "purple
 sector" fastest-time motif) with **everyday-driving calm** (clean, legible, not aggressive). The
 signature screen is the Live Tracking HUD. Think race-engineer dashboard, not arcade racer.
 
-### Design tokens (FILL IN from Pencil / Claude Design output)
+### Design tokens (extracted from Claude Design project "DriveDelta Live Tracking")
 
-These are placeholder slots. Replace the values with the finalized tokens from the design phase,
-then Claude Code generates `Color.kt`, `Type.kt`, and `Theme.kt` to match exactly.
+Source mockups live in `/design/mockups/`; the full extraction lives in `/design/tokens.md`.
+The mockups define no CSS custom properties — every value below was read from literal inline
+styles across the eight screens and cross-checked for consistency. `Color.kt`, `Type.kt`, and
+`Theme.kt` must match these exactly.
 
-**Colors — Light theme**
+> **Dark is the designed theme.** All eight screens are authored dark-first. Light values exist
+> only for the Live Tracking HUD and the pre-ride sheet. Values marked **†** were derived by
+> extension, not designed — confirm them against a light mockup before shipping a light theme.
+
+**Colors — Dark theme** (the designed default)
 | Token | Hex | Usage |
 |---|---|---|
-| `primary` | `#______` | Primary actions, active states |
-| `onPrimary` | `#______` | Text/icons on primary |
-| `secondary` | `#______` | Accents, chips |
-| `background` | `#______` | Screen background |
-| `surface` | `#______` | Cards, sheets |
-| `onSurface` | `#______` | Primary text |
-| `onSurfaceVariant` | `#______` | Secondary text |
-| `outline` | `#______` | Borders, dividers |
-| `error` | `#______` | Errors, "slower than best" delta |
-| `success` | `#______` | "Faster than best" delta (green) |
-| `deltaSlower` | `#______` | HUD delta positive (red family) |
-| `deltaFaster` | `#______` | HUD delta negative (green family) |
-| `purpleSector` | `#______` | Fastest-ever segment highlight (motorsport purple) |
+| `primary` | `#5B8DEF` | Primary actions, active states, route polyline |
+| `onPrimary` | `#FFFFFF` | Text/icons on primary |
+| `secondary` | `#82A8F4` | Accents, chips, link hover |
+| `background` | `#0A0B0D` | Screen background (near-black) |
+| `surface` | `#14161A` | Cards, inputs |
+| `onSurface` | `#F2F4F7` | Primary text |
+| `onSurfaceVariant` | `#8A9099` | Secondary text |
+| `outline` | `#FFFFFF` @ 8% | Borders, dividers (`rgba(255,255,255,0.08)`) |
+| `error` | `#FF556A` | Errors, "slower than best" delta, destructive |
+| `success` | `#37D67A` | "Faster than best" delta (green) |
+| `deltaSlower` | `#FF556A` | HUD delta positive (red family) |
+| `deltaFaster` | `#37D67A` | HUD delta negative (green family) |
+| `purpleSector` | `#B388FF` | Fastest-ever segment highlight (motorsport purple) |
 
-**Colors — Dark theme** (the HUD and map screens default to dark for glare reduction while driving)
-| Token | Hex |
-|---|---|
-| `primary` | `#______` |
-| `background` | `#______` |
-| `surface` | `#______` |
-| `onSurface` | `#______` |
-| (…mirror the light table…) | |
+Additional dark surfaces (needed for sheets, nav, segmented control):
+`surfaceSheet #101216` · `surfaceVariant #16181C` · `surfaceElevated #1B1E24` ·
+`navBackground #0C0E11` · `segmentActive #23262C` · `mapBase #0A0B0D` · `mapRoads #15171B`
+Additional dark text ramp: `#E8EAED` (bright) → `#8A9099` → `#7E858F` → `#6B7178` (dim)
+Purple-sector row: text `#C8B3FF`, muted `#8F83B0`, bg `rgba(179,136,255,0.09)`, border `rgba(179,136,255,0.25)`
+
+**Colors — Light theme** (HUD + pre-ride sheet only; rest derived)
+| Token | Hex | Usage |
+|---|---|---|
+| `primary` | `#2F6BE0` | Primary actions, active states |
+| `onPrimary` | `#FFFFFF` | Text/icons on primary |
+| `secondary` | `#E9EDF1` † | Accents, chips |
+| `background` | `#FFFFFF` | Screen background |
+| `surface` | `#F4F6F8` | Cards, sheets |
+| `onSurface` | `#14181D` | Primary text |
+| `onSurfaceVariant` | `#6B727B` | Secondary text |
+| `outline` | `#000000` @ 6% | Borders, dividers (`rgba(0,0,0,0.06)`) |
+| `error` | `#D92D4A` | Errors, "slower than best" delta |
+| `success` | `#0E9F55` | "Faster than best" delta (green) |
+| `deltaSlower` | `#D92D4A` | HUD delta positive (red family) |
+| `deltaFaster` | `#0E9F55` | HUD delta negative (green family) |
+| `purpleSector` | `#7C4DFF` | Fastest-ever segment highlight |
+
+Light extras: `placeholder #98A0AA` · `mapBase #E7ECF1` · `mapRoads #FFFFFF`
 
 **Fuel-type badge colors** (referenced in Cars feature F2)
 | Type | Hex |
 |---|---|
-| Electric | `#______` (green) |
-| Diesel | `#______` (blue) |
-| Petrol | `#______` (orange) |
-| Hybrid | `#______` (yellow) |
-| LPG | `#______` (grey) |
+| Electric | `#37D67A` (green) |
+| Diesel | `#5B8DEF` (blue) |
+| Petrol | `#F0913E` (orange) |
+| Hybrid | `#F2C94C` (yellow) |
+| LPG | `#8A9099` (grey) |
 
-**Typography** (map each to a Compose `Typography` role)
+Badge composite: text = badge colour, bg = colour @ 12%, border = colour @ 30%, radius 10dp,
+padding 6×10dp, 12sp/600.
+
+**Typography** — two families, both OFL-licensed, loaded from Google Fonts in the mockups.
+Add `Geist` (400/500/600/700) and `Geist Mono` (400/500/600) to `res/font/`.
+
 | Role | Font family | Size (sp) | Weight | Usage |
 |---|---|---|---|---|
-| `displayLarge` | `______` | `__` | `__` | HUD speed readout (large numeric) |
-| `headlineMedium` | `______` | `__` | `__` | Screen titles |
-| `titleLarge` | `______` | `__` | `__` | Card titles, road names |
-| `bodyLarge` | `______` | `__` | `__` | Primary body text |
-| `bodyMedium` | `______` | `__` | `__` | Secondary text |
-| `labelLarge` | `______` | `__` | `__` | Buttons, chips |
-| `numericMono` | `______` (monospace) | `__` | `__` | Split times / deltas (tabular figures) |
+| `displayLarge` | `Geist Mono` | `88` | `600` | HUD speed readout (ls −3sp, lh 0.82) |
+| `displayMedium` | `Geist Mono` | `34` | `600` | HUD segment time (ls −1sp) |
+| `headlineMedium` | `Geist` | `24` | `600` | Screen titles, greeting (ls −0.4sp) |
+| `titleLarge` | `Geist` | `18` | `600` | App-bar titles (ls −0.3sp) |
+| `titleMedium` | `Geist` | `15` | `500` | Card titles, road names |
+| `bodyLarge` | `Geist` | `16` | `400` | Primary body text, field values |
+| `bodyMedium` | `Geist` | `14` | `400` | Secondary text |
+| `labelLarge` | `Geist` | `15` | `600` | Buttons, chips |
+| `labelSmall` | `Geist` | `11` | `600` | Eyebrows/section labels (ls +1.5sp, uppercase) |
+| `numericMono` | `Geist Mono` (monospace) | `16` | `500` | Split times / deltas (tabular figures) |
 
-> Note: split times and deltas should use a **monospaced / tabular-figure** font so digits don't
-> jitter as they update. Consider a mono font (e.g. JetBrains Mono, Roboto Mono) for `numericMono`.
+> `numericMono` and every `Geist Mono` role must set `FontFeatureSetting("tnum")` so digits don't
+> jitter as they update. HUD delta value is 21sp/600; the "best 0:39.0" caption is 10sp.
+> Delta glyphs are literal characters: `▾` faster, `▴` slower, `★` personal best, `−` (U+2212) minus.
 
 **Spacing scale** (Compose `dp`)
 | Token | dp |
 |---|---|
-| `spaceXs` | `__` |
-| `spaceSm` | `__` |
-| `spaceMd` | `__` |
-| `spaceLg` | `__` |
-| `spaceXl` | `__` |
+| `spaceXs` | `4` |
+| `spaceSm` | `8` |
+| `spaceMd` | `12` |
+| `spaceLg` | `16` |
+| `spaceXl` | `24` |
+
+Screen horizontal padding is `20dp`; card padding is `18dp` vertical × `20dp` horizontal.
 
 **Shape / corner radius**
 | Token | dp | Usage |
 |---|---|---|
-| `radiusSm` | `__` | Chips, badges |
-| `radiusMd` | `__` | Cards, buttons |
-| `radiusLg` | `__` | Bottom sheets, dialogs |
+| `radiusSm` | `10` | Chips, badges, active segment |
+| `radiusInput` | `14` | Text fields, segmented-control container |
+| `radiusMd` | `16` | Buttons, toggle rows |
+| `radiusCard` | `22` | Trip/car/place cards |
+| `radiusLg` | `28` | Bottom sheets (top corners only) |
+| `radiusHudPanel` | `30` | HUD telemetry overlay |
 
-**Elevation**
-| Token | dp |
-|---|---|
-| `elevationCard` | `__` |
-| `elevationSheet` | `__` |
+**Elevation** — the design uses hairline borders + large soft shadows rather than Material tint.
+| Token | dp | Notes |
+|---|---|---|
+| `elevationCard` | `0` | Flat; 1dp `outline` border instead of a shadow |
+| `elevationSheet` | `16` | Approximates `0 -14dp 40dp rgba(0,0,0,0.5)` |
+
+Primary buttons carry a coloured glow — `0 12dp 28dp rgba(91,141,239,0.30)` — which Compose
+`elevation` cannot express. Use `Modifier.shadow(spotColor = primary, ambientColor = primary)`.
+Glass surfaces (HUD panel, map controls) use `backdrop-filter: blur(18–30px)`; on Android use
+a `RenderEffect.createBlurEffect` haze or a flat `surface @ 74–82%` alpha fallback.
 
 ### Core screens to design in Checkpoint 0
 
@@ -1054,36 +1140,38 @@ before moving to the next. Do not start checkpoint N+1 until checkpoint N is ver
 
 ---
 
-### ✅ CHECKPOINT 0 — Design (done by YOU in Pencil / Claude Design, before any code)
+### ✅ CHECKPOINT 0 — Design (done by YOU in Claude Design, before any code)
 
 **Goal:** Lock the high-fi visual design and extract a concrete design-token set, so every
 subsequent checkpoint implements against approved designs instead of inventing UI.
 
-> This checkpoint is NOT for Claude Code. You do it yourself in Pencil (pencil.dev) and/or
-> Claude Design. Claude Code's only involvement is the final step: translating your finalized
-> tokens into Compose theme files (folded into Checkpoint 1). Remember both design tools emit
-> web code, not Compose — treat their output as visual reference + tokens, not as importable code.
+> Design happens in Claude Design, not in Claude Code. Claude Code's involvement is importing the
+> project, extracting tokens, and later translating them into Compose theme files (Checkpoint 1).
+> Claude Design emits web code, not Compose — its output is a visual reference + tokens, never
+> importable code.
 
-- [ ] Read the "Design System" section above for the aesthetic direction and the list of core screens.
-- [ ] (Optional) Paste the design brief (separate doc) into Claude Design / Pencil as the opening prompt.
-- [ ] Design the 6 core screens in high fidelity (light + dark for the HUD and map screens):
-  - [ ] Auth screen
-  - [ ] Dashboard
-  - [ ] Live Tracking HUD (signature screen — spend the most time here)
-  - [ ] Trip Detail (Map / Splits / Replay tabs)
-  - [ ] Car edit (segmented control + conditional fields)
-  - [ ] Place edit (map + draggable marker + radius slider + emoji picker)
-- [ ] Design the reused component styles listed under "Component styles to define".
-- [ ] Export each screen as PNG/SVG → save into `/design/mockups/<screen>.png` in the repo.
-- [ ] Extract the design tokens (colors, typography, spacing, radius, elevation) and fill in the
-      placeholder tables in the "Design System" section above with real values.
+- [x] Read the "Design System" section above for the aesthetic direction and the list of core screens.
+- [x] Paste the design brief (`DESIGN_BRIEF.md`) into Claude Design as the opening prompt.
+- [x] Design the core screens in high fidelity (**dark only** — light is out of scope for the POC):
+  - [x] Auth screen
+  - [x] Dashboard
+  - [x] Live Tracking HUD (signature screen — spend the most time here)
+  - [x] Trip Detail (Map / Splits / Replay tabs)
+  - [x] Car edit (segmented control + conditional fields)
+  - [x] Place edit (map + draggable marker + radius slider + emoji picker)
+  - [x] Ride Moments (bonus — pre-ride/stop/arrival sheets, acquiring-GPS, 3 empty states)
+- [x] Design the reused component styles listed under "Component styles to define".
+- [x] Import the Claude Design project into `/design/` via the `claude_design` MCP (`/design-login`).
+      Project: `50aaa2d0-469b-4699-aba1-25ae18291f19` — "DriveDelta Live Tracking".
+- [x] Extract the design tokens (colors, typography, spacing, radius, elevation) into
+      `design/tokens.md` and fill in the tables in the "Design System" section above.
+- [x] **Export each screen from Claude Design as PNG → `design/mockups/<screen>.png`.**
+      Exported from the Claude Design UI (the `.dc.html` sources can't render offline). 14 PNGs at
+      1176×2631: the 6 core screens, both HUD delta states, and 7 Ride Moments states. All verified
+      to render the true dark design (`#0A0B0D` canvas, apex logo, correct deltas).
 - [ ] Commit `/design/` and the updated CLAUDE.md to the repo.
-- [ ] **Acceptance:** All 6 core screens exist as high-fi mockups in `/design/mockups/`, and every
-      token table in the Design System section is filled in with real values (no `#______` left).
-
-> Tip: save often in Pencil (it's early-stage — crashes happen, no autosave). Pencil needs Claude
-> Code installed + authenticated for its AI features. When you later hand a screen to Claude Code
-> for implementation, give it the exported image AND the token values as text.
+- [ ] **Acceptance:** Every core screen exists as a PNG in `/design/mockups/`, `design/tokens.md`
+      is complete, and every token table in the Design System section holds real values.
 
 ---
 
@@ -1097,13 +1185,19 @@ user is routed to an empty Dashboard.
 - [ ] Add `google-services.json`, configure Firebase in `build.gradle.kts`
 - [ ] `DriveDeltaApplication.kt`: `@HiltAndroidApp`, Firebase init, Places SDK init
 - [ ] `MainActivity.kt`: single-activity Compose host
-- [ ] **Implement the design system from Checkpoint 0 as Compose theme files:**
-  - [ ] `Color.kt` — all color tokens (light + dark) from the filled-in Design System tables
-  - [ ] `Type.kt` — the typography scale, including the monospaced `numericMono` role for split times
-  - [ ] `Theme.kt` — Material 3 `MaterialTheme` wiring light/dark schemes; expose spacing/shape/elevation
-        tokens (e.g. via a custom `LocalDriveDeltaTokens` CompositionLocal for the non-Material tokens)
-  - [ ] Add any custom fonts to `res/font/` and reference them in `Type.kt`
-  - [ ] Add fuel-type badge colors as named values for reuse in the Cars feature
+- [ ] **Implement the design system from Checkpoint 0 as Compose theme files.**
+      Values come from `design/tokens.md` — it is authoritative. **Dark only.**
+  - [ ] `Color.kt` — the dark color tokens, plus the extended surfaces (`surfaceSheet`,
+        `navBackground`, `segmentActive`, …) and the purple-sector row colors
+  - [ ] `Type.kt` — the typography scale. Vendor **Geist** (400/500/600/700) and **Geist Mono**
+        (400/500/600) into `res/font/` (both OFL). Every `Geist Mono` role must set
+        `fontFeatureSettings = "tnum"` so digits don't jitter as they tick.
+  - [ ] `Theme.kt` — Material 3 `MaterialTheme` wiring a single dark `ColorScheme`. Do **not** add a
+        light scheme or an `isSystemInDarkTheme()` branch. Set `surfaceTint = Color.Transparent`:
+        the design uses hairline borders + soft shadows, not M3 tonal elevation. Expose
+        spacing/shape/elevation via a `LocalDriveDeltaTokens` CompositionLocal.
+  - [ ] Add fuel-type badge colors as named values for reuse in the Cars feature. Note Diesel ==
+        `primary` and Electric == `success`, so badges must always render their text label.
 - [ ] `AppNavGraph.kt`: define all route destinations as constants in `NavDestinations.kt`. Stub all screens except Auth and Dashboard.
 - [ ] `FirebaseAuthRepository.kt`: `signInWithGoogle()`, `signOut()`, `currentUserId`, `isSignedIn`
 - [ ] `AuthViewModel.kt` + `AuthScreen.kt`: Google button, loading, error snackbar
