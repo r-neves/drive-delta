@@ -74,7 +74,12 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    // Compile targeting JVM 17 bytecode using whatever JDK runs Gradle (Android Studio's JBR 21
+    // is fine). Deliberately NOT jvmToolchain(17): that demands a JDK *exactly* 17 be installed or
+    // downloadable, which fails on a machine that only has the newer bundled JBR.
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 dependencies {

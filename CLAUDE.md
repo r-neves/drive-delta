@@ -1182,8 +1182,8 @@ user is routed to an empty Dashboard.
 
 - [x] Create Android project: package `app.drivedelta`, minSdk 26, Kotlin DSL, Jetpack Compose
 - [x] Set up `libs.versions.toml` version catalog with all libraries listed above
-- [~] Add `google-services.json`, configure Firebase in `build.gradle.kts` — google-services plugin
-      wired; **you must drop `app/google-services.json` in** (gitignored) before the build will sync.
+- [x] Add `google-services.json`, configure Firebase in `build.gradle.kts` — plugin wired;
+      `app/google-services.json` added (gitignored); debug SHA-1 registered in Firebase.
 - [x] `DriveDeltaApplication.kt`: `@HiltAndroidApp`, Places SDK init (Firebase auto-inits from json)
 - [x] `MainActivity.kt`: single-activity Compose host (splash + edge-to-edge)
 - [x] **Implement the design system from Checkpoint 0 as Compose theme files.** Dark only.
@@ -1197,13 +1197,8 @@ user is routed to an empty Dashboard.
 - [x] `AuthViewModel.kt` + `AuthScreen.kt`: Google button, loading, error snackbar
 - [x] `DashboardScreen.kt` stub: "Dashboard" text + Sign Out button
 - [x] Routing logic in `AppNavGraph`: unauthenticated → Auth, authenticated → Dashboard, back stack cleared
-- [ ] **Acceptance test (you run in Android Studio):** Cold launch → AuthScreen → sign in →
-      DashboardScreen. Kill app → reopen → DashboardScreen directly (no auth prompt). Sign out → AuthScreen.
-
-> **Before this builds** (this dev box has no JDK/SDK — authored, not compiled here):
-> 1. `app/google-services.json` from Firebase (package `app.drivedelta`), Google provider enabled.
-> 2. Debug keystore SHA-1 registered in Firebase (Google Sign-In needs it).
-> 3. Optionally API keys in `local.properties` (see `local.properties.example`) — not needed for auth.
+- [x] **Acceptance test:** ✅ Verified in Android Studio — sign in → Dashboard; kill/reopen →
+      straight to Dashboard (auth persists). Sign-out button wired (trivial branch, not re-clicked).
 
 ---
 
