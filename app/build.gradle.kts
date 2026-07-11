@@ -73,6 +73,11 @@ android {
     sourceSets["test"].java.srcDirs("src/test/kotlin")
 }
 
+// Room schema export: emit versioned schema JSON under app/schemas for migration tracking.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 kotlin {
     // Compile targeting JVM 17 bytecode using whatever JDK runs Gradle (Android Studio's JBR 21
     // is fine). Deliberately NOT jvmToolchain(17): that demands a JDK *exactly* 17 be installed or
