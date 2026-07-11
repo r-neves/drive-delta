@@ -14,17 +14,14 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 2 (Room DB & Sync Skeleton) — 🟡 code complete, needs device test
-- **Last completed:** ✅ Checkpoint 1 (Skeleton, Theme & Auth) — verified on device.
-- **CP2 written (not yet compiled/run here — no JDK on this box):** 6 Room entities + 6 DAOs +
-  AppDatabase + DatabaseModule; 5 Firestore DTOs + FirestoreCodec + FirestoreDataSource +
-  FirestoreModule; SyncManager + SyncWorker; Hilt WorkManager wiring (Application is now a
-  `Configuration.Provider`, default WM initializer removed in manifest); Room schema export enabled.
-  Cross-checked statically: DI provides all DAOs + Firestore; DTO↔entity fields align; `syncedAt`
-  is never pushed. A temporary "Insert test place & sync" button sits on the Dashboard (remove in CP4).
-- **Next up (you, in Android Studio):** Build → run → tap "Insert test place & sync" → confirm a doc
-  appears at Firestore `/users/{uid}/places/`. Expect maybe a small first-compile fix. Then tick the
-  CP2 boxes in CLAUDE.md and this file, and start Checkpoint 3 (Cars CRUD).
+- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — not started
+- **Last completed:** ✅ Checkpoint 2 (Room DB & Sync Skeleton) — builds and runs; test place
+  verified in Firestore at `/users/{uid}/places/`.
+- **Next up:** Checkpoint 3 — CarRepository, Save/Delete/GetCars use cases, CarsScreen +
+  CarEditScreen (fuel-type SegmentedButton, conditional fields, default toggle), bottom nav.
+  Remove the temporary "Insert test place & sync" button from the Dashboard as part of this.
+- **Housekeeping for the CP3 session:** tick the CP2 boxes in CLAUDE.md (they still show unchecked;
+  PROGRESS is the source of truth and already reflects done).
 - **Last updated by:** (machine / 2026-07-11)
 - **Working branch:** `main`
 
@@ -36,7 +33,7 @@
 |---|---|---|---|---|
 | 0 | Design (Claude Design) | ✅ Done | You (design tools) | Committed + pushed `d199717` |
 | 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
-| 2 | Room DB & Sync Skeleton | 🟡 Code complete | Local | Needs device test: place → Firestore |
+| 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
 | 3 | Cars Feature (CRUD) | ⬜ Not started | Web or Local | |
 | 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
 | 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
@@ -55,6 +52,11 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-11` — **Firestore uses a NAMED database, `drivedelta-firestore`, not `(default)`.**
+  `FirestoreModule` binds `FirebaseFirestore.getInstance("drivedelta-firestore")`; the KTX
+  `Firebase.firestore` accessor targets `(default)` and threw `NOT_FOUND` until this was fixed.
+  Security rules are per-database — publish the `request.auth.uid == userId` rules to
+  `drivedelta-firestore` specifically, not `(default)`. CP2 sync verified end-to-end after this.
 - `2026-07-10` — **Checkpoint 1 scaffold authored (not yet compiled).** Full Gradle setup (version
   catalog, wrapper 8.9, AGP 8.6.1, Kotlin 2.0.21, KSP), Hilt, dark Compose theme from `tokens.md`
   (Color/Type/Theme + `LocalDdTokens`/`LocalDdType`), Geist + Geist Mono vendored to `res/font/`,
