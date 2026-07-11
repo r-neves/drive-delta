@@ -14,16 +14,13 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 1 (Project Skeleton, Theme & Auth) — 🟡 in progress
-- **Last completed:** ✅ Checkpoint 0 (Design) — committed + pushed (`d199717`)
-- **Next up:** Scaffold the Android project, dark Compose theme from `tokens.md`, Google Sign-In.
-  **Blocked on you (per machine):** `google-services.json` in `app/`, and `MAPS_API_KEY` /
-  `ROADS_API_KEY` / `PLACES_API_KEY` in `local.properties` — the Gradle build won't sync without
-  `google-services.json`.
-- **Last updated by:** (machine / 2026-07-10)
+- **Active checkpoint:** Checkpoint 2 (Room DB & Sync Skeleton) — not started
+- **Last completed:** ✅ Checkpoint 1 (Skeleton, Theme & Auth) — builds, runs, and the auth flow
+  is verified on device (sign in → Dashboard; cold relaunch → Dashboard directly).
+- **Next up:** Room entities + DAOs, Firestore DTOs/data source, SyncManager + SyncWorker.
+  Also wire Hilt WorkManager (`Configuration.Provider`) here.
+- **Last updated by:** (machine / 2026-07-11)
 - **Working branch:** `main`
-- **Build note:** This dev box has no JDK / Android SDK / Gradle — code is authored here and built
-  in Android Studio. Source is written to be buildable; it is not compiler-verified locally.
 
 ---
 
@@ -32,7 +29,7 @@
 | # | Checkpoint | Status | Where run | Notes |
 |---|---|---|---|---|
 | 0 | Design (Claude Design) | ✅ Done | You (design tools) | Committed + pushed `d199717` |
-| 1 | Project Skeleton, Theme & Auth | 🟡 In progress | Local | Needs google-services.json + API keys |
+| 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
 | 2 | Room DB & Sync Skeleton | ⬜ Not started | Web or Local | |
 | 3 | Cars Feature (CRUD) | ⬜ Not started | Web or Local | |
 | 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
@@ -103,9 +100,11 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
-- **CP1 build is not compiler-verified.** Authored on a box with no JDK/SDK/Gradle. First real
-  compile happens in Android Studio; expect to fix small issues (version resolution, an import).
-  Blockers to build at all: `app/google-services.json` + debug-keystore SHA-1 in Firebase.
+- ✅ RESOLVED — CP1 now builds and runs in Android Studio. The one fix needed vs. the authored
+  scaffold: `kotlin { jvmToolchain(17) }` demanded a JDK-17 toolchain that isn't installed →
+  replaced with `compilerOptions { jvmTarget = JVM_17 }` (compiles on the JBR 21 that runs Gradle).
+  Left the IDE nudges (Kotlin 2.3.10, AGP 8.7, Daemon toolchain) declined on purpose — version
+  freeze during MVP; Kotlin/KSP/Compose move in lockstep.
 - **WorkManager + Hilt not fully wired yet.** `hilt-work` is on the classpath but the Application
   does not yet implement `Configuration.Provider`; do that in Checkpoint 2 alongside `SyncWorker`
   (and remove the default `WorkManagerInitializer` in the manifest then).

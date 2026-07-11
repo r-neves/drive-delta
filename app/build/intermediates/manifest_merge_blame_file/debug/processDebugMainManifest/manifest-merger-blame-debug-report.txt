@@ -1,0 +1,656 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="app.drivedelta"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:5:5-67
+11-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:5:22-64
+12    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+12-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:6:5-79
+12-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:6:22-76
+13    <uses-permission android:name="android.permission.WAKE_LOCK" />
+13-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:23:5-68
+13-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:23:22-65
+14    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+14-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:25:5-81
+14-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:25:22-78
+15    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+15-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:26:5-77
+15-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:26:22-74
+16    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+16-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:9:5-81
+16-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:9:22-78
+17    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+17-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:10:5-79
+17-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:10:22-76
+18    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+18-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:11:5-76
+18-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:11:22-73
+19
+20    <uses-feature
+20-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:26:5-28:35
+21        android:glEsVersion="0x00020000"
+21-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:27:9-41
+22        android:required="true" />
+22-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:28:9-32
+23
+24    <queries>
+24-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:30:5-34:15
+25
+26        <!-- Needs to be explicitly declared on Android R+ -->
+27        <package android:name="com.google.android.apps.maps" />
+27-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:33:9-64
+27-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:33:18-61
+28    </queries>
+29
+30    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+30-->[com.google.android.recaptcha:recaptcha:18.4.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/87a26e0534057e92a8012e6869803d0b/transformed/recaptcha-18.4.0/AndroidManifest.xml:9:5-98
+30-->[com.google.android.recaptcha:recaptcha:18.4.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/87a26e0534057e92a8012e6869803d0b/transformed/recaptcha-18.4.0/AndroidManifest.xml:9:22-95
+31
+32    <permission
+32-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+33        android:name="app.drivedelta.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+33-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+34        android:protectionLevel="signature" />
+34-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+35
+36    <uses-permission android:name="app.drivedelta.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+36-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+36-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+37
+38    <application
+38-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:8:5-37:19
+39        android:name="app.drivedelta.DriveDeltaApplication"
+39-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:9:9-46
+40        android:allowBackup="true"
+40-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:10:9-35
+41        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+41-->[androidx.core:core:1.13.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/d80622acef0afc09fad25d330b8208a8/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+42        android:dataExtractionRules="@xml/data_extraction_rules"
+42-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:11:9-65
+43        android:debuggable="true"
+44        android:extractNativeLibs="false"
+45        android:fullBackupContent="@xml/backup_rules"
+45-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:12:9-54
+46        android:icon="@mipmap/ic_launcher"
+46-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:13:9-43
+47        android:label="@string/app_name"
+47-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:14:9-41
+48        android:roundIcon="@mipmap/ic_launcher_round"
+48-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:15:9-54
+49        android:supportsRtl="true"
+49-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:16:9-35
+50        android:testOnly="true"
+51        android:theme="@style/Theme.DriveDelta.Starting" >
+51-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:17:9-57
+52        <activity
+52-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:20:9-29:20
+53            android:name="app.drivedelta.MainActivity"
+53-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:21:13-41
+54            android:exported="true"
+54-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:22:13-36
+55            android:theme="@style/Theme.DriveDelta.Starting"
+55-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:23:13-61
+56            android:windowSoftInputMode="adjustResize" >
+56-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:24:13-55
+57            <intent-filter>
+57-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:25:13-28:29
+58                <action android:name="android.intent.action.MAIN" />
+58-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:26:17-69
+58-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:26:25-66
+59
+60                <category android:name="android.intent.category.LAUNCHER" />
+60-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:27:17-77
+60-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:27:27-74
+61            </intent-filter>
+62        </activity>
+63
+64        <!--
+65             Google Maps API key (from local.properties via manifestPlaceholders).
+66             Empty until keys are added; Maps features arrive in Checkpoint 4.
+67        -->
+68        <meta-data
+69            android:name="com.google.android.geo.API_KEY"
+69-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:34:13-58
+70            android:value="" />
+70-->/Users/rodrigoneves/Documents/code/personal/drive-delta/app/src/main/AndroidManifest.xml:35:13-44
+71
+72        <provider
+72-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:29:9-37:20
+73            android:name="androidx.startup.InitializationProvider"
+73-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:30:13-67
+74            android:authorities="app.drivedelta.androidx-startup"
+74-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:31:13-68
+75            android:exported="false" >
+75-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:32:13-37
+76            <meta-data
+76-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:34:13-36:52
+77                android:name="androidx.work.WorkManagerInitializer"
+77-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:35:17-68
+78                android:value="androidx.startup" />
+78-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:36:17-49
+79            <meta-data
+79-->[androidx.emoji2:emoji2:1.3.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9af8ba13933f73129bda845619df16b7/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+80                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+80-->[androidx.emoji2:emoji2:1.3.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9af8ba13933f73129bda845619df16b7/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+81                android:value="androidx.startup" />
+81-->[androidx.emoji2:emoji2:1.3.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9af8ba13933f73129bda845619df16b7/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+82            <meta-data
+82-->[androidx.lifecycle:lifecycle-process:2.8.6] /Users/rodrigoneves/.gradle/caches/8.9/transforms/0538600f86f861718bce564ece737cde/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:29:13-31:52
+83                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+83-->[androidx.lifecycle:lifecycle-process:2.8.6] /Users/rodrigoneves/.gradle/caches/8.9/transforms/0538600f86f861718bce564ece737cde/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:30:17-78
+84                android:value="androidx.startup" />
+84-->[androidx.lifecycle:lifecycle-process:2.8.6] /Users/rodrigoneves/.gradle/caches/8.9/transforms/0538600f86f861718bce564ece737cde/transformed/lifecycle-process-2.8.6/AndroidManifest.xml:31:17-49
+85            <meta-data
+85-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+86                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+86-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+87                android:value="androidx.startup" />
+87-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+88        </provider>
+89
+90        <service
+90-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:39:9-45:35
+91            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
+91-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:40:13-88
+92            android:directBootAware="false"
+92-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:41:13-44
+93            android:enabled="@bool/enable_system_alarm_service_default"
+93-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:42:13-72
+94            android:exported="false" />
+94-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:43:13-37
+95        <service
+95-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:46:9-52:35
+96            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+96-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:47:13-84
+97            android:directBootAware="false"
+97-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:48:13-44
+98            android:enabled="@bool/enable_system_job_service_default"
+98-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:49:13-70
+99            android:exported="true"
+99-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:50:13-36
+100            android:permission="android.permission.BIND_JOB_SERVICE" />
+100-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:51:13-69
+101        <service
+101-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:53:9-59:35
+102            android:name="androidx.work.impl.foreground.SystemForegroundService"
+102-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:54:13-81
+103            android:directBootAware="false"
+103-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:55:13-44
+104            android:enabled="@bool/enable_system_foreground_service_default"
+104-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:56:13-77
+105            android:exported="false" />
+105-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:57:13-37
+106
+107        <receiver
+107-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:61:9-66:35
+108            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+108-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:62:13-88
+109            android:directBootAware="false"
+109-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:63:13-44
+110            android:enabled="true"
+110-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:64:13-35
+111            android:exported="false" />
+111-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:65:13-37
+112        <receiver
+112-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:67:9-77:20
+113            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
+113-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:68:13-106
+114            android:directBootAware="false"
+114-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:69:13-44
+115            android:enabled="false"
+115-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:70:13-36
+116            android:exported="false" >
+116-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:71:13-37
+117            <intent-filter>
+117-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:73:13-76:29
+118                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+118-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:74:17-87
+118-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:74:25-84
+119                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+119-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:75:17-90
+119-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:75:25-87
+120            </intent-filter>
+121        </receiver>
+122        <receiver
+122-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:78:9-88:20
+123            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
+123-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:79:13-104
+124            android:directBootAware="false"
+124-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:80:13-44
+125            android:enabled="false"
+125-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:81:13-36
+126            android:exported="false" >
+126-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:82:13-37
+127            <intent-filter>
+127-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:84:13-87:29
+128                <action android:name="android.intent.action.BATTERY_OKAY" />
+128-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:85:17-77
+128-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:85:25-74
+129                <action android:name="android.intent.action.BATTERY_LOW" />
+129-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:86:17-76
+129-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:86:25-73
+130            </intent-filter>
+131        </receiver>
+132        <receiver
+132-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:89:9-99:20
+133            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
+133-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:90:13-104
+134            android:directBootAware="false"
+134-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:91:13-44
+135            android:enabled="false"
+135-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:92:13-36
+136            android:exported="false" >
+136-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:93:13-37
+137            <intent-filter>
+137-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:95:13-98:29
+138                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+138-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:96:17-83
+138-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:96:25-80
+139                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+139-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:97:17-82
+139-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:97:25-79
+140            </intent-filter>
+141        </receiver>
+142        <receiver
+142-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:100:9-109:20
+143            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
+143-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:101:13-103
+144            android:directBootAware="false"
+144-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:102:13-44
+145            android:enabled="false"
+145-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:103:13-36
+146            android:exported="false" >
+146-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:104:13-37
+147            <intent-filter>
+147-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:106:13-108:29
+148                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+148-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:107:17-79
+148-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:107:25-76
+149            </intent-filter>
+150        </receiver>
+151        <receiver
+151-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:110:9-121:20
+152            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
+152-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:111:13-88
+153            android:directBootAware="false"
+153-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:112:13-44
+154            android:enabled="false"
+154-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:113:13-36
+155            android:exported="false" >
+155-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:114:13-37
+156            <intent-filter>
+156-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:116:13-120:29
+157                <action android:name="android.intent.action.BOOT_COMPLETED" />
+157-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:117:17-79
+157-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:117:25-76
+158                <action android:name="android.intent.action.TIME_SET" />
+158-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:118:17-73
+158-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:118:25-70
+159                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+159-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:119:17-81
+159-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:119:25-78
+160            </intent-filter>
+161        </receiver>
+162        <receiver
+162-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:122:9-131:20
+163            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
+163-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:123:13-99
+164            android:directBootAware="false"
+164-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:124:13-44
+165            android:enabled="@bool/enable_system_alarm_service_default"
+165-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:125:13-72
+166            android:exported="false" >
+166-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:126:13-37
+167            <intent-filter>
+167-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:128:13-130:29
+168                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
+168-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:129:17-98
+168-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:129:25-95
+169            </intent-filter>
+170        </receiver>
+171        <receiver
+171-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:132:9-142:20
+172            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+172-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:133:13-78
+173            android:directBootAware="false"
+173-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:134:13-44
+174            android:enabled="true"
+174-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:135:13-35
+175            android:exported="true"
+175-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:136:13-36
+176            android:permission="android.permission.DUMP" >
+176-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:137:13-57
+177            <intent-filter>
+177-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:139:13-141:29
+178                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
+178-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:140:17-88
+178-->[androidx.work:work-runtime:2.9.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bed4ac82a269e45921e983a48b47d52d/transformed/work-runtime-2.9.1/AndroidManifest.xml:140:25-85
+179            </intent-filter>
+180        </receiver>
+181
+182        <service
+182-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:8:9-14:19
+183            android:name="com.google.firebase.components.ComponentDiscoveryService"
+183-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:9:13-84
+184            android:directBootAware="true"
+184-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:32:13-43
+185            android:exported="false" >
+185-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:10:13-37
+186            <meta-data
+186-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:11:13-13:85
+187                android:name="com.google.firebase.components:com.google.firebase.auth.ktx.FirebaseAuthLegacyRegistrar"
+187-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:12:17-119
+188                android:value="com.google.firebase.components.ComponentRegistrar" />
+188-->[com.google.firebase:firebase-auth-ktx:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/9a69d530431b5c5bae3290d1d626a52f/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:13:17-82
+189            <meta-data
+189-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:69:13-71:85
+190                android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar"
+190-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:70:17-109
+191                android:value="com.google.firebase.components.ComponentRegistrar" />
+191-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:71:17-82
+192            <meta-data
+192-->[com.google.firebase:firebase-firestore-ktx:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/32b0e16a45f826b745dcc248c06880b4/transformed/firebase-firestore-ktx-25.1.0/AndroidManifest.xml:12:13-14:85
+193                android:name="com.google.firebase.components:com.google.firebase.firestore.ktx.FirebaseFirestoreLegacyRegistrar"
+193-->[com.google.firebase:firebase-firestore-ktx:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/32b0e16a45f826b745dcc248c06880b4/transformed/firebase-firestore-ktx-25.1.0/AndroidManifest.xml:13:17-129
+194                android:value="com.google.firebase.components.ComponentRegistrar" />
+194-->[com.google.firebase:firebase-firestore-ktx:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/32b0e16a45f826b745dcc248c06880b4/transformed/firebase-firestore-ktx-25.1.0/AndroidManifest.xml:14:17-82
+195            <meta-data
+195-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:17:13-19:85
+196                android:name="com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar"
+196-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:18:17-122
+197                android:value="com.google.firebase.components.ComponentRegistrar" />
+197-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:19:17-82
+198            <meta-data
+198-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:20:13-22:85
+199                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+199-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:21:17-111
+200                android:value="com.google.firebase.components.ComponentRegistrar" />
+200-->[com.google.firebase:firebase-firestore:25.1.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/19ac0f9dff5c5a28cce29e442a6b6166/transformed/firebase-firestore-25.1.0/AndroidManifest.xml:22:17-82
+201            <meta-data
+201-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/5bb030a11d719a02bf09a418cf2a769b/transformed/firebase-common-ktx-21.0.0/AndroidManifest.xml:12:13-14:85
+202                android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar"
+202-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/5bb030a11d719a02bf09a418cf2a769b/transformed/firebase-common-ktx-21.0.0/AndroidManifest.xml:13:17-116
+203                android:value="com.google.firebase.components.ComponentRegistrar" />
+203-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/5bb030a11d719a02bf09a418cf2a769b/transformed/firebase-common-ktx-21.0.0/AndroidManifest.xml:14:17-82
+204            <meta-data
+204-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:35:13-37:85
+205                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+205-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:36:17-109
+206                android:value="com.google.firebase.components.ComponentRegistrar" />
+206-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:37:17-82
+207        </service>
+208
+209        <activity
+209-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:29:9-46:20
+210            android:name="com.google.firebase.auth.internal.GenericIdpActivity"
+210-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:30:13-80
+211            android:excludeFromRecents="true"
+211-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:31:13-46
+212            android:exported="true"
+212-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:32:13-36
+213            android:launchMode="singleTask"
+213-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:33:13-44
+214            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+214-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:34:13-72
+215            <intent-filter>
+215-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:35:13-45:29
+216                <action android:name="android.intent.action.VIEW" />
+216-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:36:17-69
+216-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:36:25-66
+217
+218                <category android:name="android.intent.category.DEFAULT" />
+218-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:38:17-76
+218-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:38:27-73
+219                <category android:name="android.intent.category.BROWSABLE" />
+219-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:39:17-78
+219-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:39:27-75
+220
+221                <data
+221-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:41:17-44:51
+222                    android:host="firebase.auth"
+222-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:42:21-49
+223                    android:path="/"
+223-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:43:21-37
+224                    android:scheme="genericidp" />
+224-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:44:21-48
+225            </intent-filter>
+226        </activity>
+227        <activity
+227-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:47:9-64:20
+228            android:name="com.google.firebase.auth.internal.RecaptchaActivity"
+228-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:48:13-79
+229            android:excludeFromRecents="true"
+229-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:49:13-46
+230            android:exported="true"
+230-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:50:13-36
+231            android:launchMode="singleTask"
+231-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:51:13-44
+232            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+232-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:52:13-72
+233            <intent-filter>
+233-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:53:13-63:29
+234                <action android:name="android.intent.action.VIEW" />
+234-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:36:17-69
+234-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:36:25-66
+235
+236                <category android:name="android.intent.category.DEFAULT" />
+236-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:38:17-76
+236-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:38:27-73
+237                <category android:name="android.intent.category.BROWSABLE" />
+237-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:39:17-78
+237-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:39:27-75
+238
+239                <data
+239-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:41:17-44:51
+240                    android:host="firebase.auth"
+240-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:42:21-49
+241                    android:path="/"
+241-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:43:21-37
+242                    android:scheme="recaptcha" />
+242-->[com.google.firebase:firebase-auth:23.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/bd95700b3ded42974814f30b6ce7345d/transformed/firebase-auth-23.0.0/AndroidManifest.xml:44:21-48
+243            </intent-filter>
+244        </activity>
+245
+246        <service
+246-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:24:9-32:19
+247            android:name="androidx.credentials.playservices.CredentialProviderMetadataHolder"
+247-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:25:13-94
+248            android:enabled="true"
+248-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:26:13-35
+249            android:exported="false" >
+249-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:27:13-37
+250            <meta-data
+250-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:29:13-31:104
+251                android:name="androidx.credentials.CREDENTIAL_PROVIDER_KEY"
+251-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:30:17-76
+252                android:value="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" />
+252-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:31:17-101
+253        </service>
+254
+255        <activity
+255-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:34:9-41:20
+256            android:name="androidx.credentials.playservices.HiddenActivity"
+256-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:35:13-76
+257            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+257-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:36:13-87
+258            android:enabled="true"
+258-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:37:13-35
+259            android:exported="false"
+259-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:38:13-37
+260            android:fitsSystemWindows="true"
+260-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:39:13-45
+261            android:theme="@style/Theme.Hidden" >
+261-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] /Users/rodrigoneves/.gradle/caches/8.9/transforms/a239737e9870d36fc1098672f9cb3507/transformed/credentials-play-services-auth-1.2.0-rc01/AndroidManifest.xml:40:13-48
+262        </activity>
+263        <activity
+263-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:23:9-27:75
+264            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+264-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:24:13-93
+265            android:excludeFromRecents="true"
+265-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:25:13-46
+266            android:exported="false"
+266-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:26:13-37
+267            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+267-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:27:13-72
+268        <!--
+269            Service handling Google Sign-In user revocation. For apps that do not integrate with
+270            Google Sign-In, this service will never be started.
+271        -->
+272        <service
+272-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:33:9-37:51
+273            android:name="com.google.android.gms.auth.api.signin.RevocationBoundService"
+273-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:34:13-89
+274            android:exported="true"
+274-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:35:13-36
+275            android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"
+275-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:36:13-107
+276            android:visibleToInstantApps="true" />
+276-->[com.google.android.gms:play-services-auth:21.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4affa3bcfe9fc629ab9307fa2a887ac0/transformed/play-services-auth-21.2.0/AndroidManifest.xml:37:13-48
+277
+278        <activity
+278-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:15:9-21:20
+279            android:name="com.google.android.libraries.places.widget.AutocompleteActivity"
+279-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:16:13-91
+280            android:exported="false"
+280-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:17:13-37
+281            android:label="@string/places_autocomplete_label"
+281-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:18:13-62
+282            android:theme="@style/PlacesAutocompleteOverlay"
+282-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:19:13-61
+283            android:windowSoftInputMode="adjustResize" >
+283-->[com.google.android.libraries.places:places:3.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/2493be2ad3b61a2b49b048ee57476eb5/transformed/places-3.5.0/AndroidManifest.xml:20:13-55
+284        </activity> <!-- Needs to be explicitly declared on P+ -->
+285        <uses-library
+285-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:39:9-41:40
+286            android:name="org.apache.http.legacy"
+286-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:40:13-50
+287            android:required="false" />
+287-->[com.google.android.gms:play-services-maps:19.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/ca462265f22df127a77db027fd2dfa9f/transformed/play-services-maps-19.0.0/AndroidManifest.xml:41:13-37
+288
+289        <activity
+289-->[com.google.android.gms:play-services-base:18.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/e8af1255f5ba1dbfec217b367e17e584/transformed/play-services-base-18.5.0/AndroidManifest.xml:5:9-173
+290            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+290-->[com.google.android.gms:play-services-base:18.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/e8af1255f5ba1dbfec217b367e17e584/transformed/play-services-base-18.5.0/AndroidManifest.xml:5:19-85
+291            android:exported="false"
+291-->[com.google.android.gms:play-services-base:18.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/e8af1255f5ba1dbfec217b367e17e584/transformed/play-services-base-18.5.0/AndroidManifest.xml:5:146-170
+292            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+292-->[com.google.android.gms:play-services-base:18.5.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/e8af1255f5ba1dbfec217b367e17e584/transformed/play-services-base-18.5.0/AndroidManifest.xml:5:86-145
+293
+294        <provider
+294-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:23:9-28:39
+295            android:name="com.google.firebase.provider.FirebaseInitProvider"
+295-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:24:13-77
+296            android:authorities="app.drivedelta.firebaseinitprovider"
+296-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:25:13-72
+297            android:directBootAware="true"
+297-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:26:13-43
+298            android:exported="false"
+298-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:27:13-37
+299            android:initOrder="100" />
+299-->[com.google.firebase:firebase-common:21.0.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/09ff3853655a9d8d978f688f7db98159/transformed/firebase-common-21.0.0/AndroidManifest.xml:28:13-36
+300
+301        <activity
+301-->[androidx.compose.ui:ui-tooling-android:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/6cb4b3fc8927ac16fe68fcd2aaf9ff70/transformed/ui-tooling-release/AndroidManifest.xml:23:9-25:39
+302            android:name="androidx.compose.ui.tooling.PreviewActivity"
+302-->[androidx.compose.ui:ui-tooling-android:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/6cb4b3fc8927ac16fe68fcd2aaf9ff70/transformed/ui-tooling-release/AndroidManifest.xml:24:13-71
+303            android:exported="true" />
+303-->[androidx.compose.ui:ui-tooling-android:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/6cb4b3fc8927ac16fe68fcd2aaf9ff70/transformed/ui-tooling-release/AndroidManifest.xml:25:13-36
+304        <activity
+304-->[androidx.compose.ui:ui-test-manifest:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3fd201330135a9050a2eccfd982a33a6/transformed/ui-test-manifest-1.7.3/AndroidManifest.xml:23:9-25:39
+305            android:name="androidx.activity.ComponentActivity"
+305-->[androidx.compose.ui:ui-test-manifest:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3fd201330135a9050a2eccfd982a33a6/transformed/ui-test-manifest-1.7.3/AndroidManifest.xml:24:13-63
+306            android:exported="true" />
+306-->[androidx.compose.ui:ui-test-manifest:1.7.3] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3fd201330135a9050a2eccfd982a33a6/transformed/ui-test-manifest-1.7.3/AndroidManifest.xml:25:13-36
+307
+308        <service
+308-->[androidx.room:room-runtime:2.6.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/8c30147f0589c24a5c7a8f7f45dd6e6b/transformed/room-runtime-2.6.1/AndroidManifest.xml:24:9-28:63
+309            android:name="androidx.room.MultiInstanceInvalidationService"
+309-->[androidx.room:room-runtime:2.6.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/8c30147f0589c24a5c7a8f7f45dd6e6b/transformed/room-runtime-2.6.1/AndroidManifest.xml:25:13-74
+310            android:directBootAware="true"
+310-->[androidx.room:room-runtime:2.6.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/8c30147f0589c24a5c7a8f7f45dd6e6b/transformed/room-runtime-2.6.1/AndroidManifest.xml:26:13-43
+311            android:exported="false" />
+311-->[androidx.room:room-runtime:2.6.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/8c30147f0589c24a5c7a8f7f45dd6e6b/transformed/room-runtime-2.6.1/AndroidManifest.xml:27:13-37
+312
+313        <meta-data
+313-->[com.google.android.gms:play-services-basement:18.4.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/04c9669adac57c2c53d2dab40879802a/transformed/play-services-basement-18.4.0/AndroidManifest.xml:6:9-122
+314            android:name="com.google.android.gms.version"
+314-->[com.google.android.gms:play-services-basement:18.4.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/04c9669adac57c2c53d2dab40879802a/transformed/play-services-basement-18.4.0/AndroidManifest.xml:6:20-65
+315            android:value="@integer/google_play_services_version" />
+315-->[com.google.android.gms:play-services-basement:18.4.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/04c9669adac57c2c53d2dab40879802a/transformed/play-services-basement-18.4.0/AndroidManifest.xml:6:66-119
+316
+317        <service
+317-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:26:9-32:19
+318            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+318-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:27:13-103
+319            android:exported="false" >
+319-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:28:13-37
+320            <meta-data
+320-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:29:13-31:39
+321                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+321-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:30:17-94
+322                android:value="cct" />
+322-->[com.google.android.datatransport:transport-backend-cct:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/3353fc81e4b201ba95e9dd9eb65f9a65/transformed/transport-backend-cct-3.2.0/AndroidManifest.xml:31:17-36
+323        </service>
+324        <service
+324-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:24:9-28:19
+325            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+325-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:25:13-117
+326            android:exported="false"
+326-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:26:13-37
+327            android:permission="android.permission.BIND_JOB_SERVICE" >
+327-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:27:13-69
+328        </service>
+329
+330        <receiver
+330-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:30:9-32:40
+331            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+331-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:31:13-132
+332            android:exported="false" />
+332-->[com.google.android.datatransport:transport-runtime:3.2.0] /Users/rodrigoneves/.gradle/caches/8.9/transforms/b0dc37a978407a0817927ebf16733f5c/transformed/transport-runtime-3.2.0/AndroidManifest.xml:32:13-37
+333        <receiver
+333-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+334            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+334-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+335            android:directBootAware="false"
+335-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+336            android:enabled="true"
+336-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+337            android:exported="true"
+337-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+338            android:permission="android.permission.DUMP" >
+338-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+339            <intent-filter>
+339-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+340                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+340-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+340-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+341            </intent-filter>
+342            <intent-filter>
+342-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+343                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+343-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+343-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+344            </intent-filter>
+345            <intent-filter>
+345-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+346                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+346-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+346-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+347            </intent-filter>
+348            <intent-filter>
+348-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+349                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+349-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+349-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/rodrigoneves/.gradle/caches/8.9/transforms/4fc625be2f005af3dc341cce57dad3e8/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+350            </intent-filter>
+351        </receiver>
+352    </application>
+353
+354</manifest>
