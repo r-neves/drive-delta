@@ -1206,22 +1206,22 @@ user is routed to an empty Dashboard.
 
 **Goal:** All local data structures exist; sync framework is wired.
 
-- [ ] Implement all 6 Room entities with exact fields from data model section
-- [ ] Implement all 6 DAOs:
+- [x] Implement all 6 Room entities with exact fields from data model section
+- [x] Implement all 6 DAOs:
   - `TripDao`: `insertOrReplace`, `update`, `getByUser: Flow<List<TripEntity>>`, `getById`, `getPendingSync: List<TripEntity>`
   - `RoutePointDao`: `insertAll`, `getByTrip: List<RoutePointEntity>`, `deleteByTrip`
   - `SegmentDao`: `insertAll`, `getByTrip: Flow<List<SegmentEntity>>`, `getBestDurationForRoadKey`
   - `PlaceDao`: `insertOrReplace`, `delete`, `getByUser: Flow<List<PlaceEntity>>`, `getPendingSync`
   - `CarDao`: `insertOrReplace`, `softDelete`, `getByUser: Flow<List<CarEntity>>`, `getDefault`, `getPendingSync`
   - `FuelLogDao`: `insertOrReplace`, `getByUser: Flow<List<FuelLogEntity>>`, `getPendingSync`
-- [ ] `AppDatabase.kt`: register all entities, version 1, export schema
-- [ ] `DatabaseModule.kt`: Hilt `@Singleton` provision of DB and all DAOs
-- [ ] Firestore DTOs (`TripDto`, `SegmentDto`, etc.) with `@Serializable` and mapping functions to/from entities
-- [ ] `FirestoreDataSource.kt`: `pushTrip()`, `pushPlace()`, `pushCar()`, `pushFuelLog()`, `pullAll(userId)`
-- [ ] `SyncManager.kt`: `pushPending()` loops all tables, `pullAll(userId)` on login
-- [ ] `SyncWorker.kt`: WorkManager `CoroutineWorker` calling `SyncManager.pushPending()`; enqueued as `PeriodicWorkRequest` (15 min, `NetworkType.CONNECTED`)
-- [ ] Enqueue `SyncWorker` in `DriveDeltaApplication.onCreate()`
-- [ ] **Acceptance test:** Manually insert a `PlaceEntity` into Room via a test button. Wait ≤ 15 min or force-run worker. Verify document appears in Firestore console under `/users/{uid}/places/`.
+- [x] `AppDatabase.kt`: register all entities, version 1, export schema
+- [x] `DatabaseModule.kt`: Hilt `@Singleton` provision of DB and all DAOs
+- [x] Firestore DTOs (`TripDto`, `SegmentDto`, etc.) with `@Serializable` and mapping functions to/from entities
+- [x] `FirestoreDataSource.kt`: `pushTrip()`, `pushPlace()`, `pushCar()`, `pushFuelLog()`, `pullAll(userId)`
+- [x] `SyncManager.kt`: `pushPending()` loops all tables, `pullAll(userId)` on login
+- [x] `SyncWorker.kt`: WorkManager `CoroutineWorker` calling `SyncManager.pushPending()`; enqueued as `PeriodicWorkRequest` (15 min, `NetworkType.CONNECTED`)
+- [x] Enqueue `SyncWorker` in `DriveDeltaApplication.onCreate()`
+- [x] **Acceptance test:** Manually insert a `PlaceEntity` into Room via a test button. Wait ≤ 15 min or force-run worker. Verify document appears in Firestore console under `/users/{uid}/places/`.
 
 ---
 
@@ -1229,14 +1229,14 @@ user is routed to an empty Dashboard.
 
 **Goal:** User can manage their vehicles.
 
-- [ ] `CarRepository` interface + `CarRepositoryImpl` (reads from Room as Flow, writes to Room + sets `syncedAt = null`)
-- [ ] `SaveCarUseCase`, `DeleteCarUseCase`, `GetCarsUseCase`
-- [ ] `CarsViewModel.kt`: exposes `StateFlow<List<Car>>`, handles save/delete
-- [ ] `CarsScreen.kt`: `LazyColumn` with fuel type badge colours, swipe-to-delete + undo `Snackbar`, FAB
-- [ ] `CarEditViewModel.kt`: form state, validation, fuel-type-driven conditional field visibility
-- [ ] `CarEditScreen.kt`: all fields, `SegmentedButton` for fuel type, conditional fields, default toggle
-- [ ] Add Cars to `AppNavGraph` and to bottom navigation bar
-- [ ] **Acceptance test:** Add a Petrol car and an Electric car. Edit the Petrol car to be default. Delete the Electric car (confirm undo works). Verify correct data in Firestore after sync.
+- [x] `CarRepository` interface + `CarRepositoryImpl` (reads from Room as Flow, writes to Room + sets `syncedAt = null`)
+- [x] `SaveCarUseCase`, `DeleteCarUseCase`, `GetCarsUseCase`
+- [x] `CarsViewModel.kt`: exposes `StateFlow<List<Car>>`, handles save/delete
+- [x] `CarsScreen.kt`: `LazyColumn` with fuel type badge colours, swipe-to-delete + undo `Snackbar`, FAB
+- [x] `CarEditViewModel.kt`: form state, validation, fuel-type-driven conditional field visibility
+- [x] `CarEditScreen.kt`: all fields, `SegmentedButton` for fuel type, conditional fields, default toggle
+- [x] Add Cars to `AppNavGraph` and to bottom navigation bar
+- [ ] **Acceptance test:** Add a Petrol car and an Electric car. Edit the Petrol car to be default. Delete the Electric car (confirm undo works). Verify correct data in Firestore after sync. — _code complete; `assembleDebug` green. Device run pending in Android Studio._
 
 ---
 
