@@ -59,6 +59,11 @@ class FirestoreDataSource @Inject constructor(
             .await()
     }
 
+    /** Removes a place document. Used for the hard delete in F3 (places have no soft-delete). */
+    suspend fun deletePlace(userId: String, placeId: String) {
+        userDoc(userId).collection(PLACES).document(placeId).delete().await()
+    }
+
     /** Upserts a car under its owner's `cars` collection, keyed by [CarEntity.id]. */
     suspend fun pushCar(car: CarEntity) {
         userDoc(car.userId).collection(CARS).document(car.id)

@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.drivedelta.ui.auth.AuthScreen
 import app.drivedelta.ui.cars.CarEditScreen
+import app.drivedelta.ui.places.PlaceEditScreen
 
 /**
  * Top-level navigation. [startDestination] is decided once at launch from the current auth state:
@@ -45,6 +46,8 @@ fun AppNavGraph(
                 },
                 onAddCar = { navController.navigate(NavDestinations.carEdit()) },
                 onEditCar = { carId -> navController.navigate(NavDestinations.carEdit(carId)) },
+                onAddPlace = { navController.navigate(NavDestinations.placeEdit()) },
+                onEditPlace = { placeId -> navController.navigate(NavDestinations.placeEdit(placeId)) },
             )
         }
         composable(
@@ -58,6 +61,18 @@ fun AppNavGraph(
             ),
         ) {
             CarEditScreen(onDone = { navController.popBackStack() })
+        }
+        composable(
+            route = NavDestinations.PLACE_EDIT_ROUTE,
+            arguments = listOf(
+                navArgument(NavArgs.PLACE_ID) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) {
+            PlaceEditScreen(onDone = { navController.popBackStack() })
         }
     }
 }

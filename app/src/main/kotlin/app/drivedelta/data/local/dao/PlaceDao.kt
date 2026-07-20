@@ -20,6 +20,9 @@ interface PlaceDao {
     @Query("SELECT * FROM places WHERE userId = :userId ORDER BY createdAt DESC")
     fun getByUser(userId: String): Flow<List<PlaceEntity>>
 
+    @Query("SELECT * FROM places WHERE id = :id")
+    suspend fun getById(id: String): PlaceEntity?
+
     @Query("SELECT * FROM places WHERE userId = :userId AND syncedAt IS NULL")
     suspend fun getPendingSync(userId: String): List<PlaceEntity>
 }

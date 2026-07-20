@@ -1244,19 +1244,19 @@ user is routed to an empty Dashboard.
 
 **Goal:** User can create named places with map picker and address search.
 
-- [ ] `PlaceRepository` interface + `PlaceRepositoryImpl`
-- [ ] `SavePlaceUseCase`, `DeletePlaceUseCase`, `GetPlacesUseCase`, `DetectNearbyPlaceUseCase`
-- [ ] `PlacesViewModel.kt` + `PlacesScreen.kt`
-- [ ] `PlaceEditViewModel.kt`: map marker state, address state, radius state, emoji state, form validation
-- [ ] `PlaceEditScreen.kt`:
-  - Address search bar using Places SDK `FindAutocompletePredictionsRequest`
-  - `GoogleMap` Composable with draggable `MarkerState`
-  - "Use my location" button (permission check inline)
-  - Radius `Slider` with live `Circle` overlay on map
-  - Emoji picker `LazyRow`
-  - Reverse geocode on marker move (debounced with `LaunchedEffect` + `delay(1000)`)
-- [ ] Add Places to `AppNavGraph` and bottom nav
-- [ ] **Acceptance test:** Create "Home" using address search. Create "Office" by dragging the map marker. Verify radius circle renders at 200m. Verify both appear in Firestore. Delete Home, verify removed.
+- [x] `PlaceRepository` interface + `PlaceRepositoryImpl`
+- [x] `SavePlaceUseCase`, `DeletePlaceUseCase`, `GetPlacesUseCase`, `DetectNearbyPlaceUseCase`
+- [x] `PlacesViewModel.kt` + `PlacesScreen.kt`
+- [x] `PlaceEditViewModel.kt`: map marker state, address state, radius state, emoji state, form validation
+- [x] `PlaceEditScreen.kt`:
+  - [x] Address search bar using Places SDK `FindAutocompletePredictionsRequest` (guarded on `Places.isInitialized()`)
+  - [x] `GoogleMap` Composable with draggable `MarkerState`
+  - [x] "Use my location" button (permission check inline)
+  - [x] Radius `Slider` with live `Circle` overlay on map
+  - [x] Emoji picker `LazyRow`
+  - [x] Reverse geocode on marker move — uses the **platform `android.location.Geocoder`** (no extra API key), debounced with `delay(1000)`
+- [x] Add Places to `AppNavGraph` and bottom nav
+- [~] **Acceptance test:** Create "Home" using address search. Create "Office" by dragging the map marker. Verify radius circle renders at 200m. Verify both appear in Firestore. Delete Home, verify removed. — _Non-map flow ✅ verified on emulator (add via name+emoji, radius slider, save, swipe→confirm dialog→delete; editor opens with NO crash when keys absent — map degrades to a blank Google tile, autocomplete shows "needs API key"). Map/marker/autocomplete/geocode/Firestore-sync legs need `MAPS_API_KEY`+`PLACES_API_KEY` in local.properties — pending user keys._
 
 ---
 
