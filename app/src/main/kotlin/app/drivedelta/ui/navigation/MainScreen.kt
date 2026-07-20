@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -28,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import app.drivedelta.R
 import app.drivedelta.ui.cars.CarsScreen
 import app.drivedelta.ui.dashboard.DashboardScreen
+import app.drivedelta.ui.places.PlacesScreen
 import app.drivedelta.ui.theme.DdNavBackground
 import app.drivedelta.ui.theme.DdTextTertiary
 
@@ -41,6 +43,7 @@ private data class TabItem(
 private val tabs = listOf(
     TabItem(NavDestinations.DASHBOARD, R.string.nav_home, Icons.Outlined.Home),
     TabItem(NavDestinations.CARS, R.string.nav_vehicles, Icons.Outlined.DirectionsCar),
+    TabItem(NavDestinations.PLACES, R.string.nav_places, Icons.Outlined.Place),
 )
 
 /**
@@ -53,6 +56,8 @@ fun MainScreen(
     onSignedOut: () -> Unit,
     onAddCar: () -> Unit,
     onEditCar: (String) -> Unit,
+    onAddPlace: () -> Unit,
+    onEditPlace: (String) -> Unit,
     tabNavController: NavHostController = rememberNavController(),
 ) {
     Scaffold(
@@ -70,6 +75,9 @@ fun MainScreen(
             }
             composable(NavDestinations.CARS) {
                 CarsScreen(onAddCar = onAddCar, onEditCar = onEditCar)
+            }
+            composable(NavDestinations.PLACES) {
+                PlacesScreen(onAddPlace = onAddPlace, onEditPlace = onEditPlace)
             }
         }
     }

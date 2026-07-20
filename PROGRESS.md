@@ -14,13 +14,14 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — ✅ verified on emulator (Firestore console check pending)
-- **Last completed:** ✅ Checkpoint 2 (Room DB & Sync Skeleton) — builds and runs; test place
-  verified in Firestore at `/users/{uid}/places/`.
-- **Next up:** Run the CP3 acceptance test on a device in Android Studio (add Petrol + Electric car,
-  set default, swipe-delete with undo, confirm Firestore sync). Then start Checkpoint 4 (Places).
-- **Housekeeping done this session:** CP2 + CP3 code boxes ticked in CLAUDE.md; removed the temporary
-  "Insert test place & sync" button + its ViewModel plumbing from the Dashboard.
+- **Active checkpoint:** Checkpoint 4 (Places CRUD) — code complete; non-map flow verified on
+  emulator. Map/autocomplete/geocode/Firestore legs pending API keys.
+- **Last completed:** ✅ Checkpoint 3 (Cars CRUD) — verified on emulator (found+fixed stale-undo bug).
+- **Next up:** Add `MAPS_API_KEY` + `PLACES_API_KEY` to `local.properties` (+ enable Maps SDK,
+  Places API, Geocoding API in Google Cloud), then verify the CP4 map/marker/autocomplete/geocode
+  and Firestore sync on device. Then Checkpoint 5 (Background GPS tracking service).
+- **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
+  are still in Room + Firestore. They now show in the Places list and can be swipe-deleted via the UI.
 - **Last updated by:** (machine / 2026-07-20)
 - **Working branch:** `main`
 
@@ -34,7 +35,7 @@
 | 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
 | 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
-| 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
+| 4 | Places Feature (CRUD) | 🟡 In progress | Local | Code complete; non-map flow verified on emulator. Map/autocomplete/geocode/sync need Maps+Places keys |
 | 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
 | 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |
@@ -51,6 +52,22 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **CP4 reverse-geocoding uses the platform `android.location.Geocoder`, not the
+  Geocoding API + Retrofit** the plan named. Rationale: the Geocoder needs no extra API key or key
+  wiring, keeps CP4 to just Maps + Places keys, and is enough for filling the address label on marker
+  drag / use-my-location. Autocomplete result selection fills the address directly (no geocode). The
+  Retrofit Geocoding path can be revisited if the platform geocoder proves unreliable in the field.
+- `2026-07-20` — **Places delete is a hard delete (no soft-delete/undo), per F3.** `deletePlace`
+  removes the Room row (source of truth) then best-effort deletes the Firestore doc
+  (`FirestoreDataSource.deletePlace`); offline the local delete still sticks and the doc lingers. A
+  swipe stages the delete and an AlertDialog confirms it — unlike cars (swipe = immediate soft-delete
+  + undo snackbar). PlaceEntity has no `isDeleted` column, so the deferred tombstone-pruning TODO
+  does not apply to places; instead the open risk is a deleted place resurrecting on a fresh-device
+  pull if the offline Firestore delete never ran. Acceptable for the single-user POC.
+- `2026-07-20` — **App must not crash when Maps/Places keys are absent (verified).** `PlaceEditScreen`
+  guards the `PlacesClient` on `Places.isInitialized()` (search field disables with a helper note),
+  and `GoogleMap` renders a blank Google tile without a `MAPS_API_KEY` rather than crashing. Emulator
+  run confirmed the editor opens and the full non-map CRUD works with no key present.
 - `2026-07-20` — **Bug found + fixed via emulator run: undo-delete restored stale car data.**
   `SwipeToDismissBox`'s `confirmValueChange` lambda is captured once at the item's first composition
   and NOT refreshed on recomposition, so it closed over the original `Car`. Editing a car (e.g.

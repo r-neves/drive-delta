@@ -10,6 +10,29 @@
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_vehicles">Vehicles</string>
+    <string name="nav_places">Places</string>
+
+    <!-- Places list -->
+    <string name="places_title">Places</string>
+    <string name="places_add">Add place</string>
+    <string name="places_empty_title">No places yet</string>
+    <string name="places_empty_subtitle">Save home, work, or anywhere you drive to.</string>
+    <string name="places_radius_badge">%1$dm</string>
+    <string name="places_delete_content_desc">Delete place</string>
+    <string name="places_delete_title">Delete place?</string>
+    <string name="places_delete_message">Remove \"%1$s\"? This can\'t be undone.</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Place edit -->
+    <string name="place_edit_title_new">Add place</string>
+    <string name="place_edit_title_edit">Edit place</string>
+    <string name="place_field_name">Name</string>
+    <string name="place_field_search">Search address</string>
+    <string name="place_search_unavailable">Address search needs a Places API key.</string>
+    <string name="place_field_radius">Geofence radius</string>
+    <string name="place_use_my_location">Use my current location</string>
+    <string name="place_error_name_required">Name is required</string>
 
     <!-- Cars list -->
     <string name="cars_title">Vehicles</string>
