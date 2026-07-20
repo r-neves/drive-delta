@@ -4,10 +4,15 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Foreground location for the Place editor's "use my location". The full tracking permission
-         suite (background location, foreground-service, notifications) arrives in Checkpoint 5. -->
+    <!-- Location for the Place editor's "use my location" and for trip tracking. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Background GPS tracking service (Checkpoint 5). -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".DriveDeltaApplication"
@@ -31,6 +36,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Foreground service that records the GPS trace of an active trip (Checkpoint 5). -->
+        <service
+            android:name=".service.TrackingForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <!-- Google Maps API key (from local.properties via manifestPlaceholders).
              Empty until keys are added; Maps features arrive in Checkpoint 4. -->
