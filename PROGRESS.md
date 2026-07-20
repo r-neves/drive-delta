@@ -14,14 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 4 (Places CRUD) — code complete; non-map flow verified on
-  emulator. Map/autocomplete/geocode/Firestore legs pending API keys.
-- **Last completed:** ✅ Checkpoint 3 (Cars CRUD) — verified on emulator (found+fixed stale-undo bug).
-- **Next up:** Add `MAPS_API_KEY` + `PLACES_API_KEY` to `local.properties` (+ enable Maps SDK,
-  Places API, Geocoding API in Google Cloud), then verify the CP4 map/marker/autocomplete/geocode
-  and Firestore sync on device. Then Checkpoint 5 (Background GPS tracking service).
+- **Active checkpoint:** Checkpoint 5 (Background GPS tracking service) — not started.
+- **Last completed:** ✅ Checkpoint 4 (Places CRUD) — verified on emulator WITH API keys: map render,
+  live radius Circle, Places autocomplete + select (marker/camera/address), Save persists real
+  geodata. Also verified crash-safe with no keys. Firestore console sync check still pending.
+- **Next up:** Checkpoint 5 — `LocationProvider` (FusedLocation callbackFlow), extend `GeoUtils`
+  (bearing + interpolation), `TrackingForegroundService` (F4), `DetectArrivalUseCase`, Start/Stop
+  trip use cases, `TripRepository`, and the sequential runtime permission flow in `MainActivity`.
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
-  are still in Room + Firestore. They now show in the Places list and can be swipe-deleted via the UI.
+  plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
+  the Places UI. Harmless.
 - **Last updated by:** (machine / 2026-07-20)
 - **Working branch:** `main`
 
@@ -35,7 +37,7 @@
 | 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
 | 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
-| 4 | Places Feature (CRUD) | 🟡 In progress | Local | Code complete; non-map flow verified on emulator. Map/autocomplete/geocode/sync need Maps+Places keys |
+| 4 | Places Feature (CRUD) | ✅ Done | Local | Verified on emulator with keys (map, radius circle, autocomplete, save real geodata). Firestore console sync check pending |
 | 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
 | 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |

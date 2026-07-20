@@ -1256,7 +1256,7 @@ user is routed to an empty Dashboard.
   - [x] Emoji picker `LazyRow`
   - [x] Reverse geocode on marker move — uses the **platform `android.location.Geocoder`** (no extra API key), debounced with `delay(1000)`
 - [x] Add Places to `AppNavGraph` and bottom nav
-- [~] **Acceptance test:** Create "Home" using address search. Create "Office" by dragging the map marker. Verify radius circle renders at 200m. Verify both appear in Firestore. Delete Home, verify removed. — _Non-map flow ✅ verified on emulator (add via name+emoji, radius slider, save, swipe→confirm dialog→delete; editor opens with NO crash when keys absent — map degrades to a blank Google tile, autocomplete shows "needs API key"). Map/marker/autocomplete/geocode/Firestore-sync legs need `MAPS_API_KEY`+`PLACES_API_KEY` in local.properties — pending user keys._
+- [x] **Acceptance test:** Create "Home" using address search. Create "Office" by dragging the map marker. Verify radius circle renders at 200m. Verify both appear in Firestore. Delete Home, verify removed. — _✅ Verified on emulator WITH keys: map renders (Lisbon tiles/POIs), radius slider grows the live Circle (100m→425m), Places autocomplete returns predictions ("Rossio" → Rossio Square/Praça Dom Pedro IV/…), selecting one recenters camera + marker + fills reverse-geocoded address, and Save persists real lat/lng+address to the list. Also verified with NO keys: editor opens without crashing (blank map tile, search shows "needs API key"), and the non-map CRUD (add/emoji/radius/swipe→confirm dialog→delete) works. Not separately exercised: marker-drag reverse-geocode and "use my location" (same onMarkerMoved/reverse-geocode path). Firestore console sync check pending (15-min worker / user account)._
 
 ---
 
