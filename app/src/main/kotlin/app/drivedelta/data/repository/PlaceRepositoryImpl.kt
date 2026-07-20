@@ -1,6 +1,7 @@
 package app.drivedelta.data.repository
 
 import app.drivedelta.core.auth.AuthRepository
+import app.drivedelta.core.sync.SyncTrigger
 import app.drivedelta.data.local.dao.PlaceDao
 import app.drivedelta.data.local.entity.PlaceEntity
 import app.drivedelta.data.remote.firestore.FirestoreDataSource
@@ -22,6 +23,7 @@ class PlaceRepositoryImpl @Inject constructor(
     private val placeDao: PlaceDao,
     private val firestore: FirestoreDataSource,
     private val authRepository: AuthRepository,
+    private val syncTrigger: SyncTrigger,
 ) : PlaceRepository {
 
     override fun observePlaces(): Flow<List<Place>> {
@@ -37,6 +39,7 @@ class PlaceRepositoryImpl @Inject constructor(
     override suspend fun savePlace(place: Place) {
         val userId = authRepository.currentUserId ?: return
         placeDao.insertOrReplace(place.toEntity(userId))
+        syncTrigger.requestSync()
     }
 
     override suspend fun deletePlace(place: Place) {
