@@ -54,6 +54,16 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **Added on-demand sync (`SyncTrigger`) — writes now reach Firestore in seconds,
+  not up to 15 min.** Diagnosing "my edit isn't in Firestore" revealed the app only synced via the
+  15-min periodic worker (no push-on-save), so fresh writes sat unsynced. Fix: `core/sync/SyncTrigger`
+  enqueues a unique one-time `SyncWorker` (`ExistingWorkPolicy.REPLACE`, `NetworkType.CONNECTED`);
+  `CarRepositoryImpl.saveCar/deleteCar` and `PlaceRepositoryImpl.savePlace` call `requestSync()` after
+  the local write. NOT `setExpedited` — expedited on API < 31 (minSdk 26) requires a foreground
+  notification via `getForegroundInfo`, unwanted per edit; a plain one-time request runs promptly
+  while foreground. Place hard-delete doesn't call it (no pending row; `firestore.deletePlace` handles
+  remote directly). Periodic worker stays as the offline/missed backstop. Verified on emulator: a
+  radius edit synced in ~10 s (was ~150 s). Future repos (trips, fuel logs) should call `requestSync()` too.
 - `2026-07-20` — **CP4 reverse-geocoding uses the platform `android.location.Geocoder`, not the
   Geocoding API + Retrofit** the plan named. Rationale: the Geocoder needs no extra API key or key
   wiring, keeps CP4 to just Maps + Places keys, and is enough for filling the address label on marker

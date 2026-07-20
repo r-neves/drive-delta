@@ -1,6 +1,7 @@
 package app.drivedelta.data.repository
 
 import app.drivedelta.core.auth.AuthRepository
+import app.drivedelta.core.sync.SyncTrigger
 import app.drivedelta.data.local.dao.CarDao
 import app.drivedelta.data.local.entity.CarEntity
 import app.drivedelta.domain.model.Car
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class CarRepositoryImpl @Inject constructor(
     private val carDao: CarDao,
     private val authRepository: AuthRepository,
+    private val syncTrigger: SyncTrigger,
 ) : CarRepository {
 
     override fun observeCars(): Flow<List<Car>> {
@@ -38,10 +40,12 @@ class CarRepositoryImpl @Inject constructor(
         if (entity.isDefault) {
             carDao.clearDefaultExcept(userId, entity.id)
         }
+        syncTrigger.requestSync()
     }
 
     override suspend fun deleteCar(carId: String) {
         carDao.softDelete(carId)
+        syncTrigger.requestSync()
     }
 }
 
