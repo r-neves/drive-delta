@@ -14,15 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 5 (Background GPS tracking service) — 🟡 code authored + full
-  `assembleDebug` passes (Hilt graph + Room KSP OK). **Pending on-device GPS acceptance test.**
-- **Last completed:** ✅ Checkpoint 4 (Places CRUD) — verified on emulator WITH API keys: map render,
-  live radius Circle, Places autocomplete + select (marker/camera/address), Save persists real
-  geodata. Also verified crash-safe with no keys. Firestore console sync check still pending.
-- **Next up (to close CP5):** run the acceptance test on a device/emulator — grant the permission
-  chain, tap **Start test trip** on the Dashboard, drive/walk ~5 min (or use emulator GPX playback),
-  tap **Stop test trip**, confirm the on-screen summary shows route points recorded with some marked
-  interpolated and no gap > 35 s. Then tick CP5 boxes + move to Checkpoint 6 (Live Tracking screen).
+- **Active checkpoint:** Checkpoint 6 (Live Tracking screen) — not started.
+- **Last completed:** ✅ Checkpoint 5 (Background GPS tracking service) — verified end-to-end on the
+  `Medium_Phone` emulator via scripted `adb emu geo fix` route playback: foreground service records
+  a moving track, warm-up + accuracy filters apply, GPS-gap interpolation fills a 14 s feed-gap, and
+  the trip finalises on Stop. Room query: 30 points / 10 interpolated / max gap 6.0 s (< 35 s) /
+  trip ended 280 m, 118 s, MANUAL, start backfilled. `assembleDebug` green (Hilt + Room KSP).
+- **Next up:** Checkpoint 6 — `TrackingViewModel` binds the service's `StateFlow<TrackingState>`,
+  `TrackingScreen` (map + live polyline + `HudOverlay`), `StopConfirmSheet`, `ArrivalSheet` (30 s
+  countdown), and the pre-ride sheet. Reuse `TrackingForegroundService.trackingState` (already
+  exposed via `TrackingBinder`) and the CP5 use cases. Remove the temporary Dashboard test harness.
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -41,7 +42,7 @@
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
 | 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
 | 4 | Places Feature (CRUD) | ✅ Done | Local | Verified on emulator with keys (map, radius circle, autocomplete, save real geodata). Firestore console sync check pending |
-| 5 | Background GPS Tracking Service | 🟡 In progress | Local | Code authored, `assembleDebug` green; needs device-GPS acceptance run |
+| 5 | Background GPS Tracking Service | ✅ Done | Local | Verified on emulator via `adb emu geo fix` playback (30 pts/10 interp/max gap 6 s) |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
 | 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |
 | 8 | Trip Detail & Comparison | ⬜ Not started | Web or Local | |
@@ -57,6 +58,17 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **CP5 verified via scripted emulator GPS (reusable for CP6/CP7).** No device GPS
+  needed: boot the `Medium_Phone` AVD, `pm grant` the location/notification perms + `dumpsys deviceidle
+  whitelist +app.drivedelta` so the CP5 permission chain short-circuits, then drive a moving track
+  with a bash loop of `adb emu geo fix <lon> <lat>` (step ≥ ~10 m each tick to beat the 5 m
+  `minUpdateDistance`; pause > 8 s to trigger gap interpolation). The emulator has **no `sqlite3`
+  binary** — pull the DB to the host instead: `adb exec-out run-as app.drivedelta cat
+  …/databases/drivedelta.db{,-wal,-shm}` then query with host sqlite (Room is WAL, so grab the -wal).
+  Gotcha hit this run: a **blind center `input tap` hit the Dashboard "Sign out" button** → signed
+  out. Re-sign-in worked because the emulator has a Google account (silent SSO); still, always tap by
+  reading a fresh `uiautomator dump`'s node bounds (Compose collapses the tree, so match the *text*
+  node's `bounds`, not the root).
 - `2026-07-20` — **CP5 authored: GPS tracking foreground service + start/stop use cases.** Key
   decisions: (1) The **service owns all live recording state** (point buffer, running distance,
   elapsed, arrival status) and exposes `StateFlow<TrackingState>` via a bound `TrackingBinder` for

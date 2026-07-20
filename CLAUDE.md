@@ -1264,15 +1264,15 @@ user is routed to an empty Dashboard.
 
 **Goal:** App reliably records GPS traces in the background.
 
-- [ ] `LocationProvider.kt`: wraps `FusedLocationProviderClient`, returns `Flow<Location>` using `callbackFlow`
-- [ ] `GeoUtils.kt`: Haversine distance, linear interpolation between two `LatLng` points with bearing and speed
-- [ ] `TrackingForegroundService.kt`: full implementation per F4 spec
-- [ ] `DetectArrivalUseCase.kt`: per F6 spec
-- [ ] `StartTripUseCase.kt`: creates `TripEntity`, starts service
-- [ ] `StopTripUseCase.kt`: stops service, triggers async post-processing
-- [ ] `TripRepository` interface + `TripRepositoryImpl`
-- [ ] Permission flow in `MainActivity`: sequential requests for fine location, background location, notifications, battery optimisation
-- [ ] **Acceptance test:** Grant all permissions. Start a trip from a test button on Dashboard. Switch to Google Maps and drive (or walk) for 5 minutes. Return to app. Verify route points exist in Room with no gap longer than 35 seconds. Verify interpolated points are marked `isInterpolated = true`.
+- [x] `LocationProvider.kt`: wraps `FusedLocationProviderClient`, returns `Flow<Location>` using `callbackFlow` (+ one-shot `lastLocation()`)
+- [x] `GeoUtils.kt`: Haversine distance, linear interpolation between two `LatLng` points with bearing and speed
+- [x] `TrackingForegroundService.kt`: full implementation per F4 spec
+- [x] `DetectArrivalUseCase.kt`: per F6 spec (wired; the ARRIVED auto-stop flow is exercised in CP6 with a destination)
+- [x] `StartTripUseCase.kt`: creates `TripEntity`, starts service
+- [x] `StopTripUseCase.kt`: stops service, triggers async post-processing
+- [x] `TripRepository` interface + `TripRepositoryImpl`
+- [x] Permission flow: sequential requests for fine location, background location, notifications, battery optimisation — as a Compose helper (`ui/permissions/rememberStartTrackingPermissionFlow`) invoked from the Dashboard, since `MainActivity` is a pure `setContent` host
+- [x] **Acceptance test:** ✅ Verified on the `Medium_Phone` emulator via scripted `adb emu geo fix` route playback (GPX-style). Pre-granted the permission chain, tapped **Start test trip**, streamed a moving track with a deliberate 14 s feed-gap, tapped **Stop**. Room result (queried via `run-as` + host sqlite): trip finalised (`endTime` set, 280 m, 118 s, `stopTrigger=MANUAL`, start backfilled to first real fix); **30 route points, 10 marked `isInterpolated=1`** in two runs bridging the >8 s gaps; **max consecutive gap 6.0 s** (< 35 s). Foreground service ran with `type=location`, notification id 42.
 
 ---
 
