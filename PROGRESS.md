@@ -133,6 +133,16 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
+- **Soft-delete tombstones are never pruned (deferred from CP3).** Swipe-delete does
+  `CarDao.softDelete` (isDeleted=true, syncedAt=NULL) and the worker pushes the `isDeleted:true`
+  doc to Firestore — this is correct and intended: the tombstone propagates the deletion to other
+  devices (pull re-inserts it into Room, `getByUser` filters `isDeleted=0` so it stays hidden). What
+  the plan's F2 flow also calls for but CP3 does NOT yet implement is the final step — **hard-delete
+  the Room row once the deletion has synced.** Consequence today: deleted cars linger forever as
+  hidden `isDeleted=true` rows in both Room and Firestore (verified: Tesla M3 sits in Firestore with
+  isDeleted=true). Harmless for the POC but unbounded growth. Do this with the sync-completion logic
+  when the sync layer (thin since CP2) is fleshed out — a `hardDeleteSyncedTombstones()` pass after a
+  successful push, applied to cars/places (and any other soft-deleted entity). Not a CP3 bolt-on.
 - ✅ RESOLVED — CP1 now builds and runs in Android Studio. The one fix needed vs. the authored
   scaffold: `kotlin { jvmToolchain(17) }` demanded a JDK-17 toolchain that isn't installed →
   replaced with `compilerOptions { jvmTarget = JVM_17 }` (compiles on the JBR 21 that runs Gradle).
