@@ -1236,7 +1236,7 @@ user is routed to an empty Dashboard.
 - [x] `CarEditViewModel.kt`: form state, validation, fuel-type-driven conditional field visibility
 - [x] `CarEditScreen.kt`: all fields, `SegmentedButton` for fuel type, conditional fields, default toggle
 - [x] Add Cars to `AppNavGraph` and to bottom navigation bar
-- [ ] **Acceptance test:** Add a Petrol car and an Electric car. Edit the Petrol car to be default. Delete the Electric car (confirm undo works). Verify correct data in Firestore after sync. — _code complete; `assembleDebug` green. Device run pending in Android Studio._
+- [x] **Acceptance test:** Add a Petrol car and an Electric car. Edit the Petrol car to be default. Delete the Electric car (confirm undo works). Verify correct data in Firestore after sync. — _✅ Verified on emulator: added VW Golf (Petrol) + Tesla M3 (Electric, default) → default toggle moves default correctly → swipe-delete + undo restores with current state (incl. default). Firestore sync (needs the 15-min worker / your account) still to confirm in console._
 
 ---
 

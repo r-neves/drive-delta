@@ -14,7 +14,7 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — code complete, device verification pending
+- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — ✅ verified on emulator (Firestore console check pending)
 - **Last completed:** ✅ Checkpoint 2 (Room DB & Sync Skeleton) — builds and runs; test place
   verified in Firestore at `/users/{uid}/places/`.
 - **Next up:** Run the CP3 acceptance test on a device in Android Studio (add Petrol + Electric car,
@@ -33,7 +33,7 @@
 | 0 | Design (Claude Design) | ✅ Done | You (design tools) | Committed + pushed `d199717` |
 | 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
-| 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Code complete + `assembleDebug` green; device acceptance test pending |
+| 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
 | 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
 | 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
@@ -51,6 +51,19 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **Bug found + fixed via emulator run: undo-delete restored stale car data.**
+  `SwipeToDismissBox`'s `confirmValueChange` lambda is captured once at the item's first composition
+  and NOT refreshed on recomposition, so it closed over the original `Car`. Editing a car (e.g.
+  toggling default) then swiping it passed the pre-edit object to `deleteCar`, and undo re-saved the
+  stale version — the restored car lost its default flag. Fix: `CarsViewModel.deleteCar(carId)` now
+  reads the undo snapshot fresh from `cars.value` by id instead of trusting the object the composable
+  passes. Re-verified on emulator: default survives swipe+undo. (The delete itself was always fine —
+  it only used the immutable id.)
+- `2026-07-20` — **CP3 acceptance test run on an emulator (`Medium_Phone`), not just compiled.**
+  The debug build carried a persisted Firebase session from CP1/CP2, so the app opened straight to
+  Dashboard — no interactive Google sign-in needed — which let the whole Cars CRUD flow be driven via
+  adb. All UI states verified from screenshots (empty state, add Petrol + Electric with conditional
+  fields, fuel-badge colours, default chip + single-default enforcement, swipe-delete + undo).
 - `2026-07-20` — **CP3 nav is two-level.** Outer graph = `AUTH` / `MAIN` / `car_edit?carId={carId}`;
   `MAIN` is a `MainScreen` shell holding a bottom `NavigationBar` over its own inner NavHost of tab
   routes (`dashboard`, `cars`). Full-screen editors (car edit) live in the OUTER graph so they cover
