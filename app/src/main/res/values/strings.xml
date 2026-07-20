@@ -6,4 +6,44 @@
     <string name="auth_error_generic">Sign-in failed. Please try again.</string>
     <string name="dashboard_title">Dashboard</string>
     <string name="action_sign_out">Sign out</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_vehicles">Vehicles</string>
+
+    <!-- Cars list -->
+    <string name="cars_title">Vehicles</string>
+    <string name="cars_add">Add vehicle</string>
+    <string name="cars_empty_title">No vehicles yet</string>
+    <string name="cars_empty_subtitle">Add a car to log fuel and track drives.</string>
+    <string name="cars_default_chip">Default</string>
+    <string name="cars_deleted">Vehicle deleted</string>
+    <string name="action_undo">Undo</string>
+    <string name="car_delete_content_desc">Delete vehicle</string>
+
+    <!-- Consumption labels on the list card -->
+    <string name="car_consumption_fuel">%1$s L/100km</string>
+    <string name="car_consumption_electric">%1$s kWh/100km</string>
+
+    <!-- Car edit -->
+    <string name="car_edit_title_new">Add vehicle</string>
+    <string name="car_edit_title_edit">Edit vehicle</string>
+    <string name="car_field_name">Name</string>
+    <string name="car_field_license_plate">License plate</string>
+    <string name="car_field_fuel_type">Fuel type</string>
+    <string name="car_field_tank_capacity">Tank capacity (L)</string>
+    <string name="car_field_battery_capacity">Battery capacity (kWh)</string>
+    <string name="car_field_consumption_fuel">Est. consumption (L/100km)</string>
+    <string name="car_field_consumption_electric">Est. consumption (kWh/100km)</string>
+    <string name="car_set_default">Set as default vehicle</string>
+    <string name="car_error_name_required">Name is required</string>
+    <string name="action_save">Save</string>
+    <string name="action_back">Back</string>
+
+    <!-- Fuel types -->
+    <string name="fuel_petrol">Petrol</string>
+    <string name="fuel_diesel">Diesel</string>
+    <string name="fuel_hybrid">Hybrid</string>
+    <string name="fuel_electric">Electric</string>
+    <string name="fuel_lpg">LPG</string>
 </resources>

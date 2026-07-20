@@ -14,15 +14,14 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — not started
+- **Active checkpoint:** Checkpoint 3 (Cars CRUD) — code complete, device verification pending
 - **Last completed:** ✅ Checkpoint 2 (Room DB & Sync Skeleton) — builds and runs; test place
   verified in Firestore at `/users/{uid}/places/`.
-- **Next up:** Checkpoint 3 — CarRepository, Save/Delete/GetCars use cases, CarsScreen +
-  CarEditScreen (fuel-type SegmentedButton, conditional fields, default toggle), bottom nav.
-  Remove the temporary "Insert test place & sync" button from the Dashboard as part of this.
-- **Housekeeping for the CP3 session:** tick the CP2 boxes in CLAUDE.md (they still show unchecked;
-  PROGRESS is the source of truth and already reflects done).
-- **Last updated by:** (machine / 2026-07-11)
+- **Next up:** Run the CP3 acceptance test on a device in Android Studio (add Petrol + Electric car,
+  set default, swipe-delete with undo, confirm Firestore sync). Then start Checkpoint 4 (Places).
+- **Housekeeping done this session:** CP2 + CP3 code boxes ticked in CLAUDE.md; removed the temporary
+  "Insert test place & sync" button + its ViewModel plumbing from the Dashboard.
+- **Last updated by:** (machine / 2026-07-20)
 - **Working branch:** `main`
 
 ---
@@ -34,7 +33,7 @@
 | 0 | Design (Claude Design) | ✅ Done | You (design tools) | Committed + pushed `d199717` |
 | 1 | Project Skeleton, Theme & Auth | ✅ Done | Local | Builds + auth verified on device |
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
-| 3 | Cars Feature (CRUD) | ⬜ Not started | Web or Local | |
+| 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Code complete + `assembleDebug` green; device acceptance test pending |
 | 4 | Places Feature (CRUD) | ⬜ Not started | Local | Needs Maps/Places key |
 | 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
@@ -52,6 +51,19 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **CP3 nav is two-level.** Outer graph = `AUTH` / `MAIN` / `car_edit?carId={carId}`;
+  `MAIN` is a `MainScreen` shell holding a bottom `NavigationBar` over its own inner NavHost of tab
+  routes (`dashboard`, `cars`). Full-screen editors (car edit) live in the OUTER graph so they cover
+  the bar. `MainScreen`'s Scaffold uses `contentWindowInsets = WindowInsets(0)` so the inner NavHost
+  is padded only by the bar height and each tab owns its top inset (no double inset). Start
+  destination moved from `DASHBOARD` to `MAIN`.
+- `2026-07-20` — **Car userId is stamped by the repository, not the UI.** `CarRepositoryImpl.saveCar`
+  overwrites `Car.userId` with `authRepository.currentUserId` (ignoring whatever the ViewModel set to
+  `""`), so per-user isolation lives in one place. Signed-out reads emit empty; writes are no-ops.
+  "Only one default" is enforced by `CarDao.clearDefaultExcept` after an upsert with `isDefault`.
+- `2026-07-20` — **Swipe-delete = optimistic soft-delete + undo restore.** Swiping calls
+  `softDelete` (isDeleted=1, syncedAt=NULL) → the `getByUser` Flow drops it instantly; the snackbar's
+  Undo re-saves the captured `Car` (re-insert un-deletes). Single-slot undo (newest wins) — fine for POC.
 - `2026-07-11` — **Firestore uses a NAMED database, `drivedelta-firestore`, not `(default)`.**
   `FirestoreModule` binds `FirebaseFirestore.getInstance("drivedelta-firestore")`; the KTX
   `Firebase.firestore` accessor targets `(default)` and threw `NOT_FOUND` until this was fixed.

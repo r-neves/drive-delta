@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val startDestination = if (authRepository.isSignedIn) {
-            NavDestinations.DASHBOARD
+            NavDestinations.MAIN
         } else {
             NavDestinations.AUTH
         }
