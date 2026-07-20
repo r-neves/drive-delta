@@ -2,8 +2,10 @@ package app.drivedelta.di
 
 import app.drivedelta.data.repository.CarRepositoryImpl
 import app.drivedelta.data.repository.PlaceRepositoryImpl
+import app.drivedelta.data.repository.TripRepositoryImpl
 import app.drivedelta.domain.repository.CarRepository
 import app.drivedelta.domain.repository.PlaceRepository
+import app.drivedelta.domain.repository.TripRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +24,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPlaceRepository(impl: PlaceRepositoryImpl): PlaceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTripRepository(impl: TripRepositoryImpl): TripRepository
 }

@@ -14,16 +14,19 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 5 (Background GPS tracking service) — not started.
+- **Active checkpoint:** Checkpoint 5 (Background GPS tracking service) — 🟡 code authored + full
+  `assembleDebug` passes (Hilt graph + Room KSP OK). **Pending on-device GPS acceptance test.**
 - **Last completed:** ✅ Checkpoint 4 (Places CRUD) — verified on emulator WITH API keys: map render,
   live radius Circle, Places autocomplete + select (marker/camera/address), Save persists real
   geodata. Also verified crash-safe with no keys. Firestore console sync check still pending.
-- **Next up:** Checkpoint 5 — `LocationProvider` (FusedLocation callbackFlow), extend `GeoUtils`
-  (bearing + interpolation), `TrackingForegroundService` (F4), `DetectArrivalUseCase`, Start/Stop
-  trip use cases, `TripRepository`, and the sequential runtime permission flow in `MainActivity`.
+- **Next up (to close CP5):** run the acceptance test on a device/emulator — grant the permission
+  chain, tap **Start test trip** on the Dashboard, drive/walk ~5 min (or use emulator GPX playback),
+  tap **Stop test trip**, confirm the on-screen summary shows route points recorded with some marked
+  interpolated and no gap > 35 s. Then tick CP5 boxes + move to Checkpoint 6 (Live Tracking screen).
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
-  the Places UI. Harmless.
+  the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
+  (CP5) and is removed when the real Start Ride flow lands in CP6.
 - **Last updated by:** (machine / 2026-07-20)
 - **Working branch:** `main`
 
@@ -38,7 +41,7 @@
 | 2 | Room DB & Sync Skeleton | ✅ Done | Local | Place verified in Firestore; named DB "drivedelta-firestore" |
 | 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
 | 4 | Places Feature (CRUD) | ✅ Done | Local | Verified on emulator with keys (map, radius circle, autocomplete, save real geodata). Firestore console sync check pending |
-| 5 | Background GPS Tracking Service | ⬜ Not started | Local | Needs device GPS |
+| 5 | Background GPS Tracking Service | 🟡 In progress | Local | Code authored, `assembleDebug` green; needs device-GPS acceptance run |
 | 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
 | 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |
 | 8 | Trip Detail & Comparison | ⬜ Not started | Web or Local | |
@@ -54,6 +57,31 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-20` — **CP5 authored: GPS tracking foreground service + start/stop use cases.** Key
+  decisions: (1) The **service owns all live recording state** (point buffer, running distance,
+  elapsed, arrival status) and exposes `StateFlow<TrackingState>` via a bound `TrackingBinder` for
+  CP6 to collect. (2) **`StartTripUseCase`/`StopTripUseCase` are thin** — Start mints the trip UUID,
+  snapshots `lastLocation()` as start (0,0 if none; the service **backfills start coords on its first
+  accepted fix**), persists the `TripEntity`, and calls `TrackingForegroundService.start(...)`; Stop
+  just delivers a STOP intent and the service runs the whole finalise sequence (flush → stamp end
+  fields → `finishTrip` → `requestSync`). Both use cases inject `@ApplicationContext` to start/stop
+  the service (same pragmatic Context-in-use-case call as `SyncTrigger`). (3) **GPS-gap fill**: on a
+  fix > 8 s late, interpolate between the last valid and new fix at ~2 s spacing (`isInterpolated=
+  true`); if the gap > 30 s, drop a single interpolated midpoint marker instead. Uses `GeoUtils`
+  `interpolate` + `bearingDegrees` (added this CP). Warm-up drops the first 10 s; accuracy filter
+  drops `>25 m`. (4) **Timing**: monotonic `elapsedRealtime` for warm-up/gap logic, wall-clock epoch
+  for stored point timestamps + duration. (5) **Route points are local-only** — `appendRoutePoints`
+  never calls `requestSync` (Firestore stores trips/segments only, per plan). (6) **Post-ride Roads
+  snap/segment build is a TODO hook** in `stopTracking` — lands in CP7. (7) Foreground start uses
+  `ServiceCompat.startForeground(..., FOREGROUND_SERVICE_TYPE_LOCATION)` called first thing in the
+  START branch to dodge the start-timeout ANR; `START_NOT_STICKY` (mid-trip process death out of
+  scope). (8) **Permission chain** is a Compose helper `rememberStartTrackingPermissionFlow`
+  (`ui/permissions/`), not imperative `MainActivity` code — the idiomatic Compose place given
+  MainActivity is a pure `setContent` host. Sequence: fine → background (API 29+) → notifications
+  (API 33+) → battery-optimisation exemption → start. Permanently-denied rationale + settings
+  deep-link deferred to CP10. (9) A temporary **Start/Stop test-trip harness on the Dashboard**
+  exercises the service pre-CP6; it polls the trip until `endTime` is stamped then shows a
+  points/interpolated/km summary. Removed when the real Start Ride flow lands in CP6.
 - `2026-07-20` — **Added on-demand sync (`SyncTrigger`) — writes now reach Firestore in seconds,
   not up to 15 min.** Diagnosing "my edit isn't in Firestore" revealed the app only synced via the
   15-min periodic worker (no push-on-save), so fresh writes sat unsynced. Fix: `core/sync/SyncTrigger`
