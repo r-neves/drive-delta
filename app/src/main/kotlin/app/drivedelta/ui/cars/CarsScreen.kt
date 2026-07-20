@@ -109,7 +109,7 @@ fun CarsScreen(
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = { value ->
                             if (value == SwipeToDismissBoxValue.Settled) return@rememberSwipeToDismissBoxState false
-                            viewModel.deleteCar(car)
+                            viewModel.deleteCar(car.id)
                             scope.launch {
                                 val result = snackbarHostState.showSnackbar(
                                     message = deletedMessage,

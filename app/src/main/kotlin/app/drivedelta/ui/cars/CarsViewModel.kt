@@ -26,10 +26,15 @@ class CarsViewModel @Inject constructor(
     /** Holds the last swiped-away car so [undoDelete] can restore it. Single-slot: newest wins. */
     private var recentlyDeleted: Car? = null
 
-    /** Soft-deletes [car]; it leaves the list immediately (the flow filters deleted rows). */
-    fun deleteCar(car: Car) {
-        recentlyDeleted = car
-        viewModelScope.launch { deleteCarUseCase(car.id) }
+    /**
+     * Soft-deletes the car with [carId]; it leaves the list immediately (the flow filters deleted
+     * rows). The undo snapshot is read fresh from [cars] here — not passed in from the composable —
+     * because a swipe handler can close over a stale [Car] (e.g. captured before an edit), which
+     * would make undo restore outdated data.
+     */
+    fun deleteCar(carId: String) {
+        recentlyDeleted = cars.value.firstOrNull { it.id == carId }
+        viewModelScope.launch { deleteCarUseCase(carId) }
     }
 
     /** Re-inserts the last deleted car (un-deletes it), driven by the snackbar's Undo action. */
