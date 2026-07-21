@@ -3,10 +3,13 @@ package app.drivedelta.data.repository
 import app.drivedelta.core.auth.AuthRepository
 import app.drivedelta.core.sync.SyncTrigger
 import app.drivedelta.data.local.dao.RoutePointDao
+import app.drivedelta.data.local.dao.SegmentDao
 import app.drivedelta.data.local.dao.TripDao
 import app.drivedelta.data.local.entity.RoutePointEntity
+import app.drivedelta.data.local.entity.SegmentEntity
 import app.drivedelta.data.local.entity.TripEntity
 import app.drivedelta.domain.model.RoutePoint
+import app.drivedelta.domain.model.Segment
 import app.drivedelta.domain.model.Trip
 import app.drivedelta.domain.repository.TripRepository
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +25,7 @@ import javax.inject.Inject
 class TripRepositoryImpl @Inject constructor(
     private val tripDao: TripDao,
     private val routePointDao: RoutePointDao,
+    private val segmentDao: SegmentDao,
     private val authRepository: AuthRepository,
     private val syncTrigger: SyncTrigger,
 ) : TripRepository {
@@ -78,7 +82,39 @@ class TripRepositoryImpl @Inject constructor(
         )
         syncTrigger.requestSync()
     }
+
+    override suspend fun finishTripSegments(
+        tripId: String,
+        segments: List<Segment>,
+        routeHash: String,
+        roadsProcessed: Boolean,
+    ) {
+        segmentDao.insertAll(segments.map { it.toEntity() })
+        val current = tripDao.getById(tripId) ?: return
+        tripDao.update(current.copy(routeHash = routeHash, roadsProcessed = roadsProcessed, syncedAt = null))
+        syncTrigger.requestSync()
+    }
+
+    override suspend fun bestSegmentDuration(roadKey: String): Long? {
+        val userId = authRepository.currentUserId ?: return null
+        return segmentDao.getBestDurationForRoadKey(userId, roadKey)
+    }
 }
+
+private fun Segment.toEntity(): SegmentEntity = SegmentEntity(
+    tripId = tripId,
+    segmentIndex = segmentIndex,
+    roadKey = roadKey,
+    roadName = roadName,
+    startLat = startLat,
+    startLng = startLng,
+    endLat = endLat,
+    endLng = endLng,
+    distanceMeters = distanceMeters,
+    durationMs = durationMs,
+    avgSpeedMps = avgSpeedMps,
+    maxSpeedMps = maxSpeedMps,
+)
 
 /** Room row → domain. */
 private fun TripEntity.toDomain(): Trip = Trip(

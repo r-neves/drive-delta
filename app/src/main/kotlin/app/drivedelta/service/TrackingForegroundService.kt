@@ -26,6 +26,8 @@ import app.drivedelta.domain.model.TrackingState
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.domain.usecase.arrival.DetectArrivalUseCase
+import app.drivedelta.domain.usecase.segment.BuildSegmentsUseCase
+import app.drivedelta.domain.usecase.segment.SnapRouteToRoadsUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,8 @@ class TrackingForegroundService : Service() {
     @Inject lateinit var tripRepository: TripRepository
     @Inject lateinit var placeRepository: PlaceRepository
     @Inject lateinit var detectArrival: DetectArrivalUseCase
+    @Inject lateinit var snapRouteToRoads: SnapRouteToRoadsUseCase
+    @Inject lateinit var buildSegments: BuildSegmentsUseCase
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -309,7 +313,13 @@ class TrackingForegroundService : Service() {
                     durationMs = endEpoch - recordingStartEpoch,
                     stopTrigger = trigger,
                 )
-                // Roads snap → segment build → sync runs post-ride from here in Checkpoint 7.
+                // Post-ride (F7): snap to roads, then build named segments. On Roads API failure the
+                // snap returns null and segment building falls back to raw 500 m chunks. Best-effort:
+                // a failure here must not block the service from stopping.
+                runCatching {
+                    val snapped = snapRouteToRoads(id)
+                    buildSegments(id, snapped)
+                }
             }
             _trackingState.update { it.copy(isTracking = false) }
             stopSelfCleanly()

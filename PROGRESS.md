@@ -14,16 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 7 (Roads API & Segment Building) — not started.
-- **Last completed:** ✅ Checkpoint 6 (Live Tracking screen) — verified on emulator: Start Ride →
-  pre-ride sheet → TrackingScreen (live HUD, destination chip, map, STOP). Geofence arrival
-  auto-finished a trip (`stopTrigger=GEOFENCE`); manual STOP → StopConfirmSheet → Finish
-  (`stopTrigger=MANUAL`). Arrival debounce also covered by `DetectArrivalUseCaseTest` (5 cases).
-- **Next up:** Checkpoint 7 — `RoadsApiService` (Retrofit → Google Roads API), `RoadsDataSource`
-  (chunking/stitching), `SnapRouteToRoadsUseCase` (RDP simplify → snap → update Room),
-  `BuildSegmentsUseCase` (group by placeId → roadKey/routeHash → segments), raw fallback, and wire
-  both from `StopTripUseCase`/service post-ride path (the TODO hook in `TrackingForegroundService`).
-  Needs Roads API + Geocoding API enabled on the key.
+- **Active checkpoint:** Checkpoint 8 (Trip Detail & Comparison) — not started.
+- **Last completed:** ✅ Checkpoint 7 (Roads API & Segment Building) — verified on emulator with the
+  **real Roads API** (live 200 from `snapToRoads`). A Lisbon trip → 15 named segments (Rua Garrett,
+  Calçada do Sacramento, Largo do Carmo, …), all non-zero durations, `roadsProcessed=1`, 64-char
+  `routeHash`. 9 unit tests cover RDP, chunking/stitching, segment grouping + raw fallback.
+- **Next up:** Checkpoint 8 — `GetTripDetailUseCase` (trip + segments + points + best-ever per
+  roadKey), `TripDetailScreen` (Map/Splits/Replay tabs), speed-coloured polyline, `SegmentSplitList`,
+  `ReplayController`, post-ride fuel prompt, `CompareSegmentsUseCase`/`MatchSegmentsUseCase`,
+  `CompareScreen` (Vico bar chart). Trips reachable from History (F11) — may need a minimal trips
+  list entry point since the Dashboard recent-trips list is CP9.
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -44,7 +44,7 @@
 | 4 | Places Feature (CRUD) | ✅ Done | Local | Verified on emulator with keys (map, radius circle, autocomplete, save real geodata). Firestore console sync check pending |
 | 5 | Background GPS Tracking Service | ✅ Done | Local | Verified on emulator via `adb emu geo fix` playback (30 pts/10 interp/max gap 6 s) |
 | 6 | Live Tracking Screen | ✅ Done | Local | Verified on emulator (GEOFENCE auto-finish + MANUAL stop); arrival unit-tested |
-| 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |
+| 7 | Roads API & Segment Building | ✅ Done | Local | Real Roads API verified (15 named Lisbon segments); 9 unit tests |
 | 8 | Trip Detail & Comparison | ⬜ Not started | Web or Local | |
 | 9 | History, Fuel Log & Dashboard | ⬜ Not started | Local | |
 | 10 | Hardening & Play Store Prep | ⬜ Not started | Local | |
@@ -58,6 +58,22 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-21` — **CP7 (Roads API & segments) built + verified with the LIVE Roads API.** Notes:
+  (1) The `ROADS_API_KEY` in local.properties has **Roads API enabled + billing** — confirmed by a
+  live `200` from `snapToRoads` on the emulator (my Lisbon test coords are on real streets). (2)
+  **Road names come from the platform `Geocoder`** (`GeocoderRoadNameResolver`, no Geocoding API key),
+  because `snapToRoads` returns only `placeId` — same key-free approach as CP4. `nearestRoads` not
+  implemented (unneeded). (3) **Segment timing is distance-proportional**, NOT per-point: RDP thinning
+  (ε 10 m, needed for Roads cost control) plus interpolated snapped points strip timestamps, so a
+  short segment between two thinned points would collapse to 0 ms if timed from snapped points. Fix:
+  distribute the trip's total time across segments by each segment's share of the snapped distance
+  (positive, monotone, sums to total) — verified 15/15 segments non-zero. Consequence: all segments
+  in a trip share the trip's avg speed (intra-trip speed variation not captured). **Post-MVP:** finer
+  timing by projecting boundaries onto the raw trace. (4) `roadKey`/hash use `Locale.US` formatting so
+  a comma-decimal locale (pt-PT!) can't corrupt the `lat,lng` key. (5) Snap+build run in the service
+  **stop coroutine** (`runCatching`), not a separate use case from `StopTripUseCase` — the service
+  owns post-ride processing. Roads/Room calls are main-safe so no explicit IO dispatch. (6) Emulator
+  reusable-GPS caveat still applies (see CP6 note): feed real road coords for meaningful snapping.
 - `2026-07-21` — **CP6 (Live Tracking) built + verified.** Notes for future sessions: (1) The
   screen binds the running service via a `ServiceConnection` in `TrackingViewModel`
   (`BIND_AUTO_CREATE`, unbind in `onCleared`) and mirrors `service.trackingState`; it accumulates a

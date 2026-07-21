@@ -1,11 +1,13 @@
 package app.drivedelta.di
 
+import app.drivedelta.data.remote.GeocoderRoadNameResolver
 import app.drivedelta.data.repository.CarRepositoryImpl
 import app.drivedelta.data.repository.PlaceRepositoryImpl
 import app.drivedelta.data.repository.TripRepositoryImpl
 import app.drivedelta.domain.repository.CarRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
+import app.drivedelta.domain.usecase.segment.RoadNameResolver
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,4 +30,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTripRepository(impl: TripRepositoryImpl): TripRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRoadNameResolver(impl: GeocoderRoadNameResolver): RoadNameResolver
 }

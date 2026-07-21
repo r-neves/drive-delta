@@ -1311,13 +1311,15 @@ user is routed to an empty Dashboard.
       @Query("key") key: String = BuildConfig.ROADS_API_KEY
   ): RoadsNearestResponse
   ```
-- [ ] `RoadsDto.kt`: `@Serializable` response classes matching Roads API JSON
-- [ ] `RoadsDataSource.kt`: chunking (100pt limit), 10-point overlap, stitching
-- [ ] `SnapRouteToRoadsUseCase.kt`: loads RoutePoints → RDP simplification → chunks → API calls → update Room
-- [ ] `BuildSegmentsUseCase.kt`: group by `placeId` → compute `roadKey` → compute `routeHash` → persist segments → mark `roadsProcessed = true`
-- [ ] Graceful fallback: if Roads API returns error, use 500m fixed chunks with `RAW|` prefixed `roadKey`
-- [ ] Both use cases triggered from `StopTripUseCase` via `launch(Dispatchers.IO)`
-- [ ] **Acceptance test:** Complete a short trip on known roads. Wait for async processing (check `roadsProcessed = true` in Room). Verify `SegmentEntity` rows have correct `roadName` values. Verify `routeHash` is set on `TripEntity`.
+- [x] Enable Roads API + Geocoding API — Roads API confirmed enabled + billing working (live 200 from `snapToRoads` on the emulator). Road names use the **platform Geocoder** (no Geocoding API key), same as CP4; `nearestRoads` not needed.
+- [x] `RoadsDto.kt`: `@Serializable` `RoadsSnapResponse`/`SnappedPointDto`/`RoadsLocationDto`
+- [x] `RoadsApiService.kt` + `NetworkModule.kt`: Retrofit + OkHttp + kotlinx-serialization converter (`roads.googleapis.com`)
+- [x] `RoadsDataSource.kt`: 100-pt chunking, 10-pt overlap, stitch + de-dup by originalIndex (unit-tested to 205 pts)
+- [x] `SnapRouteToRoadsUseCase.kt`: loads non-interpolated RoutePoints → RDP simplify (ε 10 m, `GeoUtils.simplify`) → chunks → snap; returns null on failure/too-short
+- [x] `BuildSegmentsUseCase.kt`: group by `placeId` → `roadKey` (locale-safe) → SHA-256 `routeHash` → persist segments → `roadsProcessed = true`. **Timing note:** RDP + interpolated snapped points strip timestamps, so per-segment duration is distributed by each segment's share of the snapped distance (positive, monotone, sums to trip total); intra-segment speed profiling is post-MVP.
+- [x] Graceful fallback: Roads API failure → 500 m fixed chunks, `RAW|`-prefixed `roadKey`, "Unknown road" (unit-tested)
+- [x] Triggered post-ride from the service stop path (`snapRouteToRoads` → `buildSegments`, wrapped in runCatching so a failure never blocks stop)
+- [x] **Acceptance test:** ✅ Verified on emulator with the **real Roads API** (live 200). A Lisbon-street trip produced 15 segments with real road names (Rua Garrett, Calçada do Sacramento, Largo do Carmo, …), all non-zero durations summing to the 54 s trip, `roadsProcessed=1`, 64-char `routeHash`. Fallback + chunking + RDP + segment grouping covered by 9 unit tests (`GeoUtilsTest`, `RoadsDataSourceTest`, `BuildSegmentsUseCaseTest`).
 
 ---
 
