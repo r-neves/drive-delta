@@ -55,6 +55,7 @@
 
     <!-- Live tracking screen (F9) -->
     <string name="tracking_stop">STOP</string>
+    <string name="tracking_acquiring_gps">Acquiring GPS…</string>
     <string name="tracking_destination_chip">🏁 %1$s — %2$.1f km left</string>
     <string name="tracking_stop_title">Finish this ride?</string>
     <string name="tracking_stat_time">Time</string>

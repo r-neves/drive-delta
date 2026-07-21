@@ -1361,15 +1361,15 @@ user is routed to an empty Dashboard.
 
 **Goal:** Production-ready internal Play Store release.
 
-- [ ] Handle all permission permanently-denied states: rationale dialogs + settings deep-link for each
-- [ ] Handle no-internet state gracefully: all screens load from Room; sync retries automatically when connectivity restored (`NetworkCallback` in `SyncManager`)
-- [ ] Handle Roads API quota exceeded: exponential backoff retry (max 3 attempts), fallback to raw segments
-- [ ] Handle cold GPS start: show "Acquiring GPS..." state in HUD for first 10 seconds, grey out Start button if no GPS fix
-- [ ] ProGuard/R8 rules for Firebase, Retrofit, Hilt, Vico, Kotlin Serialization
-- [ ] Add Firebase Crashlytics: `implementation("com.google.firebase:firebase-crashlytics-ktx")`
-- [ ] Unit tests for: `BuildSegmentsUseCase`, `CompareSegmentsUseCase`, `DetectArrivalUseCase`, `SnapRouteToRoadsUseCase` (mock API), `SyncManager` (mock Firestore)
-- [ ] Configure Play Store internal track: create keystore, set up signing in `build.gradle.kts`, upload AAB
-- [ ] **Acceptance test:** Install from Play Store internal track on a **fresh device with no existing data**. Sign in → verify Firestore pull restores all previous data → create a new trip → verify it syncs.
+- [~] Permission permanently-denied states: the sequential permission chain exists (CP5); **full rationale dialogs + settings deep-link per permission are NOT added** — deferred. (A denied step currently just doesn't advance the ride start.)
+- [x] No-internet handled: all screens read from Room (source of truth); `SyncWorker` runs under `NetworkType.CONNECTED` so pushes auto-retry when connectivity returns (periodic 15-min + on-write `SyncTrigger`). A dedicated `NetworkCallback` isn't needed given WorkManager's constraint.
+- [x] Roads API quota/transient failures: **exponential backoff (max 3, 500 ms→1 s→2 s)** in `RoadsDataSource.snapChunkWithRetry`; exhausting retries propagates → raw-segment fallback. Unit-tested (retry-then-succeed + give-up).
+- [x] Cold GPS start: HUD shows **"Acquiring GPS…"** while `isTracking && currentLocation == null` (before the first fix). (Start-button grey-out on no-fix not added — the ride can start and the HUD covers the acquiring window.)
+- [x] ProGuard/R8 rules for Firebase, Retrofit/OkHttp, Hilt, Room, kotlinx-serialization, Vico staged in `proguard-rules.pro`. **`isMinifyEnabled` stays false** for the MVP internal track — verify a minified build before enabling.
+- [ ] Firebase Crashlytics — **NOT added** (needs the Crashlytics Gradle plugin + Firebase console enablement). Manual/release-ops.
+- [x] Unit tests: `DetectArrivalUseCase`, `BuildSegmentsUseCase`, `CompareSegmentsUseCase`/`MatchSegments`, `GeoUtils` (RDP/bearing), `RoadsDataSource` (chunking + retry) — **18 tests**. (`SnapRouteToRoadsUseCase` is a thin RDP+delegate wrapper covered indirectly; `SyncManager` Firestore-mock test not added.)
+- [ ] Play Store internal track (keystore, signing config, AAB upload) — **release-ops the user must do**; can't be done from here.
+- [ ] **Acceptance test** (install from Play Store, fresh-device Firestore restore) — **manual**, depends on the release-ops above.
 
 ---
 
