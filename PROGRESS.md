@@ -14,16 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 9 (History, Fuel Log & Dashboard polish) — not started.
-- **Last completed:** ✅ Checkpoint 8 (Trip Detail & Comparison) — verified on emulator: Dashboard
-  recent-rides → Trip Detail (Map coloured polyline, Splits table w/ road names + deltas + vs-best
-  filter, Replay scrubber/controls), first-open fuel prompt, Compare screen (empty-state; real
-  matches need a device — emulator GPS non-deterministic). Compare/match logic unit-tested (18 tests total).
-- **Next up:** Checkpoint 9 — `HistoryScreen` (grouped by month, filter chips, delete),
-  `FuelLogScreen` (adaptive fuel/electric form, post-save stats, `LogFuelUseCase`), Dashboard polish
-  (recent/personal-bests/weekly — partly done), live-split best-times into the HUD at trip start,
-  full sign-out (clear Room), i18n (`values-pt`), contentDescriptions. Wire the fuel-prompt
-  "Add fill-up" → `FuelLogScreen(tripId)`.
+- **Active checkpoint:** Checkpoint 10 (Hardening & Play Store Prep) — not started.
+- **Last completed:** ✅ Checkpoint 9 (History, Fuel Log, sign-out, i18n) — verified on emulator:
+  History (grouped by month, delete), Fuel Log (adaptive form, auto-calc 40×1.80→72.00, post-save
+  efficiency, Room row synced) reached via the Trip Detail fuel prompt. Sign-out clears Room; pt
+  translations added. **Deferred:** live-split HUD (architectural — no live road detection allowed by
+  cost rule), dashboard personal-bests/weekly-stats, History filter chips.
+- **Next up:** Checkpoint 10 — permission permanently-denied handling (rationale + settings deep-link),
+  no-internet handling, Roads API quota backoff, cold-GPS "Acquiring GPS" HUD state, ProGuard/R8 rules,
+  Crashlytics, more unit tests, Play Store signing/AAB. Mostly hardening; several items are release-ops
+  the user must do (keystore, Play Console).
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -46,7 +46,7 @@
 | 6 | Live Tracking Screen | ✅ Done | Local | Verified on emulator (GEOFENCE auto-finish + MANUAL stop); arrival unit-tested |
 | 7 | Roads API & Segment Building | ✅ Done | Local | Real Roads API verified (15 named Lisbon segments); 9 unit tests |
 | 8 | Trip Detail & Comparison | ✅ Done | Local | Emulator: Map/Splits/Replay + fuel prompt; compare logic unit-tested (18 tests) |
-| 9 | History, Fuel Log & Dashboard | ⬜ Not started | Local | |
+| 9 | History, Fuel Log & Dashboard | ✅ Done | Local | Emulator: History + Fuel Log verified; sign-out clear + pt i18n; live-split/stats deferred |
 | 10 | Hardening & Play Store Prep | ⬜ Not started | Local | |
 
 Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + pushed)

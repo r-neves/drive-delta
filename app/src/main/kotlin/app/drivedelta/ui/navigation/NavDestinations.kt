@@ -11,6 +11,7 @@ object NavDestinations {
 
     // Bottom-nav tabs (inside MAIN)
     const val DASHBOARD = "dashboard"
+    const val HISTORY = "history"
     const val CARS = "cars"
     const val PLACES = "places"
 
@@ -27,6 +28,11 @@ object NavDestinations {
 
     fun tripDetail(tripId: String): String = "trip_detail/$tripId"
     fun compare(tripId: String): String = "compare/$tripId"
+
+    // Fuel log (outer graph); optional tripId to pre-link a ride.
+    const val FUEL_LOG_ROUTE = "fuel_log?${NavArgs.TRIP_ID}={${NavArgs.TRIP_ID}}"
+    fun fuelLog(tripId: String? = null): String =
+        if (tripId == null) "fuel_log" else "fuel_log?${NavArgs.TRIP_ID}=$tripId"
 
     /** Builds the car-edit route: no argument for add, a car id for edit. */
     fun carEdit(carId: String? = null): String =

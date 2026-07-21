@@ -103,6 +103,14 @@ class TripRepositoryImpl @Inject constructor(
     override suspend fun getSegments(tripId: String): List<Segment> =
         segmentDao.getByTripOnce(tripId).map(SegmentEntity::toDomain)
 
+    override suspend fun deleteTrip(tripId: String) {
+        // Hard delete from Room (source of truth). Remote tombstoning is deferred (single-user POC);
+        // route points are local-only so there's nothing remote to clean for them.
+        segmentDao.deleteByTrip(tripId)
+        routePointDao.deleteByTrip(tripId)
+        tripDao.deleteById(tripId)
+    }
+
     override suspend fun markFuelPromptDismissed(tripId: String) {
         val current = tripDao.getById(tripId) ?: return
         if (current.notes.contains(FUEL_DISMISSED_FLAG)) return

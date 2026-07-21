@@ -25,4 +25,7 @@ interface TripDao {
 
     @Query("SELECT * FROM trips WHERE userId = :userId AND syncedAt IS NULL")
     suspend fun getPendingSync(userId: String): List<TripEntity>
+
+    @Query("DELETE FROM trips WHERE id = :id")
+    suspend fun deleteById(id: String)
 }

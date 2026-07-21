@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import app.drivedelta.ui.auth.AuthScreen
 import app.drivedelta.ui.cars.CarEditScreen
 import app.drivedelta.ui.compare.CompareScreen
+import app.drivedelta.ui.fuel.FuelLogScreen
 import app.drivedelta.ui.places.PlaceEditScreen
 import app.drivedelta.ui.tracking.TrackingScreen
 import app.drivedelta.ui.tripdetail.TripDetailScreen
@@ -96,6 +97,7 @@ fun AppNavGraph(
             TripDetailScreen(
                 onBack = { navController.popBackStack() },
                 onCompare = { tripId -> navController.navigate(NavDestinations.compare(tripId)) },
+                onAddFuel = { tripId -> navController.navigate(NavDestinations.fuelLog(tripId)) },
             )
         }
         composable(
@@ -103,6 +105,18 @@ fun AppNavGraph(
             arguments = listOf(navArgument(NavArgs.TRIP_ID) { type = NavType.StringType }),
         ) {
             CompareScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = NavDestinations.FUEL_LOG_ROUTE,
+            arguments = listOf(
+                navArgument(NavArgs.TRIP_ID) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) {
+            FuelLogScreen(onDone = { navController.popBackStack() })
         }
     }
 }

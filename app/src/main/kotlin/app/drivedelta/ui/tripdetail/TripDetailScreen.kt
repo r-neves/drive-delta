@@ -69,6 +69,7 @@ private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.str
 fun TripDetailScreen(
     onBack: () -> Unit,
     onCompare: (String) -> Unit,
+    onAddFuel: (String) -> Unit,
     viewModel: TripDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -131,8 +132,9 @@ fun TripDetailScreen(
     }
 
     if (state.showFuelPrompt) {
+        val tripId = state.detail?.trip?.id
         FuelPromptSheet(
-            carPresent = state.detail?.trip?.carId != null,
+            onAddFuel = { if (tripId != null) { viewModel.dismissFuelPrompt(); onAddFuel(tripId) } },
             onDismiss = viewModel::dismissFuelPrompt,
         )
     }
@@ -311,9 +313,8 @@ private fun ReplayTab(detail: TripDetail, state: TripDetailUiState, viewModel: T
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FuelPromptSheet(carPresent: Boolean, onDismiss: () -> Unit) {
+private fun FuelPromptSheet(onAddFuel: () -> Unit, onDismiss: () -> Unit) {
     val tokens = LocalDdTokens.current
-    val scope = rememberCoroutineScope()
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surface) {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding).padding(bottom = tokens.spaceXl),
@@ -321,9 +322,9 @@ private fun FuelPromptSheet(carPresent: Boolean, onDismiss: () -> Unit) {
         ) {
             Text(stringResource(R.string.trip_fuel_prompt_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(stringResource(R.string.trip_fuel_prompt_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            // "Add fill-up" navigates to the Fuel Log in Checkpoint 9; for now both actions dismiss.
-            TextButton(onClick = { scope.launch { onDismiss() } }, modifier = Modifier.align(Alignment.End)) {
-                Text(stringResource(R.string.trip_fuel_skip))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.trip_fuel_skip)) }
+                TextButton(onClick = onAddFuel) { Text(stringResource(R.string.trip_fuel_add)) }
             }
         }
     }

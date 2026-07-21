@@ -74,8 +74,28 @@
 
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
     <string name="nav_vehicles">Vehicles</string>
     <string name="nav_places">Places</string>
+
+    <!-- History (F11) -->
+    <string name="history_empty">No rides yet.</string>
+    <string name="history_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="history_delete_title">Delete ride?</string>
+    <string name="history_delete_message">This permanently removes the ride and its route.</string>
+
+    <!-- Fuel log (F12) -->
+    <string name="fuel_title">Log fuel</string>
+    <string name="fuel_car">Vehicle</string>
+    <string name="fuel_liters">Litres filled</string>
+    <string name="fuel_price_liter">Price per litre</string>
+    <string name="fuel_kwh">kWh charged</string>
+    <string name="fuel_price_kwh">Price per kWh</string>
+    <string name="fuel_total">Total cost</string>
+    <string name="fuel_odometer">Odometer (km)</string>
+    <string name="fuel_saved_cost">This fill-up: %1$s</string>
+    <string name="fuel_saved_efficiency">Efficiency: %1$s</string>
+    <string name="trip_fuel_add">Add fill-up</string>
 
     <!-- Places list -->
     <string name="places_title">Places</string>
