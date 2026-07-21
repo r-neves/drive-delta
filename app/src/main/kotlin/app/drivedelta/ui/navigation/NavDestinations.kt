@@ -14,6 +14,9 @@ object NavDestinations {
     const val CARS = "cars"
     const val PLACES = "places"
 
+    // Full-screen live tracking (outer graph; covers the bottom bar)
+    const val TRACKING = "tracking"
+
     // Full-screen editors (outer graph)
     const val CAR_EDIT_ROUTE = "car_edit?${NavArgs.CAR_ID}={${NavArgs.CAR_ID}}"
     const val PLACE_EDIT_ROUTE = "place_edit?${NavArgs.PLACE_ID}={${NavArgs.PLACE_ID}}"

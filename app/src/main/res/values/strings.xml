@@ -7,11 +7,32 @@
     <string name="dashboard_title">Dashboard</string>
     <string name="action_sign_out">Sign out</string>
 
-    <!-- Tracking test controls (temporary; replaced by the Live Tracking screen in Checkpoint 6) -->
-    <string name="tracking_start_test">Start test trip</string>
-    <string name="tracking_stop_test">Stop test trip</string>
-    <string name="tracking_recording">Recording…</string>
-    <string name="tracking_summary">%1$d points (%2$d interpolated) · %3$.2f km</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_start_ride">Start Ride</string>
+
+    <!-- Pre-ride sheet (F5) -->
+    <string name="preride_title">Start a ride</string>
+    <string name="preride_no_cars">Add a vehicle first to start a ride.</string>
+    <string name="preride_car">Vehicle</string>
+    <string name="preride_origin">Origin (optional)</string>
+    <string name="preride_destination">Destination (optional)</string>
+    <string name="preride_place_none">None</string>
+    <string name="preride_nearby_chip">%1$s Near %2$s — use as origin?</string>
+    <string name="preride_start">Start Ride</string>
+
+    <!-- Live tracking screen (F9) -->
+    <string name="tracking_stop">STOP</string>
+    <string name="tracking_destination_chip">🏁 %1$s — %2$.1f km left</string>
+    <string name="tracking_stop_title">Finish this ride?</string>
+    <string name="tracking_stat_time">Time</string>
+    <string name="tracking_stat_distance">Distance</string>
+    <string name="tracking_stat_avg_speed">Avg speed</string>
+    <string name="tracking_finish">Finish Ride</string>
+    <string name="tracking_keep_going">Keep Going</string>
+    <string name="tracking_arrived_title">You\'ve arrived at %1$s 🎉</string>
+    <string name="tracking_arrived_countdown">Auto-finishing in %1$ds…</string>
+    <string name="tracking_just_passing">I\'m just passing</string>
 
     <!-- Tracking foreground-service notification -->
     <string name="tracking_notification_channel">Ride tracking</string>

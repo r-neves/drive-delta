@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import app.drivedelta.ui.auth.AuthScreen
 import app.drivedelta.ui.cars.CarEditScreen
 import app.drivedelta.ui.places.PlaceEditScreen
+import app.drivedelta.ui.tracking.TrackingScreen
 
 /**
  * Top-level navigation. [startDestination] is decided once at launch from the current auth state:
@@ -44,6 +45,7 @@ fun AppNavGraph(
                         launchSingleTop = true
                     }
                 },
+                onStartTracking = { navController.navigate(NavDestinations.TRACKING) },
                 onAddCar = { navController.navigate(NavDestinations.carEdit()) },
                 onEditCar = { carId -> navController.navigate(NavDestinations.carEdit(carId)) },
                 onAddPlace = { navController.navigate(NavDestinations.placeEdit()) },
@@ -73,6 +75,16 @@ fun AppNavGraph(
             ),
         ) {
             PlaceEditScreen(onDone = { navController.popBackStack() })
+        }
+        composable(NavDestinations.TRACKING) {
+            TrackingScreen(
+                onFinished = {
+                    navController.navigate(NavDestinations.MAIN) {
+                        popUpTo(NavDestinations.MAIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
         }
     }
 }

@@ -18,6 +18,8 @@ data class TrackingState(
     val currentSegmentElapsedMs: Long = 0L,
     val bestSegmentMs: Long? = null,
     val arrivalStatus: ArrivalStatus = ArrivalStatus.EN_ROUTE,
+    val destinationName: String? = null,          // null when no destination set
+    val distanceToDestinationMeters: Float? = null,
 )
 
 /** Where the driver is relative to the trip's destination geofence. */

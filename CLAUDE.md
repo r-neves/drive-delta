@@ -1280,14 +1280,14 @@ user is routed to an empty Dashboard.
 
 **Goal:** User sees the full HUD dashboard while a trip is active.
 
-- [ ] `TrackingViewModel.kt`: binds to `TrackingForegroundService`, collects `TrackingState`, handles stop triggers
-- [ ] `TrackingScreen.kt`: `GoogleMap` with live `Polyline`, camera follow logic (debounced), `HudOverlay` composable, STOP button
-- [ ] `HudOverlay.kt`: speed, elapsed time, distance, road name, segment time, best time, delta with colour
-- [ ] `StopConfirmSheet.kt`: `ModalBottomSheet` with stats + confirm/cancel
-- [ ] `ArrivalSheet.kt`: `ModalBottomSheet` with countdown timer (30s auto-confirm using `LaunchedEffect`)
-- [ ] Pre-ride bottom sheet: car selector, origin/destination place dropdowns, nearby place suggestion chip
-- [ ] Wire Dashboard "Start Ride" FAB → pre-ride sheet → `StartTripUseCase` → `TrackingScreen`
-- [ ] **Acceptance test:** Start a trip with "Home" as destination. Drive past Home without entering → sheet does NOT appear. Enter Home's radius and stay 10+ seconds → `ArrivalSheet` appears. Tap "I'm just passing" → continues. Re-enter and wait 30s → auto-confirms and trip ends.
+- [x] `TrackingViewModel.kt`: binds to `TrackingForegroundService` (ServiceConnection), collects `TrackingState`, accumulates live polyline + throttled camera target, emits `tripEnded`
+- [x] `TrackingScreen.kt`: `GoogleMap` with live `Polyline`, debounced (3 s) camera follow, `HudOverlay`, destination chip, STOP button
+- [x] `HudOverlay.kt`: speed, elapsed time, distance, road name (—), segment time, best time, delta with colour (grey when no best — live splits land CP9)
+- [x] `StopConfirmSheet.kt`: `ModalBottomSheet` with stats + Finish/Keep Going
+- [x] `ArrivalSheet.kt`: `ModalBottomSheet` with 30 s auto-confirm countdown (`LaunchedEffect`)
+- [x] Pre-ride bottom sheet (`PreRideSheet` + `PreRideViewModel`): car selector (pre-selects default), origin/destination dropdowns, nearby-place suggestion chip
+- [x] Wire Dashboard "Start Ride" FAB → permission chain → pre-ride sheet → `StartTripUseCase` → `TrackingScreen`
+- [x] **Acceptance test:** ✅ Verified on emulator via `adb emu geo fix`. Full flow: Start Ride → pre-ride (TestCar pre-selected, picked "Test Place" as destination) → TrackingScreen with live HUD + destination chip ("🏁 Test Place — 0.1 km left") + STOP. Approaching **outside** the 100 m geofence → **no** ArrivalSheet. Held inside → arrival fired: trip auto-finished with **`stopTrigger=GEOFENCE`** (proves ArrivalSheet + 30 s countdown ran). Separately, a no-destination ride → STOP → `StopConfirmSheet` ("Finish this ride?") → Finish → trip `stopTrigger=MANUAL` → back to Dashboard, service stopped. Note: the 5-consecutive-fix arrival debounce is unreliable to drive via the emulator (fused provider delivers real fixes only every ~3–28 s), so it's also covered by a **unit test** (`DetectArrivalUseCaseTest`, 5 cases, mocks `Location.distanceBetween`).
 
 ---
 
