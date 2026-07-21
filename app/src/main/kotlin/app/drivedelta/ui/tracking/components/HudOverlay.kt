@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import app.drivedelta.R
 import app.drivedelta.domain.model.TrackingState
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdTextSecondary
@@ -55,19 +57,27 @@ fun HudOverlay(
             .padding(tokens.spaceXl),
         verticalArrangement = Arrangement.spacedBy(tokens.spaceLg),
     ) {
-        // Speed readout
-        Row(verticalAlignment = Alignment.Bottom) {
+        // Speed readout — or a cold-GPS "acquiring" state until the first fix lands (Checkpoint 10).
+        if (state.isTracking && state.currentLocation == null) {
             Text(
-                text = state.currentSpeedKph.roundToInt().toString(),
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = " km/h",
-                style = MaterialTheme.typography.titleMedium,
+                text = stringResource(R.string.tracking_acquiring_gps),
+                style = MaterialTheme.typography.displayMedium,
                 color = DdTextSecondary,
-                modifier = Modifier.padding(bottom = 12.dp),
             )
+        } else {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = state.currentSpeedKph.roundToInt().toString(),
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = " km/h",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = DdTextSecondary,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+            }
         }
 
         // Elapsed + distance

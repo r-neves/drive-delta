@@ -4,8 +4,10 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.IOException
 
 class RoadsDataSourceTest {
 
@@ -51,5 +53,32 @@ class RoadsDataSourceTest {
     fun `fewer than two points snaps to nothing`() = runTest {
         stubEcho()
         assertTrue(dataSource.snapToRoads(points(1)).isEmpty())
+    }
+
+    @Test
+    fun `transient failures are retried then succeed`() = runTest {
+        var calls = 0
+        coEvery { service.snapToRoads(any(), any(), any()) } answers {
+            calls++
+            if (calls < 3) throw IOException("transient")
+            RoadsSnapResponse(listOf(SnappedPointDto(RoadsLocationDto(38.0, -9.0), 0, "r"), SnappedPointDto(RoadsLocationDto(38.1, -9.0), 1, "r")))
+        }
+        val result = dataSource.snapToRoads(points(2))
+        assertEquals(3, calls) // failed twice, succeeded on the third attempt
+        assertTrue(result.isNotEmpty())
+    }
+
+    @Test
+    fun `gives up after max attempts and propagates`() = runTest {
+        var calls = 0
+        coEvery { service.snapToRoads(any(), any(), any()) } answers { calls++; throw IOException("down") }
+        var thrown = false
+        try {
+            dataSource.snapToRoads(points(2))
+        } catch (e: IOException) {
+            thrown = true
+        }
+        assertTrue(thrown)
+        assertEquals(3, calls) // MAX_ATTEMPTS
     }
 }

@@ -14,16 +14,15 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 10 (Hardening & Play Store Prep) — not started.
-- **Last completed:** ✅ Checkpoint 9 (History, Fuel Log, sign-out, i18n) — verified on emulator:
-  History (grouped by month, delete), Fuel Log (adaptive form, auto-calc 40×1.80→72.00, post-save
-  efficiency, Room row synced) reached via the Trip Detail fuel prompt. Sign-out clears Room; pt
-  translations added. **Deferred:** live-split HUD (architectural — no live road detection allowed by
-  cost rule), dashboard personal-bests/weekly-stats, History filter chips.
-- **Next up:** Checkpoint 10 — permission permanently-denied handling (rationale + settings deep-link),
-  no-internet handling, Roads API quota backoff, cold-GPS "Acquiring GPS" HUD state, ProGuard/R8 rules,
-  Crashlytics, more unit tests, Play Store signing/AAB. Mostly hardening; several items are release-ops
-  the user must do (keystore, Play Console).
+- **Active checkpoint:** MVP build complete (CP0–CP10 code done). Remaining work is release-ops +
+  manual verification the environment can't do from here (see "Manual checks" list handed to the user).
+- **Last completed:** ✅ Checkpoint 10 (Hardening) — code-side hardening done: Roads API exponential
+  backoff (unit-tested), cold-GPS "Acquiring GPS" HUD state, no-internet handled via WorkManager
+  network constraint, ProGuard/R8 rules staged, 18 unit tests. **Deferred/release-ops:** permission
+  permanently-denied rationale + settings deep-link, Firebase Crashlytics, keystore/signing/AAB +
+  Play Store internal track, minified-release verification.
+- **Next up:** user-side release-ops (keystore, Play Console, Crashlytics) + the manual verification
+  checklist (Firestore console, real-device arrival visual, populated compare, sign-out round-trip).
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -47,7 +46,7 @@
 | 7 | Roads API & Segment Building | ✅ Done | Local | Real Roads API verified (15 named Lisbon segments); 9 unit tests |
 | 8 | Trip Detail & Comparison | ✅ Done | Local | Emulator: Map/Splits/Replay + fuel prompt; compare logic unit-tested (18 tests) |
 | 9 | History, Fuel Log & Dashboard | ✅ Done | Local | Emulator: History + Fuel Log verified; sign-out clear + pt i18n; live-split/stats deferred |
-| 10 | Hardening & Play Store Prep | ⬜ Not started | Local | |
+| 10 | Hardening & Play Store Prep | 🟡 Code done | Local | Backoff/cold-GPS/ProGuard/18 tests done; Crashlytics + keystore/AAB are release-ops |
 
 Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + pushed)
 
