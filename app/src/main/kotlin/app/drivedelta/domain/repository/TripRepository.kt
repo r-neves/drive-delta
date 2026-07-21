@@ -1,6 +1,7 @@
 package app.drivedelta.domain.repository
 
 import app.drivedelta.domain.model.RoutePoint
+import app.drivedelta.domain.model.Segment
 import app.drivedelta.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
 
@@ -42,4 +43,18 @@ interface TripRepository {
         durationMs: Long,
         stopTrigger: String,
     )
+
+    /**
+     * Persists the post-ride [segments] for a trip, stamps its [routeHash] and [roadsProcessed]
+     * flag, and requests a sync (trip + segments push to Firestore; segments replace any prior set).
+     */
+    suspend fun finishTripSegments(
+        tripId: String,
+        segments: List<Segment>,
+        routeHash: String,
+        roadsProcessed: Boolean,
+    )
+
+    /** Best (minimum) recorded duration for [roadKey] across the user's trips, or null if none. */
+    suspend fun bestSegmentDuration(roadKey: String): Long?
 }

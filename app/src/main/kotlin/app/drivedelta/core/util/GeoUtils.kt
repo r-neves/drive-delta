@@ -51,4 +51,64 @@ object GeoUtils {
         val f = fraction.coerceIn(0.0, 1.0)
         return (lat1 + (lat2 - lat1) * f) to (lng1 + (lng2 - lng1) * f)
     }
+
+    /**
+     * Ramer–Douglas–Peucker line simplification. Returns the sorted indices of [points]
+     * (each a lat/lng pair) to keep so no dropped point lies more than [epsilonMeters] from the
+     * retained polyline — used to thin a GPS trace before the Roads API snap (fewer points → fewer
+     * chunks → lower cost). Endpoints are always kept. Iterative (explicit stack) to avoid deep
+     * recursion on long routes.
+     */
+    fun simplify(points: List<Pair<Double, Double>>, epsilonMeters: Double): List<Int> {
+        if (points.size < 3) return points.indices.toList()
+        val keep = BooleanArray(points.size)
+        keep[0] = true
+        keep[points.lastIndex] = true
+        val stack = ArrayDeque<Pair<Int, Int>>()
+        stack.addLast(0 to points.lastIndex)
+        while (stack.isNotEmpty()) {
+            val (first, last) = stack.removeLast()
+            var maxDist = 0.0
+            var index = -1
+            for (i in first + 1 until last) {
+                val d = perpendicularDistanceMeters(
+                    points[i].first, points[i].second,
+                    points[first].first, points[first].second,
+                    points[last].first, points[last].second,
+                )
+                if (d > maxDist) {
+                    maxDist = d
+                    index = i
+                }
+            }
+            if (maxDist > epsilonMeters && index != -1) {
+                keep[index] = true
+                stack.addLast(first to index)
+                stack.addLast(index to last)
+            }
+        }
+        return points.indices.filter { keep[it] }
+    }
+
+    /** Perpendicular distance (metres) from point P to segment A→B, via a local planar projection. */
+    private fun perpendicularDistanceMeters(
+        pLat: Double, pLng: Double,
+        aLat: Double, aLng: Double,
+        bLat: Double, bLng: Double,
+    ): Double {
+        val mPerDegLat = 111_320.0
+        val mPerDegLng = 111_320.0 * cos(Math.toRadians(aLat))
+        val px = (pLng - aLng) * mPerDegLng
+        val py = (pLat - aLat) * mPerDegLat
+        val bx = (bLng - aLng) * mPerDegLng
+        val by = (bLat - aLat) * mPerDegLat
+        val segLen2 = bx * bx + by * by
+        if (segLen2 == 0.0) return sqrt(px * px + py * py)
+        val t = ((px * bx + py * by) / segLen2).coerceIn(0.0, 1.0)
+        val projX = t * bx
+        val projY = t * by
+        val dx = px - projX
+        val dy = py - projY
+        return sqrt(dx * dx + dy * dy)
+    }
 }
