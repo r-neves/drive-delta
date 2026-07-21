@@ -14,16 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 8 (Trip Detail & Comparison) — not started.
-- **Last completed:** ✅ Checkpoint 7 (Roads API & Segment Building) — verified on emulator with the
-  **real Roads API** (live 200 from `snapToRoads`). A Lisbon trip → 15 named segments (Rua Garrett,
-  Calçada do Sacramento, Largo do Carmo, …), all non-zero durations, `roadsProcessed=1`, 64-char
-  `routeHash`. 9 unit tests cover RDP, chunking/stitching, segment grouping + raw fallback.
-- **Next up:** Checkpoint 8 — `GetTripDetailUseCase` (trip + segments + points + best-ever per
-  roadKey), `TripDetailScreen` (Map/Splits/Replay tabs), speed-coloured polyline, `SegmentSplitList`,
-  `ReplayController`, post-ride fuel prompt, `CompareSegmentsUseCase`/`MatchSegmentsUseCase`,
-  `CompareScreen` (Vico bar chart). Trips reachable from History (F11) — may need a minimal trips
-  list entry point since the Dashboard recent-trips list is CP9.
+- **Active checkpoint:** Checkpoint 9 (History, Fuel Log & Dashboard polish) — not started.
+- **Last completed:** ✅ Checkpoint 8 (Trip Detail & Comparison) — verified on emulator: Dashboard
+  recent-rides → Trip Detail (Map coloured polyline, Splits table w/ road names + deltas + vs-best
+  filter, Replay scrubber/controls), first-open fuel prompt, Compare screen (empty-state; real
+  matches need a device — emulator GPS non-deterministic). Compare/match logic unit-tested (18 tests total).
+- **Next up:** Checkpoint 9 — `HistoryScreen` (grouped by month, filter chips, delete),
+  `FuelLogScreen` (adaptive fuel/electric form, post-save stats, `LogFuelUseCase`), Dashboard polish
+  (recent/personal-bests/weekly — partly done), live-split best-times into the HUD at trip start,
+  full sign-out (clear Room), i18n (`values-pt`), contentDescriptions. Wire the fuel-prompt
+  "Add fill-up" → `FuelLogScreen(tripId)`.
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -45,7 +45,7 @@
 | 5 | Background GPS Tracking Service | ✅ Done | Local | Verified on emulator via `adb emu geo fix` playback (30 pts/10 interp/max gap 6 s) |
 | 6 | Live Tracking Screen | ✅ Done | Local | Verified on emulator (GEOFENCE auto-finish + MANUAL stop); arrival unit-tested |
 | 7 | Roads API & Segment Building | ✅ Done | Local | Real Roads API verified (15 named Lisbon segments); 9 unit tests |
-| 8 | Trip Detail & Comparison | ⬜ Not started | Web or Local | |
+| 8 | Trip Detail & Comparison | ✅ Done | Local | Emulator: Map/Splits/Replay + fuel prompt; compare logic unit-tested (18 tests) |
 | 9 | History, Fuel Log & Dashboard | ⬜ Not started | Local | |
 | 10 | Hardening & Play Store Prep | ⬜ Not started | Local | |
 

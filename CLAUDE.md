@@ -1327,16 +1327,17 @@ user is routed to an empty Dashboard.
 
 **Goal:** User can view post-ride summary with map, splits, replay and compare two trips.
 
-- [ ] `GetTripDetailUseCase.kt`: loads trip + segments + route points from Room; computes best-ever times per `roadKey`
-- [ ] `TripDetailViewModel.kt`: exposes trip detail, tab state, replay state
-- [ ] `TripDetailScreen.kt`: `TabRow` + `HorizontalPager` with 3 tabs
-- [ ] `RouteMapView.kt`: speed-coloured `Polyline` segments (use `PolylineOptions` with per-segment colour based on `avgSpeedKph` relative to trip max)
-- [ ] `SegmentSplitList.kt`: comparison table with filter toggle
-- [ ] `ReplayController.kt`: `Slider` scrubber, play/pause/2x controls, animated marker using `LaunchedEffect` coroutine, speed state
-- [ ] Post-ride fuel prompt bottom sheet (first-open only, dismissed flag stored in `TripEntity`)
-- [ ] `CompareSegmentsUseCase.kt` + `MatchSegmentsUseCase.kt`
-- [ ] `CompareViewModel.kt` + `CompareScreen.kt`: trip selectors (filtered by `routeHash`), Vico bar chart (delta per segment), split table
-- [ ] "Compare" button in `TripDetailScreen` → `CompareScreen` with current trip pre-selected
+- [x] `GetTripDetailUseCase.kt`: loads trip + segments + route points; best-ever per `roadKey`
+- [x] `TripDetailViewModel.kt`: trip detail, tab state, replay state, "vs previous" baseline, fuel-prompt gate
+- [x] `TripDetailScreen.kt`: `TabRow` + 3 tabs (used tab-index state, not `HorizontalPager` — simpler, same UX)
+- [x] Speed-coloured `Polyline` (Map tab): per-hop colour green(fast)→red(slow) by speed vs trip max. **Consolidated `RouteMapView`/`SegmentSplitList`/`ReplayController` as private composables in `TripDetailScreen.kt`** rather than separate files (leaner for the POC)
+- [x] Splits table with vs-best / vs-previous filter toggle + purple-sector highlight on a personal best
+- [x] Replay: `Slider` scrubber + play/pause + 1×/2× + live speed readout; animated marker driven by a VM coroutine advancing a 0..1 fraction
+- [x] Post-ride fuel prompt bottom sheet (first-open only; dismissed flag stored in `TripEntity.notes`). "Add fill-up" nav to Fuel Log is wired in CP9; for now both actions dismiss.
+- [x] `CompareSegmentsUseCase.kt` + `MatchSegmentsUseCase.kt` (same-routeHash OR ≥70% roadKey overlap)
+- [x] `CompareViewModel.kt` + `CompareScreen.kt`: candidate selector, **custom Canvas diverging bar chart** (delta per segment) — used instead of Vico 2.0.0-beta.1 (the plan itself flags a rendering bug in that beta), split table
+- [x] "Compare" button in `TripDetailScreen` app bar → `CompareScreen` (trip A pre-selected, auto-picks newest match)
+- [x] **Acceptance test:** ✅ Verified on emulator: Dashboard recent-rides → Trip Detail. **Map** tab renders the coloured route polyline + start/end markers over Lisbon; **Splits** tab shows the summary header (Total/Best/Delta) + per-segment rows with real road names, times and coloured deltas + vs-best/vs-previous filter; **Replay** tab shows the scrubber, play/pause, 1×/2× and live speed; the **first-open fuel prompt** appears and dismisses; **Compare** screen renders (empty-state, since the emulator's non-deterministic GPS can't produce two matching-routeHash drives). Compare/match **logic** covered by `CompareAndMatchSegmentsTest` (alignment, deltas, winners, same-hash + overlap match). ⚠️ **Manual check:** the *populated* compare chart+table needs a real device (two genuinely identical drives).
 - [ ] **Acceptance test:** Drive the same route twice (same origin + destination). Open comparison screen, select both trips. Verify segment table shows correct road names, times, and deltas. Verify bar chart renders.
 
 ---

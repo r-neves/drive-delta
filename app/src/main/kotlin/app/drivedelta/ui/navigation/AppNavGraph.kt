@@ -9,8 +9,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.drivedelta.ui.auth.AuthScreen
 import app.drivedelta.ui.cars.CarEditScreen
+import app.drivedelta.ui.compare.CompareScreen
 import app.drivedelta.ui.places.PlaceEditScreen
 import app.drivedelta.ui.tracking.TrackingScreen
+import app.drivedelta.ui.tripdetail.TripDetailScreen
 
 /**
  * Top-level navigation. [startDestination] is decided once at launch from the current auth state:
@@ -46,6 +48,7 @@ fun AppNavGraph(
                     }
                 },
                 onStartTracking = { navController.navigate(NavDestinations.TRACKING) },
+                onOpenTrip = { tripId -> navController.navigate(NavDestinations.tripDetail(tripId)) },
                 onAddCar = { navController.navigate(NavDestinations.carEdit()) },
                 onEditCar = { carId -> navController.navigate(NavDestinations.carEdit(carId)) },
                 onAddPlace = { navController.navigate(NavDestinations.placeEdit()) },
@@ -85,6 +88,21 @@ fun AppNavGraph(
                     }
                 },
             )
+        }
+        composable(
+            route = NavDestinations.TRIP_DETAIL_ROUTE,
+            arguments = listOf(navArgument(NavArgs.TRIP_ID) { type = NavType.StringType }),
+        ) {
+            TripDetailScreen(
+                onBack = { navController.popBackStack() },
+                onCompare = { tripId -> navController.navigate(NavDestinations.compare(tripId)) },
+            )
+        }
+        composable(
+            route = NavDestinations.COMPARE_ROUTE,
+            arguments = listOf(navArgument(NavArgs.TRIP_ID) { type = NavType.StringType }),
+        ) {
+            CompareScreen(onBack = { navController.popBackStack() })
         }
     }
 }

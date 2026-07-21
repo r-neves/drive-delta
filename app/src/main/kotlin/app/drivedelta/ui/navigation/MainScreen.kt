@@ -55,6 +55,7 @@ private val tabs = listOf(
 fun MainScreen(
     onSignedOut: () -> Unit,
     onStartTracking: () -> Unit,
+    onOpenTrip: (String) -> Unit,
     onAddCar: () -> Unit,
     onEditCar: (String) -> Unit,
     onAddPlace: () -> Unit,
@@ -72,7 +73,11 @@ fun MainScreen(
             modifier = Modifier.padding(padding),
         ) {
             composable(NavDestinations.DASHBOARD) {
-                DashboardScreen(onSignedOut = onSignedOut, onStartTracking = onStartTracking)
+                DashboardScreen(
+                    onSignedOut = onSignedOut,
+                    onStartTracking = onStartTracking,
+                    onOpenTrip = onOpenTrip,
+                )
             }
             composable(NavDestinations.CARS) {
                 CarsScreen(onAddCar = onAddCar, onEditCar = onEditCar)

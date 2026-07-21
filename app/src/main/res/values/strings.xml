@@ -10,6 +10,38 @@
 
     <!-- Dashboard -->
     <string name="dashboard_start_ride">Start Ride</string>
+    <string name="dashboard_recent_rides">RECENT RIDES</string>
+    <string name="dashboard_no_trips">No rides yet — tap Start Ride to record one.</string>
+    <string name="dashboard_trip_summary">%1$.1f km · %2$d min</string>
+
+    <!-- Trip detail (F10) -->
+    <string name="trip_detail_title">Ride</string>
+    <string name="trip_tab_map">Map</string>
+    <string name="trip_tab_splits">Splits</string>
+    <string name="trip_tab_replay">Replay</string>
+    <string name="trip_compare">Compare</string>
+    <string name="trip_not_found">Ride not found.</string>
+    <string name="trip_no_route">No route recorded.</string>
+    <string name="trip_start">Start</string>
+    <string name="trip_end">End</string>
+    <string name="trip_total_time">Total</string>
+    <string name="trip_best_total">Best</string>
+    <string name="trip_delta">Delta</string>
+    <string name="trip_vs_best">vs best ever</string>
+    <string name="trip_vs_previous">vs previous run</string>
+    <string name="trip_segment_dist">%1$d m</string>
+    <string name="trip_replay_speed">%1$d km/h</string>
+    <string name="trip_replay_multiplier">%1$d×</string>
+    <string name="trip_play_pause">Play or pause</string>
+    <string name="trip_fuel_prompt_title">Add a fill-up?</string>
+    <string name="trip_fuel_prompt_body">Log fuel or charging for this ride to track consumption.</string>
+    <string name="trip_fuel_skip">Skip</string>
+
+    <!-- Compare (F8) -->
+    <string name="compare_title">Compare rides</string>
+    <string name="compare_loading">Loading…</string>
+    <string name="compare_no_matches">No other rides on this route yet. Drive it again to compare.</string>
+    <string name="compare_legend">Per-segment delta (A − B): green = A faster, red = A slower.</string>
 
     <!-- Pre-ride sheet (F5) -->
     <string name="preride_title">Start a ride</string>
