@@ -14,16 +14,16 @@
 
 ## Current status
 
-- **Active checkpoint:** Checkpoint 6 (Live Tracking screen) — not started.
-- **Last completed:** ✅ Checkpoint 5 (Background GPS tracking service) — verified end-to-end on the
-  `Medium_Phone` emulator via scripted `adb emu geo fix` route playback: foreground service records
-  a moving track, warm-up + accuracy filters apply, GPS-gap interpolation fills a 14 s feed-gap, and
-  the trip finalises on Stop. Room query: 30 points / 10 interpolated / max gap 6.0 s (< 35 s) /
-  trip ended 280 m, 118 s, MANUAL, start backfilled. `assembleDebug` green (Hilt + Room KSP).
-- **Next up:** Checkpoint 6 — `TrackingViewModel` binds the service's `StateFlow<TrackingState>`,
-  `TrackingScreen` (map + live polyline + `HudOverlay`), `StopConfirmSheet`, `ArrivalSheet` (30 s
-  countdown), and the pre-ride sheet. Reuse `TrackingForegroundService.trackingState` (already
-  exposed via `TrackingBinder`) and the CP5 use cases. Remove the temporary Dashboard test harness.
+- **Active checkpoint:** Checkpoint 7 (Roads API & Segment Building) — not started.
+- **Last completed:** ✅ Checkpoint 6 (Live Tracking screen) — verified on emulator: Start Ride →
+  pre-ride sheet → TrackingScreen (live HUD, destination chip, map, STOP). Geofence arrival
+  auto-finished a trip (`stopTrigger=GEOFENCE`); manual STOP → StopConfirmSheet → Finish
+  (`stopTrigger=MANUAL`). Arrival debounce also covered by `DetectArrivalUseCaseTest` (5 cases).
+- **Next up:** Checkpoint 7 — `RoadsApiService` (Retrofit → Google Roads API), `RoadsDataSource`
+  (chunking/stitching), `SnapRouteToRoadsUseCase` (RDP simplify → snap → update Room),
+  `BuildSegmentsUseCase` (group by placeId → roadKey/routeHash → segments), raw fallback, and wire
+  both from `StopTripUseCase`/service post-ride path (the TODO hook in `TrackingForegroundService`).
+  Needs Roads API + Geocoding API enabled on the key.
 - **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
   plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
   the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
@@ -43,7 +43,7 @@
 | 3 | Cars Feature (CRUD) | 🟡 In progress | Local | Verified on emulator (found+fixed a stale-undo bug); Firestore console sync check still pending |
 | 4 | Places Feature (CRUD) | ✅ Done | Local | Verified on emulator with keys (map, radius circle, autocomplete, save real geodata). Firestore console sync check pending |
 | 5 | Background GPS Tracking Service | ✅ Done | Local | Verified on emulator via `adb emu geo fix` playback (30 pts/10 interp/max gap 6 s) |
-| 6 | Live Tracking Screen | ⬜ Not started | Local | Needs device GPS |
+| 6 | Live Tracking Screen | ✅ Done | Local | Verified on emulator (GEOFENCE auto-finish + MANUAL stop); arrival unit-tested |
 | 7 | Roads API & Segment Building | ⬜ Not started | Local | Needs Roads API key |
 | 8 | Trip Detail & Comparison | ⬜ Not started | Web or Local | |
 | 9 | History, Fuel Log & Dashboard | ⬜ Not started | Local | |
@@ -58,6 +58,25 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-21` — **CP6 (Live Tracking) built + verified.** Notes for future sessions: (1) The
+  screen binds the running service via a `ServiceConnection` in `TrackingViewModel`
+  (`BIND_AUTO_CREATE`, unbind in `onCleared`) and mirrors `service.trackingState`; it accumulates a
+  live polyline from each distinct `currentLocation` and a **camera target throttled to 3 s** so the
+  map doesn't jitter. `tripEnded` (wasTracking && !isTracking) drives navigation back to the
+  Dashboard. (2) Nav: added outer-graph `TRACKING` route (covers the bottom bar, like the editors);
+  `MainScreen`/`DashboardScreen` gained an `onStartTracking` callback. (3) Pre-ride is its own
+  `PreRideViewModel` + `PreRideSheet` (hiltViewModel-scoped to the sheet); it streams cars/places,
+  suggests a nearby origin from `lastLocation()`, and calls `StartTripUseCase` then emits the new
+  trip id to trigger navigation. Removed the temporary CP5 Dashboard test harness (Start Ride FAB
+  replaces it). (4) Added `destinationName` + `distanceToDestinationMeters` to `TrackingState`
+  (service fills them) for the HUD destination chip + ArrivalSheet title. (5) "I'm just passing" is a
+  **local UI dismiss** flag reset when arrivalStatus returns to EN_ROUTE (leaving the radius), not a
+  service-state change. (6) **Emulator can't reliably drive the 5-consecutive-fix arrival debounce**:
+  `adb emu geo fix` reaches the fused provider only every ~3–28 s (irregular), so most points get
+  interpolated and real inside-fixes are too sparse. It DID fire once (GEOFENCE auto-finish observed),
+  but the reliable coverage is `DetectArrivalUseCaseTest` (mocks static `Location.distanceBetween`).
+  Also: the emulator's `System.currentTimeMillis()` jumped after snapshot-restore/host-sleep, so
+  observed elapsed/duration was bogus (9 h) — a clock artifact, not a code bug.
 - `2026-07-20` — **CP5 verified via scripted emulator GPS (reusable for CP6/CP7).** No device GPS
   needed: boot the `Medium_Phone` AVD, `pm grant` the location/notification perms + `dumpsys deviceidle
   whitelist +app.drivedelta` so the CP5 permission chain short-circuits, then drive a moving track

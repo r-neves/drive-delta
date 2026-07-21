@@ -133,7 +133,13 @@ class TrackingForegroundService : Service() {
         _trackingState.value = TrackingState(isTracking = true)
 
         if (destinationPlaceId != null) {
-            serviceScope.launch { destination = placeRepository.getPlace(destinationPlaceId) }
+            serviceScope.launch {
+                val place = placeRepository.getPlace(destinationPlaceId)
+                destination = place
+                if (place != null) {
+                    _trackingState.update { it.copy(destinationName = place.name) }
+                }
+            }
         }
 
         locationJob = serviceScope.launch {
@@ -198,7 +204,11 @@ class TrackingForegroundService : Service() {
 
         destination?.let { dest ->
             val status = detectArrival.onLocationUpdate(location, dest)
-            _trackingState.update { it.copy(arrivalStatus = status) }
+            val results = FloatArray(1)
+            Location.distanceBetween(location.latitude, location.longitude, dest.lat, dest.lng, results)
+            _trackingState.update {
+                it.copy(arrivalStatus = status, distanceToDestinationMeters = results[0])
+            }
         }
 
         _trackingState.update {
