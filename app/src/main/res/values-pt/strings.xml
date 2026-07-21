@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portuguese (pt-PT) translations. Any key not present here falls back to values/strings.xml. -->
+<resources>
+    <string name="app_name">DriveDelta</string>
+    <string name="auth_tagline">A tua condução, analisada.</string>
+    <string name="auth_sign_in_google">Iniciar sessão com Google</string>
+    <string name="auth_error_generic">Falha ao iniciar sessão. Tenta novamente.</string>
+    <string name="dashboard_title">Início</string>
+    <string name="action_sign_out">Terminar sessão</string>
+
+    <!-- Navegação -->
+    <string name="nav_home">Início</string>
+    <string name="nav_history">Histórico</string>
+    <string name="nav_vehicles">Veículos</string>
+    <string name="nav_places">Locais</string>
+
+    <!-- Ações comuns -->
+    <string name="action_delete">Eliminar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_undo">Anular</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_back">Voltar</string>
+
+    <!-- Painel -->
+    <string name="dashboard_start_ride">Iniciar viagem</string>
+    <string name="dashboard_recent_rides">VIAGENS RECENTES</string>
+    <string name="dashboard_no_trips">Ainda não há viagens — toca em Iniciar viagem para gravar uma.</string>
+    <string name="dashboard_trip_summary">%1$.1f km · %2$d min</string>
+
+    <!-- Histórico -->
+    <string name="history_empty">Ainda não há viagens.</string>
+    <string name="history_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="history_delete_title">Eliminar viagem?</string>
+    <string name="history_delete_message">Remove permanentemente a viagem e o seu percurso.</string>
+
+    <!-- Registo de combustível -->
+    <string name="fuel_title">Registar abastecimento</string>
+    <string name="fuel_car">Veículo</string>
+    <string name="fuel_liters">Litros abastecidos</string>
+    <string name="fuel_price_liter">Preço por litro</string>
+    <string name="fuel_kwh">kWh carregados</string>
+    <string name="fuel_price_kwh">Preço por kWh</string>
+    <string name="fuel_total">Custo total</string>
+    <string name="fuel_odometer">Quilómetros (odómetro)</string>
+    <string name="fuel_saved_cost">Este abastecimento: %1$s</string>
+    <string name="fuel_saved_efficiency">Eficiência: %1$s</string>
+    <string name="trip_fuel_add">Adicionar abastecimento</string>
+
+    <!-- Veículos -->
+    <string name="cars_title">Veículos</string>
+    <string name="cars_add">Adicionar veículo</string>
+    <string name="cars_empty_title">Ainda não há veículos</string>
+    <string name="cars_empty_subtitle">Adiciona um carro para registar combustível e viagens.</string>
+    <string name="cars_default_chip">Predefinido</string>
+    <string name="cars_deleted">Veículo eliminado</string>
+    <string name="car_edit_title_new">Adicionar veículo</string>
+    <string name="car_edit_title_edit">Editar veículo</string>
+    <string name="car_field_name">Nome</string>
+    <string name="car_field_license_plate">Matrícula</string>
+    <string name="car_field_fuel_type">Tipo de combustível</string>
+    <string name="car_field_tank_capacity">Capacidade do depósito (L)</string>
+    <string name="car_field_battery_capacity">Capacidade da bateria (kWh)</string>
+    <string name="car_field_consumption_fuel">Consumo estimado (L/100km)</string>
+    <string name="car_field_consumption_electric">Consumo estimado (kWh/100km)</string>
+    <string name="car_set_default">Definir como veículo predefinido</string>
+    <string name="car_error_name_required">O nome é obrigatório</string>
+    <string name="fuel_petrol">Gasolina</string>
+    <string name="fuel_diesel">Gasóleo</string>
+    <string name="fuel_hybrid">Híbrido</string>
+    <string name="fuel_electric">Elétrico</string>
+    <string name="fuel_lpg">GPL</string>
+
+    <!-- Locais -->
+    <string name="places_title">Locais</string>
+    <string name="places_add">Adicionar local</string>
+    <string name="places_empty_title">Ainda não há locais</string>
+    <string name="places_empty_subtitle">Guarda casa, trabalho ou qualquer destino.</string>
+    <string name="place_edit_title_new">Adicionar local</string>
+    <string name="place_edit_title_edit">Editar local</string>
+    <string name="place_field_name">Nome</string>
+    <string name="place_field_search">Procurar morada</string>
+    <string name="place_field_radius">Raio da geocerca</string>
+    <string name="place_use_my_location">Usar a minha localização</string>
+    <string name="place_error_name_required">O nome é obrigatório</string>
+
+    <!-- Viagem em curso -->
+    <string name="tracking_stop">PARAR</string>
+    <string name="tracking_stop_title">Terminar esta viagem?</string>
+    <string name="tracking_finish">Terminar viagem</string>
+    <string name="tracking_keep_going">Continuar</string>
+    <string name="tracking_just_passing">Estou só de passagem</string>
+    <string name="tracking_arrived_title">Chegaste a %1$s 🎉</string>
+    <string name="tracking_arrived_countdown">A terminar automaticamente em %1$ds…</string>
+    <string name="tracking_stat_time">Tempo</string>
+    <string name="tracking_stat_distance">Distância</string>
+    <string name="tracking_stat_avg_speed">Vel. média</string>
+    <string name="tracking_notification_title">DriveDelta — a gravar viagem</string>
+    <string name="tracking_notification_starting">A obter GPS…</string>
+
+    <!-- Pré-viagem -->
+    <string name="preride_title">Iniciar uma viagem</string>
+    <string name="preride_no_cars">Adiciona primeiro um veículo para iniciar uma viagem.</string>
+    <string name="preride_car">Veículo</string>
+    <string name="preride_origin">Origem (opcional)</string>
+    <string name="preride_destination">Destino (opcional)</string>
+    <string name="preride_place_none">Nenhum</string>
+    <string name="preride_start">Iniciar viagem</string>
+
+    <!-- Detalhe da viagem -->
+    <string name="trip_detail_title">Viagem</string>
+    <string name="trip_tab_map">Mapa</string>
+    <string name="trip_tab_splits">Tempos</string>
+    <string name="trip_tab_replay">Repetição</string>
+    <string name="trip_total_time">Total</string>
+    <string name="trip_best_total">Melhor</string>
+    <string name="trip_vs_best">vs melhor de sempre</string>
+    <string name="trip_vs_previous">vs viagem anterior</string>
+    <string name="trip_fuel_prompt_title">Adicionar abastecimento?</string>
+    <string name="trip_fuel_prompt_body">Regista combustível ou carregamento para acompanhar o consumo.</string>
+    <string name="trip_fuel_skip">Ignorar</string>
+
+    <!-- Comparação -->
+    <string name="compare_title">Comparar viagens</string>
+    <string name="compare_no_matches">Ainda não há outras viagens neste percurso. Conduz de novo para comparar.</string>
+</resources>

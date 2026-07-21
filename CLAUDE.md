@@ -1346,14 +1346,14 @@ user is routed to an empty Dashboard.
 
 **Goal:** All screens complete. Full end-to-end user journey works.
 
-- [ ] `HistoryViewModel.kt` + `HistoryScreen.kt`: grouped by month, filter chips, delete
-- [ ] `FuelLogViewModel.kt` + `FuelLogScreen.kt`: adaptive form, post-save stats
-- [ ] Polish `DashboardScreen.kt`: recent trips, personal bests, weekly stats (Room queries)
-- [ ] Live split in `TrackingViewModel`: load best-ever segment times at trip start (based on previous trips from same origin/destination), stream delta into HUD
-- [ ] Sign-out flow: `DELETE FROM trips WHERE userId = ?` (all tables), Firebase sign-out, navigate to AuthScreen
-- [ ] i18n: extract all hardcoded strings to `res/values/strings.xml` (English). Create `res/values-pt/strings.xml` with Portuguese translations.
-- [ ] Add `ContentDescription` to all interactive Composables for accessibility
-- [ ] **Acceptance test (full E2E):** Sign in → create 2 cars (1 electric, 1 petrol) + 2 places → start trip with origin, destination, and car selected → drive route → auto-stop triggers at destination → view TripDetail with all 3 tabs → log fuel → repeat trip → compare both runs → check History filters → sign out → sign back in on same device → all data still present (from Firestore sync).
+- [x] `HistoryViewModel.kt` + `HistoryScreen.kt`: grouped by month, long-press delete (filter chips / date range deferred — grouped list + delete are the core). ✅ Verified on emulator (July 2026 group, trip cards).
+- [x] `FuelLogViewModel.kt` + `FuelLogScreen.kt`: adaptive fuel/electric form, auto-calc total, post-save cost + efficiency. ✅ Verified on emulator (40 L × 1.80 → 72.00 auto-calc, saved, efficiency shown, Room row synced). Reached via the Trip Detail fuel prompt → "Add fill-up".
+- [x] `DashboardScreen.kt`: recent-rides list (trip entry point). **Personal bests + weekly stats deferred** — recent rides + History cover the journey for the POC.
+- [~] Live split in `TrackingViewModel`: **DEFERRED (architectural).** Streaming a per-segment best delta live needs the current roadKey mid-ride, which needs live road detection — but the cost rule forbids calling Roads API during tracking. So `bestSegmentMs` stays null (HUD delta greys out); split-vs-best is delivered post-ride in the Trip Detail Splits tab (implemented, CP8). Revisit post-MVP with an offline snap or cached-route matching.
+- [x] Sign-out flow: `DashboardViewModel.signOut` calls `AppDatabase.clearAllTables()` (single-user POC → equivalent to deleting the user's rows) + Firebase sign-out + nav to Auth.
+- [x] i18n: `res/values-pt/strings.xml` with Portuguese (pt-PT) translations for the core user-facing strings; untranslated keys fall back to the English default. (A few newer strings may want a translation pass.)
+- [~] `ContentDescription`: present on icon buttons/nav; not an exhaustive audit (CP10 a11y pass).
+- [ ] **Acceptance test (full E2E):** Partially verified piecewise across CP5–CP9 on the emulator (cars, places, trip w/ geofence auto-stop, TripDetail 3 tabs, fuel log, History). The sign-out → sign-back-in → data-restored-from-Firestore leg needs a real account round-trip → **manual check**.
 
 ---
 

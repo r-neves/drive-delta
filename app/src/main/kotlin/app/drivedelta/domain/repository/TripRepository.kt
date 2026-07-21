@@ -63,4 +63,7 @@ interface TripRepository {
 
     /** Records that the post-ride fuel prompt was dismissed for [tripId] (stored in the trip notes). */
     suspend fun markFuelPromptDismissed(tripId: String)
+
+    /** Hard-deletes a trip and its segments + route points from Room (source of truth). */
+    suspend fun deleteTrip(tripId: String)
 }
