@@ -99,7 +99,37 @@ class TripRepositoryImpl @Inject constructor(
         val userId = authRepository.currentUserId ?: return null
         return segmentDao.getBestDurationForRoadKey(userId, roadKey)
     }
+
+    override suspend fun getSegments(tripId: String): List<Segment> =
+        segmentDao.getByTripOnce(tripId).map(SegmentEntity::toDomain)
+
+    override suspend fun markFuelPromptDismissed(tripId: String) {
+        val current = tripDao.getById(tripId) ?: return
+        if (current.notes.contains(FUEL_DISMISSED_FLAG)) return
+        val notes = listOf(current.notes, FUEL_DISMISSED_FLAG).filter { it.isNotBlank() }.joinToString(" ")
+        tripDao.update(current.copy(notes = notes, syncedAt = null))
+        syncTrigger.requestSync()
+    }
+
+    private companion object {
+        const val FUEL_DISMISSED_FLAG = "fuel_dismissed"
+    }
 }
+
+private fun SegmentEntity.toDomain(): Segment = Segment(
+    tripId = tripId,
+    segmentIndex = segmentIndex,
+    roadKey = roadKey,
+    roadName = roadName,
+    startLat = startLat,
+    startLng = startLng,
+    endLat = endLat,
+    endLng = endLng,
+    distanceMeters = distanceMeters,
+    durationMs = durationMs,
+    avgSpeedMps = avgSpeedMps,
+    maxSpeedMps = maxSpeedMps,
+)
 
 private fun Segment.toEntity(): SegmentEntity = SegmentEntity(
     tripId = tripId,

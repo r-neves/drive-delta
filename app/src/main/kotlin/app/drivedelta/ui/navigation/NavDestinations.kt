@@ -21,6 +21,13 @@ object NavDestinations {
     const val CAR_EDIT_ROUTE = "car_edit?${NavArgs.CAR_ID}={${NavArgs.CAR_ID}}"
     const val PLACE_EDIT_ROUTE = "place_edit?${NavArgs.PLACE_ID}={${NavArgs.PLACE_ID}}"
 
+    // Trip detail + compare (outer graph)
+    const val TRIP_DETAIL_ROUTE = "trip_detail/{${NavArgs.TRIP_ID}}"
+    const val COMPARE_ROUTE = "compare/{${NavArgs.TRIP_ID}}"
+
+    fun tripDetail(tripId: String): String = "trip_detail/$tripId"
+    fun compare(tripId: String): String = "compare/$tripId"
+
     /** Builds the car-edit route: no argument for add, a car id for edit. */
     fun carEdit(carId: String? = null): String =
         if (carId == null) "car_edit" else "car_edit?${NavArgs.CAR_ID}=$carId"
@@ -34,4 +41,5 @@ object NavDestinations {
 object NavArgs {
     const val CAR_ID = "carId"
     const val PLACE_ID = "placeId"
+    const val TRIP_ID = "tripId"
 }

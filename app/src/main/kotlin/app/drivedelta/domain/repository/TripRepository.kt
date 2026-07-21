@@ -57,4 +57,10 @@ interface TripRepository {
 
     /** Best (minimum) recorded duration for [roadKey] across the user's trips, or null if none. */
     suspend fun bestSegmentDuration(roadKey: String): Long?
+
+    /** The ordered segments of a trip (empty until Roads processing has run). */
+    suspend fun getSegments(tripId: String): List<Segment>
+
+    /** Records that the post-ride fuel prompt was dismissed for [tripId] (stored in the trip notes). */
+    suspend fun markFuelPromptDismissed(tripId: String)
 }
