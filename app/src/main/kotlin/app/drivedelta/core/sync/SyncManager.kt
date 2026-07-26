@@ -4,6 +4,7 @@ import app.drivedelta.core.auth.AuthRepository
 import app.drivedelta.data.local.dao.CarDao
 import app.drivedelta.data.local.dao.FuelLogDao
 import app.drivedelta.data.local.dao.PlaceDao
+import app.drivedelta.data.local.dao.SegmentDao
 import app.drivedelta.data.local.dao.TripDao
 import app.drivedelta.data.remote.firestore.FirestoreDataSource
 import javax.inject.Inject
@@ -26,6 +27,7 @@ class SyncManager @Inject constructor(
     private val placeDao: PlaceDao,
     private val carDao: CarDao,
     private val fuelLogDao: FuelLogDao,
+    private val segmentDao: SegmentDao,
 ) {
 
     /** Pushes all locally-pending rows to Firestore. No-op when signed out. */
@@ -36,6 +38,8 @@ class SyncManager @Inject constructor(
 
             tripDao.getPendingSync(userId).forEach { trip ->
                 remote.pushTrip(trip)
+                // Segments have no syncedAt of their own; push them with their (pending) trip.
+                segmentDao.getByTripOnce(trip.id).forEach { remote.pushSegment(userId, it) }
                 tripDao.update(trip.copy(syncedAt = now))
             }
             placeDao.getPendingSync(userId).forEach { place ->
@@ -59,6 +63,13 @@ class SyncManager @Inject constructor(
         return runCatching {
             val snapshot = remote.pullAll(userId)
             snapshot.trips.forEach { tripDao.insertOrReplace(it) }
+            // Pulled segments carry id=0 (Room autogenerates), so replace per-trip to keep re-pulls
+            // idempotent. Only touch trips the server actually has segments for, so local-only
+            // segments still pending their first push aren't wiped by a pull.
+            snapshot.segments.groupBy { it.tripId }.forEach { (tripId, segs) ->
+                segmentDao.deleteByTrip(tripId)
+                segmentDao.insertAll(segs)
+            }
             snapshot.places.forEach { placeDao.insertOrReplace(it) }
             snapshot.cars.forEach { carDao.insertOrReplace(it) }
             snapshot.fuelLogs.forEach { fuelLogDao.insertOrReplace(it) }

@@ -19,13 +19,20 @@ class SyncWorker @AssistedInject constructor(
     private val syncManager: SyncManager,
 ) : CoroutineWorker(appContext, params) {
 
-    override suspend fun doWork(): Result =
-        syncManager.pushPending().fold(
-            onSuccess = { Result.success() },
-            onFailure = { Result.retry() },
-        )
+    override suspend fun doWork(): Result = runCatching {
+        // Always push local pending first so local changes aren't clobbered by a subsequent pull.
+        syncManager.pushPending().getOrThrow()
+        // Initial/cold-start sync also pulls the remote mirror into Room (restore on new device / re-login).
+        if (inputData.getBoolean(KEY_PULL, false)) {
+            syncManager.pullAll().getOrThrow()
+        }
+    }.fold(
+        onSuccess = { Result.success() },
+        onFailure = { Result.retry() },
+    )
 
     companion object {
         const val UNIQUE_NAME = "drivedelta_periodic_sync"
+        const val KEY_PULL = "pull"
     }
 }

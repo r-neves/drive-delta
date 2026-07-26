@@ -30,6 +30,12 @@ class DriveDeltaApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var authRepository: app.drivedelta.core.auth.AuthRepository
+
+    @Inject
+    lateinit var syncTrigger: app.drivedelta.core.sync.SyncTrigger
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -39,6 +45,10 @@ class DriveDeltaApplication : Application(), Configuration.Provider {
         super.onCreate()
         initPlaces()
         schedulePeriodicSync()
+        // Cold start while already signed in: pull the remote mirror into Room (restore across devices).
+        if (authRepository.isSignedIn) {
+            syncTrigger.requestInitialSync()
+        }
     }
 
     private fun schedulePeriodicSync() {
