@@ -3,6 +3,7 @@ package app.drivedelta.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.drivedelta.core.auth.AuthRepository
+import app.drivedelta.core.sync.SyncTrigger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val syncTrigger: SyncTrigger,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState(signedIn = authRepository.isSignedIn))
@@ -35,7 +37,11 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             authRepository.signInWithGoogle(idToken)
-                .onSuccess { _uiState.update { it.copy(isLoading = false, signedIn = true) } }
+                .onSuccess {
+                    // Restore this user's data from Firestore (push local first, then pull).
+                    syncTrigger.requestInitialSync()
+                    _uiState.update { it.copy(isLoading = false, signedIn = true) }
+                }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
                 }

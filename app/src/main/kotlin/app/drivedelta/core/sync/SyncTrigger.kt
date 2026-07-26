@@ -6,6 +6,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,11 +30,10 @@ import javax.inject.Singleton
 class SyncTrigger @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    /** On-demand push after a local write (propagates changes to Firestore in seconds). */
     fun requestSync() {
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
-            .setConstraints(
-                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-            )
+            .setConstraints(connectedConstraints())
             .build()
         WorkManager.getInstance(context).enqueueUniqueWork(
             UNIQUE_NAME,
@@ -42,7 +42,28 @@ class SyncTrigger @Inject constructor(
         )
     }
 
+    /**
+     * Push-then-**pull** sync, run once on sign-in and on cold start while signed in, so a fresh
+     * device / re-login restores the user's data from Firestore. Uses its own unique name (KEEP) so
+     * the frequent write-triggered [requestSync] can't REPLACE the pull before it runs.
+     */
+    fun requestInitialSync() {
+        val request = OneTimeWorkRequestBuilder<SyncWorker>()
+            .setConstraints(connectedConstraints())
+            .setInputData(workDataOf(SyncWorker.KEY_PULL to true))
+            .build()
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            INITIAL_SYNC_NAME,
+            ExistingWorkPolicy.KEEP,
+            request,
+        )
+    }
+
+    private fun connectedConstraints(): Constraints =
+        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+
     companion object {
         const val UNIQUE_NAME = "drivedelta_expedited_sync"
+        const val INITIAL_SYNC_NAME = "drivedelta_initial_sync"
     }
 }

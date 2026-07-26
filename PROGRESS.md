@@ -57,6 +57,25 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Sync bug hunt (user report: "only cars + fuel_logs in Firestore").** Diagnosed on
+  emulator by wiping local (sign-out) and observing what a pull restores. Findings + fixes:
+  (1) **`SyncManager.pullAll()` was NEVER called** anywhere — restore-on-sign-in / new-device was
+  fully broken (nothing ever came back). FIX: added `SyncWorker` pull mode (`KEY_PULL` input) +
+  `SyncTrigger.requestInitialSync()` (own unique name `drivedelta_initial_sync`, KEEP, so the frequent
+  write-triggered push can't REPLACE it); wired it on **sign-in** (`AuthViewModel`) and **cold start
+  while signed in** (`DriveDeltaApplication.onCreate`). Verified: cold start restored 6 trips / 3 cars
+  / 3 places / 1 fuel from the server. (2) **Segments were never pushed** (no `syncedAt`, absent from
+  the push loop) AND **`pullAll` never inserted segments** either. FIX: push each pending trip's
+  segments alongside the trip; pull inserts them grouped-by-trip (delete-then-insert only for trips
+  the server returns segments for, so local-only pending segments survive a pull — pulled `SegmentDto`
+  carries id=0 so Room re-autogenerates). (3) **trips + places WERE on the server all along** — the
+  user's console view just didn't expand the `trips`/`places`/`segments` subcollections under
+  `/users/{uid}/`; the pull proved they're there. **Order matters:** `SyncWorker` now pushes BEFORE it
+  pulls so local pending isn't clobbered. **Caveat:** `route_points` remain local-only by design (plan)
+  — they never sync, so Trip Detail map/replay only work on the recording device until the post-MVP
+  Firebase Storage upload lands. (The diagnostic sign-out wiped this device's old test route points;
+  restored here from a DB backup.)
+
 - `2026-07-21` — **CP7 (Roads API & segments) built + verified with the LIVE Roads API.** Notes:
   (1) The `ROADS_API_KEY` in local.properties has **Roads API enabled + billing** — confirmed by a
   live `200` from `snapToRoads` on the emulator (my Lisbon test coords are on real streets). (2)
