@@ -12,6 +12,7 @@ import app.drivedelta.data.remote.firestore.dto.SegmentDto
 import app.drivedelta.data.remote.firestore.dto.TripDto
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -87,19 +88,19 @@ class FirestoreDataSource @Inject constructor(
         userId: String,
         syncedAt: Long = System.currentTimeMillis(),
     ): RemoteSnapshot {
-        val trips = userDoc(userId).collection(TRIPS).get().await().documents.map { doc ->
+        val trips = userDoc(userId).collection(TRIPS).get(Source.SERVER).await().documents.map { doc ->
             TripDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
-        val segments = userDoc(userId).collection(SEGMENTS).get().await().documents.map { doc ->
+        val segments = userDoc(userId).collection(SEGMENTS).get(Source.SERVER).await().documents.map { doc ->
             SegmentDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
-        val places = userDoc(userId).collection(PLACES).get().await().documents.map { doc ->
+        val places = userDoc(userId).collection(PLACES).get(Source.SERVER).await().documents.map { doc ->
             PlaceDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
-        val cars = userDoc(userId).collection(CARS).get().await().documents.map { doc ->
+        val cars = userDoc(userId).collection(CARS).get(Source.SERVER).await().documents.map { doc ->
             CarDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
-        val fuelLogs = userDoc(userId).collection(FUEL_LOGS).get().await().documents.map { doc ->
+        val fuelLogs = userDoc(userId).collection(FUEL_LOGS).get(Source.SERVER).await().documents.map { doc ->
             FuelLogDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
         return RemoteSnapshot(
