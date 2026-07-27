@@ -16,8 +16,8 @@
 
 - **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
   bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
-  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, and **Auth**. Still to sweep:
-  Trip Detail, ride-moments sheets, Fuel Log. Everything below is committed **and pushed** to `origin/main`.
+  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, and **Trip Detail**.
+  Still to sweep: ride-moments sheets, Fuel Log. Everything below is committed **and pushed** to `origin/main`.
 - **Last completed (this session, 2026-07-27):**
   1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
      dead) and segments were never pushed. Wired `SyncTrigger.requestInitialSync()` (push-then-pull)
@@ -80,6 +80,27 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep cont'd: Trip Detail rebuilt to match `trip-detail.png`.** The screen
+  was restructured to the mockup's shape: (1) **app bar** now shows the dynamic **"Origin → Destination"**
+  route title (via the shared `routeTitle` helper; falls back to "Ride" when a trip has no linked
+  places) with a **"Today · 18:24 · Car"** subtitle (`tripSubtitle` — relative day + `HH:mm` + car
+  name), a **circular** back button, and the two actions (Route insights + Compare) folded into a
+  single **⋮ overflow `DropdownMenu`** (matches the mockup's lone ⋮). (2) A **persistent 4-stat summary
+  header** (Duration / km / avg km/h / **vs best** with a green ▾ or red ▴ delta) now sits between the
+  app bar and the tabs, replacing the old in-Splits summary. (3) **Splits is the default tab** (was
+  Map) with a blue underline + bold active label. (4) The **splits table** was redesigned: a
+  `SEGMENT / TIME / Δ VS BEST` **column header**, rows with **no leading index**, road name + `X.X km`
+  sub-line, a larger mono **TIME**, and a **`Δ VS BEST`** column showing `▾0.8`/`▴2.4` (seconds, one
+  decimal) + a `best m:ss.d` caption; a **personal-best segment** now renders as a **purple band**
+  (`DdPurpleRowBg` + border, purple text) with **`★ PB` / `new best`** instead of a delta. Hairline
+  dividers between rows. The vs-best/vs-previous **filter chips are kept** (functional, per F10) though
+  the mockup doesn't show them — placed compactly above the header. **Data:** `TripDetailViewModel`
+  now injects `PlaceRepository` + `CarRepository` and resolves `originName`/`destName`/`carName` in
+  init (added to the ui-state) — no change to `TripDetail`/`GetTripDetailUseCase`. **Verified on
+  emulator**: a VW Golf drive opened to the redesigned Splits tab (header stats `0:47 / 0.3 / 23 /
+  ▾0:00`, two purple `★ PB` segment bands with real Lisbon road names), the Map tab shows "No route
+  recorded" (route points are local-only + these are Firestore-restored trips), and the ⋮ menu opens
+  with Route insights + Compare. Tab switch + underline confirmed.
 - `2026-07-27` — **Design sweep cont'd: Auth screen rebuilt to match `auth.png`.** Swapped the
   placeholder `Δ` glyph for a proper **apex mark** — a new `ic_apex_logo.xml` vector drawing two
   overlapping triangle strokes (brand blue `#5B8DEF` + success green `#37D67A`) inside the rounded

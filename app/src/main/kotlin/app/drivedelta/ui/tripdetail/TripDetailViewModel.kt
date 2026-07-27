@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import app.drivedelta.domain.model.TripDetail
 import app.drivedelta.domain.usecase.segment.GetTripDetailUseCase
 import app.drivedelta.domain.usecase.segment.MatchSegmentsUseCase
+import app.drivedelta.domain.repository.CarRepository
+import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +33,10 @@ data class TripDetailUiState(
     val replayFraction: Float = 0f,
     val isPlaying: Boolean = false,
     val replaySpeed: Int = 1,
+    // Display strings for the app-bar title/subtitle (resolved from the trip's linked place/car ids).
+    val originName: String? = null,
+    val destName: String? = null,
+    val carName: String? = null,
 )
 
 /**
@@ -43,6 +49,8 @@ class TripDetailViewModel @Inject constructor(
     private val getTripDetail: GetTripDetailUseCase,
     private val matchSegments: MatchSegmentsUseCase,
     private val tripRepository: TripRepository,
+    private val placeRepository: PlaceRepository,
+    private val carRepository: CarRepository,
 ) : ViewModel() {
 
     private val tripId: String = checkNotNull(savedStateHandle[NavArgs.TRIP_ID])
@@ -60,6 +68,10 @@ class TripDetailViewModel @Inject constructor(
             val previous = previousTrip
                 ?.let { tripRepository.getSegments(it.id).associate { s -> s.roadKey to s.durationMs } }
                 ?: emptyMap()
+            val trip = detail?.trip
+            val originName = trip?.startPlaceId?.let { placeRepository.getPlace(it)?.name }
+            val destName = trip?.endPlaceId?.let { placeRepository.getPlace(it)?.name }
+            val carName = trip?.carId?.let { carRepository.getCar(it)?.name }
             _uiState.update {
                 it.copy(
                     detail = detail,
@@ -67,6 +79,9 @@ class TripDetailViewModel @Inject constructor(
                     previousPerRoadKey = previous,
                     hasPreviousRun = previous.isNotEmpty(),
                     showFuelPrompt = detail?.let { d -> !d.fuelPromptDismissed && d.trip.carId != null } ?: false,
+                    originName = originName,
+                    destName = destName,
+                    carName = carName,
                 )
             }
         }
