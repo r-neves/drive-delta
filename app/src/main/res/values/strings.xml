@@ -109,6 +109,7 @@
     <string name="preride_place_none">None</string>
     <string name="preride_nearby_chip">%1$s Near %2$s — use as origin?</string>
     <string name="preride_start">Start Ride</string>
+    <string name="preride_hint">Set a destination to auto-finish the ride on arrival.</string>
 
     <!-- Live tracking screen (F9) -->
     <string name="tracking_stop">STOP</string>
@@ -126,6 +127,11 @@
     <string name="tracking_best_caption">BEST %1$s</string>
     <string name="tracking_recenter">Recenter map</string>
     <string name="tracking_stop_title">Finish this ride?</string>
+    <string name="tracking_stop_subtitle">Your route and splits will be saved to your history.</string>
+    <string name="tracking_arrived_subtitle">Auto-finishing this ride…</string>
+    <string name="tracking_countdown_unit">SEC</string>
+    <string name="tracking_stat_elapsed">Elapsed</string>
+    <string name="tracking_stat_avg">Avg</string>
     <string name="tracking_stat_time">Time</string>
     <string name="tracking_stat_distance">Distance</string>
     <string name="tracking_stat_avg_speed">Avg speed</string>

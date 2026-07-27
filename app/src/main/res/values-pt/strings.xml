@@ -141,6 +141,11 @@
     <!-- Viagem em curso -->
     <string name="tracking_stop">PARAR</string>
     <string name="tracking_stop_title">Terminar esta viagem?</string>
+    <string name="tracking_stop_subtitle">A tua rota e parciais serão guardadas no histórico.</string>
+    <string name="tracking_arrived_subtitle">A terminar esta viagem…</string>
+    <string name="tracking_countdown_unit">SEG</string>
+    <string name="tracking_stat_elapsed">Decorrido</string>
+    <string name="tracking_stat_avg">Média</string>
     <string name="tracking_finish">Terminar viagem</string>
     <string name="tracking_keep_going">Continuar</string>
     <string name="tracking_just_passing">Estou só de passagem</string>
@@ -171,6 +176,7 @@
     <string name="preride_destination">Destino (opcional)</string>
     <string name="preride_place_none">Nenhum</string>
     <string name="preride_start">Iniciar viagem</string>
+    <string name="preride_hint">Define um destino para terminar a viagem automaticamente à chegada.</string>
 
     <!-- Detalhe da viagem -->
     <string name="trip_detail_title">Viagem</string>
