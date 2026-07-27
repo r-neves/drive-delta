@@ -199,8 +199,8 @@
     <string name="car_consumption_electric">%1$s kWh/100km</string>
 
     <!-- Car edit -->
-    <string name="car_edit_title_new">Add vehicle</string>
-    <string name="car_edit_title_edit">Edit vehicle</string>
+    <string name="car_edit_title_new">Add car</string>
+    <string name="car_edit_title_edit">Edit car</string>
     <string name="car_field_name">Name</string>
     <string name="car_field_license_plate">License plate</string>
     <string name="car_field_fuel_type">Fuel type</string>
@@ -208,8 +208,17 @@
     <string name="car_field_battery_capacity">Battery capacity (kWh)</string>
     <string name="car_field_consumption_fuel">Est. consumption (L/100km)</string>
     <string name="car_field_consumption_electric">Est. consumption (kWh/100km)</string>
-    <string name="car_set_default">Set as default vehicle</string>
+    <string name="car_set_default">Set as default car</string>
+    <string name="car_set_default_subtitle">Used automatically for new drives</string>
     <string name="car_error_name_required">Name is required</string>
+    <string name="car_edit_save_changes">Save changes</string>
+    <string name="car_battery_helper">Battery fields shown for electric vehicles.</string>
+    <string name="car_label_name">CAR NAME</string>
+    <string name="car_label_plate">LICENSE PLATE</string>
+    <string name="car_label_fuel">FUEL TYPE</string>
+    <string name="car_label_battery">BATTERY</string>
+    <string name="car_label_tank">TANK</string>
+    <string name="car_label_consumption">CONSUMPTION</string>
     <string name="action_save">Save</string>
     <string name="action_back">Back</string>
 
