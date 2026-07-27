@@ -78,6 +78,20 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep cont'd: Car-edit + Place-edit rebuilt to match their mockups.**
+  **Car-edit** (`car-edit.png`): a live **preview card** (car tile + name + plate + fuel badge), uppercase
+  section labels over filled fields, a custom **colored-icon fuel-type selector** (Petrol/Diesel/Hybrid/
+  Electric/LPG, tinted by `badgeColor`), side-by-side Battery|Tank + Consumption fields with unit
+  suffixes + an electric-only helper, a **default-toggle card** with subtitle, an app-bar **Save** +
+  bottom **Save changes** button; titles now "Edit car"/"Add car". **Place-edit** (`place-edit.png`):
+  restructured to a **map-hero** layout — the address **search field moved into the top bar** (next to
+  back), the map fills the top ~300dp with the geofence circle + draggable marker, a **"Use my
+  location" pill** overlaid on it, and a bottom panel (rounded top) with uppercase PLACE NAME / ICON /
+  GEOFENCE RADIUS labels, **rounded-square emoji tiles** (blue selection), the radius slider and a
+  **Save place** button. Both verified on the emulator (Place-edit with live map tiles). Remaining
+  un-swept screens: **Auth, Trip Detail, Fuel Log, Tracking HUD** (+ the ride-moments sheets) — a
+  further sweep pass would bring those to parity too. The Cars/Places *list* screens have no dedicated
+  mockup; they already follow the card language (Cars-screen title still reads "Vehicles").
 - `2026-07-27` — **Dashboard redesigned to match `dashboard.png`; shared `RecentTripCard`; nav label
   "Vehicles" → "Cars".** The old Dashboard (plain "Dashboard" title, Start-Ride FAB, simple text
   trip rows) was rebuilt: a date + time-of-day greeting header with an avatar (initial of

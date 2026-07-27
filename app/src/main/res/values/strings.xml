@@ -181,7 +181,11 @@
     <string name="place_field_search">Search address</string>
     <string name="place_search_unavailable">Address search needs a Places API key.</string>
     <string name="place_field_radius">Geofence radius</string>
-    <string name="place_use_my_location">Use my current location</string>
+    <string name="place_label_name">PLACE NAME</string>
+    <string name="place_label_icon">ICON</string>
+    <string name="place_label_radius">GEOFENCE RADIUS</string>
+    <string name="place_edit_save">Save place</string>
+    <string name="place_use_my_location">Use my location</string>
     <string name="place_error_name_required">Name is required</string>
 
     <!-- Cars list -->
