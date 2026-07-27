@@ -96,6 +96,17 @@
     <string name="tracking_stop">STOP</string>
     <string name="tracking_acquiring_gps">Acquiring GPS…</string>
     <string name="tracking_destination_chip">🏁 %1$s — %2$.1f km left</string>
+    <string name="tracking_km_left">%1$.1f km left</string>
+    <string name="tracking_recording">RECORDING</string>
+    <string name="tracking_searching">SEARCHING</string>
+    <string name="tracking_unit_kmh">KM/H</string>
+    <string name="tracking_label_elapsed">ELAPSED</string>
+    <string name="tracking_label_distance">DISTANCE</string>
+    <string name="tracking_ahead_of_best">AHEAD OF BEST</string>
+    <string name="tracking_behind_best">BEHIND BEST</string>
+    <string name="tracking_new_best">NEW BEST</string>
+    <string name="tracking_best_caption">BEST %1$s</string>
+    <string name="tracking_recenter">Recenter map</string>
     <string name="tracking_stop_title">Finish this ride?</string>
     <string name="tracking_stat_time">Time</string>
     <string name="tracking_stat_distance">Distance</string>
