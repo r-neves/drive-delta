@@ -103,6 +103,8 @@ design/                                        # Checkpoint 0 output (design ref
 │   ├── place-edit.png
 │   ├── trip-detail.png                        # Splits tab, incl. the purple-sector PB row
 │   ├── trip-summary.png                       # Route Summary — route-level A→B analytics (post-MVP add)
+│   ├── trips-recent.png                       # Trips screen — Recent tab (day-grouped rich cards)
+│   ├── trips-by-route.png                     # Trips screen — By-route tab (sparkline + trend)
 │   ├── tracking-hud-ahead.png                 # HUD, green "ahead of best" delta state
 │   ├── tracking-hud-behind.png                # HUD, red "behind best" delta state
 │   ├── ride-moments-pre-ride.png              # pre-ride setup sheet (F5)
@@ -469,7 +471,7 @@ Read them in this order. Each answers a different question:
 | Read | For | Cost |
 |---|---|---|
 | **`design/tokens.md`** | Every exact value: colors, type scale, spacing, radii, shadows, and per-component specs (§7). **This is authoritative** — and the values are confirmed against the rendered PNGs. | cheap |
-| `design/mockups/<screen>.png` | Layout, proportion, hierarchy, density — what a token table can't encode. 15 full-res exports (see the tree above); view the one for the screen you're building. | cheap |
+| `design/mockups/<screen>.png` | Layout, proportion, hierarchy, density — what a token table can't encode. 17 full-res exports (see the tree above); view the one for the screen you're building. | cheap |
 | `design/mockups/<screen>.html` | Last resort, to settle what neither answers. | expensive |
 
 **Do not implement from the raw `.dc.html`.** Three reasons, all verified:

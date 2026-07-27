@@ -107,8 +107,31 @@
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_history">History</string>
+    <string name="nav_trips">Trips</string>
     <string name="nav_vehicles">Vehicles</string>
     <string name="nav_places">Places</string>
+
+    <!-- Trips (F11) — Recent + By route -->
+    <string name="trips_title">Trips</string>
+    <string name="trips_tab_recent">Recent</string>
+    <string name="trips_tab_by_route">By route</string>
+    <string name="trips_search">Search</string>
+    <string name="trips_search_hint">Search trips</string>
+    <string name="trips_filter">Filter</string>
+    <string name="trips_stat_drives">DRIVES</string>
+    <string name="trips_stat_distance">DISTANCE</string>
+    <string name="trips_stat_new_pbs">NEW PBS</string>
+    <string name="trips_drive_fallback">Drive</string>
+    <string name="trips_new_pb">NEW PB</string>
+    <string name="trips_best">BEST</string>
+    <string name="trips_by_route_caption">Grouped by origin → destination, showing your best time and trend across all drives.</string>
+    <string name="trips_route_meta">%1$d drives · %2$.1f km</string>
+    <string name="trips_last_drives">Last %1$d drives · faster ↓</string>
+    <string name="trips_trend_faster">trending faster</string>
+    <string name="trips_trend_slower">trending slower</string>
+    <string name="trips_trend_best">best ever</string>
+    <string name="trips_day_today">Today</string>
+    <string name="trips_day_yesterday">Yesterday</string>
 
     <!-- History (F11) -->
     <string name="history_empty">No rides yet.</string>

@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DirectionsCar
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -44,7 +44,7 @@ private data class TabItem(
 
 private val tabs = listOf(
     TabItem(NavDestinations.DASHBOARD, R.string.nav_home, Icons.Outlined.Home),
-    TabItem(NavDestinations.HISTORY, R.string.nav_history, Icons.Outlined.History),
+    TabItem(NavDestinations.HISTORY, R.string.nav_trips, Icons.Outlined.Route),
     TabItem(NavDestinations.CARS, R.string.nav_vehicles, Icons.Outlined.DirectionsCar),
     TabItem(NavDestinations.PLACES, R.string.nav_places, Icons.Outlined.Place),
 )
@@ -85,7 +85,7 @@ fun MainScreen(
                 )
             }
             composable(NavDestinations.HISTORY) {
-                HistoryScreen(onOpenTrip = onOpenTrip)
+                HistoryScreen(onOpenTrip = onOpenTrip, onOpenRouteSummary = onOpenRouteSummary)
             }
             composable(NavDestinations.CARS) {
                 CarsScreen(onAddCar = onAddCar, onEditCar = onEditCar)

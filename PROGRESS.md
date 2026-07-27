@@ -78,6 +78,26 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Trips screen redesigned to match `trips-recent.png` + `trips-by-route.png`.**
+  The old History screen (month-grouped plain list + vehicle chips) was replaced by a two-tab
+  **Trips** screen. Files: `ui/history/TripsOverview.kt` (pure builder + data classes, unit-tested),
+  reworked `HistoryViewModel` (streams trips+cars+places → `TripsOverviewBuilder`), rewritten
+  `HistoryScreen`. **Recent tab:** title + search + filter icons, a DRIVES/DISTANCE/NEW PBS stat
+  card, day-grouped ("Today"/"Yesterday"/date) rich cards — time · fuel-type icon+car name (or a
+  NEW PB pill), `Origin → Destination`, `duration · distance`, and a delta-vs-**previous-drive**
+  (green ▾ / red ▴) or "★ best" for a PB (purple-highlighted card). **By-route tab:** caption +
+  one card per route (grouped by `routeHash`) with best time, BEST/NEW PB label, a custom-Canvas
+  **sparkline** of the last ≤12 drive times (faster = **down**), and a coloured trend label
+  (green "trending faster" / purple "best ever" / red "trending slower"); tapping a route card
+  opens the Route Summary. Semantics: "NEW PB"/"best ever" ⇔ the newest drive set the record;
+  "faster/slower" trend compares the newest drive to the window start. Search filters by O/D/car
+  text; the vehicle filter moved behind the filter icon (DropdownMenu). Nav tab renamed
+  **History → Trips** with a route icon (`Icons.Outlined.Route`); the `history` route id + file
+  names are unchanged (least churn). en + pt strings; `TripsOverviewBuilderTest` (4 tests).
+  **Verified on emulator** (injected multi-route synthetic data): both tabs render per the mockups,
+  incl. the NEW-PB purple card, fuel icons, and green/purple/red sparklines; synthetic data removed
+  after. Note: the bottom-nav "Vehicles"/"Cars" label mismatch with the mockup was left as-is
+  (out of the requested scope; the Cars screen/title still says "Vehicles").
 - `2026-07-27` — **Route Summary screen — design decisions.** (1) **Keyed on `tripId`** (the drive
   in focus), not routeHash/place-pair — the mockup centres on one drive ("this drive"), and the
   group of comparable rides is derived internally by `routeHash` equality (blank hash → the drive

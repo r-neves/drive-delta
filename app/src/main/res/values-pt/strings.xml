@@ -11,8 +11,31 @@
     <!-- Navegação -->
     <string name="nav_home">Início</string>
     <string name="nav_history">Histórico</string>
+    <string name="nav_trips">Viagens</string>
     <string name="nav_vehicles">Veículos</string>
     <string name="nav_places">Locais</string>
+
+    <!-- Viagens (Recentes + Por percurso) -->
+    <string name="trips_title">Viagens</string>
+    <string name="trips_tab_recent">Recentes</string>
+    <string name="trips_tab_by_route">Por percurso</string>
+    <string name="trips_search">Pesquisar</string>
+    <string name="trips_search_hint">Pesquisar viagens</string>
+    <string name="trips_filter">Filtrar</string>
+    <string name="trips_stat_drives">VIAGENS</string>
+    <string name="trips_stat_distance">DISTÂNCIA</string>
+    <string name="trips_stat_new_pbs">NOVOS RECORDES</string>
+    <string name="trips_drive_fallback">Viagem</string>
+    <string name="trips_new_pb">RECORDE</string>
+    <string name="trips_best">MELHOR</string>
+    <string name="trips_by_route_caption">Agrupadas por origem → destino, mostrando o teu melhor tempo e a tendência em todas as viagens.</string>
+    <string name="trips_route_meta">%1$d viagens · %2$.1f km</string>
+    <string name="trips_last_drives">Últimas %1$d viagens · mais rápido ↓</string>
+    <string name="trips_trend_faster">a acelerar</string>
+    <string name="trips_trend_slower">a abrandar</string>
+    <string name="trips_trend_best">melhor de sempre</string>
+    <string name="trips_day_today">Hoje</string>
+    <string name="trips_day_yesterday">Ontem</string>
 
     <!-- Ações comuns -->
     <string name="action_delete">Eliminar</string>

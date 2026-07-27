@@ -3,9 +3,9 @@ package app.drivedelta.ui.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.drivedelta.domain.model.Car
-import app.drivedelta.domain.model.Trip
+import app.drivedelta.domain.repository.CarRepository
+import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
-import app.drivedelta.domain.usecase.car.GetCarsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,45 +13,69 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 
-data class HistoryUiState(
-    val groups: List<Pair<String, List<Trip>>> = emptyList(),
+data class TripsUiState(
+    val stats: TripsStats = TripsStats(0, 0f, 0),
+    val sections: List<DaySection> = emptyList(),
+    val routes: List<RouteItem> = emptyList(),
     val cars: List<Car> = emptyList(),
     val selectedCarId: String? = null,
-)
+    val query: String = "",
+) {
+    val isEmpty: Boolean get() = sections.isEmpty() && routes.isEmpty()
+}
 
 /**
- * Backs the History screen (F11): completed trips grouped by month (newest first), with a
- * by-vehicle filter (chips). Place-pair / date-range filters from the plan are deferred.
+ * Backs the Trips screen (design/mockups/trips-recent.png, trips-by-route.png; F11). Streams the
+ * user's completed trips, cars and places, and folds them into the Recent + By-route views via
+ * [TripsOverviewBuilder]. A by-vehicle filter and a text search narrow the set; the Recent/By-route
+ * tab and the search field's visibility are UI state owned by the screen.
  */
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val tripRepository: TripRepository,
-    getCars: GetCarsUseCase,
+    carRepository: CarRepository,
+    placeRepository: PlaceRepository,
 ) : ViewModel() {
 
-    private val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+    private val zone = ZoneId.systemDefault()
     private val selectedCarId = MutableStateFlow<String?>(null)
+    private val query = MutableStateFlow("")
 
-    val uiState: StateFlow<HistoryUiState> = combine(
+    val uiState: StateFlow<TripsUiState> = combine(
         tripRepository.observeTrips(),
-        getCars(),
+        carRepository.observeCars(),
+        placeRepository.observePlaces(),
         selectedCarId,
-    ) { trips, cars, carId ->
-        val groups = trips
-            .filter { it.endTime != null }
-            .filter { carId == null || it.carId == carId }
-            .groupBy { monthFormat.format(Date(it.startTime)) }
-            .toList()
-        HistoryUiState(groups = groups, cars = cars, selectedCarId = carId)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
+        query,
+    ) { trips, cars, places, carId, q ->
+        val overview = TripsOverviewBuilder.build(
+            allTrips = trips,
+            cars = cars,
+            places = places,
+            selectedCarId = carId,
+            query = q,
+            epochDayOf = { millis -> Instant.ofEpochMilli(millis).atZone(zone).toLocalDate().toEpochDay() },
+        )
+        TripsUiState(
+            stats = overview.stats,
+            sections = overview.sections,
+            routes = overview.routes,
+            cars = cars,
+            selectedCarId = carId,
+            query = q,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TripsUiState())
 
     fun selectCar(carId: String?) {
         selectedCarId.value = carId
+    }
+
+    fun setQuery(text: String) {
+        query.value = text
     }
 
     fun deleteTrip(tripId: String) {
