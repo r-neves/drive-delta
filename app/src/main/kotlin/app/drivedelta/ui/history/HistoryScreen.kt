@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,11 +44,11 @@ fun HistoryScreen(
     onOpenTrip: (String) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
-    val groups by viewModel.groupedTrips.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     var pendingDelete by remember { mutableStateOf<Trip?>(null) }
 
     Box(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        if (groups.isEmpty()) {
+        if (state.groups.isEmpty()) {
             Text(
                 stringResource(R.string.history_empty),
                 Modifier.align(Alignment.Center),
@@ -64,7 +67,28 @@ fun HistoryScreen(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            groups.forEach { (month, trips) ->
+            // Filter chips: All + one per vehicle (F11).
+            if (state.cars.isNotEmpty()) {
+                item {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        item {
+                            FilterChip(
+                                selected = state.selectedCarId == null,
+                                onClick = { viewModel.selectCar(null) },
+                                label = { Text(stringResource(R.string.history_filter_all)) },
+                            )
+                        }
+                        items(state.cars, key = { it.id }) { car ->
+                            FilterChip(
+                                selected = state.selectedCarId == car.id,
+                                onClick = { viewModel.selectCar(car.id) },
+                                label = { Text(car.name) },
+                            )
+                        }
+                    }
+                }
+            }
+            state.groups.forEach { (month, trips) ->
                 item(key = "h_$month") {
                     Text(
                         month,

@@ -1346,9 +1346,9 @@ user is routed to an empty Dashboard.
 
 **Goal:** All screens complete. Full end-to-end user journey works.
 
-- [x] `HistoryViewModel.kt` + `HistoryScreen.kt`: grouped by month, long-press delete (filter chips / date range deferred — grouped list + delete are the core). ✅ Verified on emulator (July 2026 group, trip cards).
+- [x] `HistoryViewModel.kt` + `HistoryScreen.kt`: grouped by month, long-press delete, **by-vehicle filter chips**. ✅ Verified on emulator (All → 7 trips, VW Golf → 1). Place-pair / date-range filters still deferred.
 - [x] `FuelLogViewModel.kt` + `FuelLogScreen.kt`: adaptive fuel/electric form, auto-calc total, post-save cost + efficiency. ✅ Verified on emulator (40 L × 1.80 → 72.00 auto-calc, saved, efficiency shown, Room row synced). Reached via the Trip Detail fuel prompt → "Add fill-up".
-- [x] `DashboardScreen.kt`: recent-rides list (trip entry point). **Personal bests + weekly stats deferred** — recent rides + History cover the journey for the POC.
+- [x] `DashboardScreen.kt`: recent-rides list, **weekly summary (distance/drive-time/fuel)** and **personal bests** (most-driven routes by routeHash + best time). ✅ Verified on emulator (THIS WEEK + PERSONAL BESTS "0.4 km · 2 rides · Best 0:45").
 - [~] Live split in `TrackingViewModel`: **DEFERRED (architectural).** Streaming a per-segment best delta live needs the current roadKey mid-ride, which needs live road detection — but the cost rule forbids calling Roads API during tracking. So `bestSegmentMs` stays null (HUD delta greys out); split-vs-best is delivered post-ride in the Trip Detail Splits tab (implemented, CP8). Revisit post-MVP with an offline snap or cached-route matching.
 - [x] Sign-out flow: `DashboardViewModel.signOut` calls `AppDatabase.clearAllTables()` (single-user POC → equivalent to deleting the user's rows) + Firebase sign-out + nav to Auth.
 - [x] i18n: `res/values-pt/strings.xml` with Portuguese (pt-PT) translations for the core user-facing strings; untranslated keys fall back to the English default. (A few newer strings may want a translation pass.)
@@ -1361,7 +1361,7 @@ user is routed to an empty Dashboard.
 
 **Goal:** Production-ready internal Play Store release.
 
-- [~] Permission permanently-denied states: the sequential permission chain exists (CP5); **full rationale dialogs + settings deep-link per permission are NOT added** — deferred. (A denied step currently just doesn't advance the ride start.)
+- [x] Permission permanently-denied states: if fine location is denied (incl. permanently), a rationale `AlertDialog` with an **"Open settings" deep-link** (`ACTION_APPLICATION_DETAILS_SETTINGS`) is shown; optional perms (background/notifications/battery) don't block. Denial-dialog path is code-verified (emulator perms were pre-granted, so the happy path was exercised end-to-end).
 - [x] No-internet handled: all screens read from Room (source of truth); `SyncWorker` runs under `NetworkType.CONNECTED` so pushes auto-retry when connectivity returns (periodic 15-min + on-write `SyncTrigger`). A dedicated `NetworkCallback` isn't needed given WorkManager's constraint.
 - [x] Roads API quota/transient failures: **exponential backoff (max 3, 500 ms→1 s→2 s)** in `RoadsDataSource.snapChunkWithRetry`; exhausting retries propagates → raw-segment fallback. Unit-tested (retry-then-succeed + give-up).
 - [x] Cold GPS start: HUD shows **"Acquiring GPS…"** while `isTracking && currentLocation == null` (before the first fix). (Start-button grey-out on no-fix not added — the ride can start and the HUD covers the acquiring window.)
