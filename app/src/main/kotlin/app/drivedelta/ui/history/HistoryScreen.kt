@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.AlertDialog
@@ -48,13 +45,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
-import app.drivedelta.domain.model.FuelType
-import app.drivedelta.ui.cars.badgeColor
+import app.drivedelta.ui.components.RecentTripCard
+import app.drivedelta.ui.components.formatClock
+import app.drivedelta.ui.components.routeTitle
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdError
 import app.drivedelta.ui.theme.DdOutline
-import app.drivedelta.ui.theme.DdPurpleRowBg
-import app.drivedelta.ui.theme.DdPurpleRowBorder
 import app.drivedelta.ui.theme.DdPurpleSector
 import app.drivedelta.ui.theme.DdSegmentActive
 import app.drivedelta.ui.theme.DdSuccess
@@ -65,13 +61,8 @@ import app.drivedelta.ui.theme.LocalDdType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Date
-import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.math.abs
 import kotlin.math.roundToInt
-
-private val TIME_FORMAT = SimpleDateFormat("HH:mm", Locale.getDefault())
 
 @Composable
 fun HistoryScreen(
@@ -130,8 +121,16 @@ fun HistoryScreen(
                     item(key = "day_${section.dayEpoch}") { DayHeader(section.dayEpoch) }
                     items(section.items.size, key = { section.items[it].tripId }) { i ->
                         val item = section.items[i]
-                        RecentCard(
-                            item = item,
+                        RecentTripCard(
+                            startTime = item.startTime,
+                            originName = item.originName,
+                            destName = item.destName,
+                            carName = item.carName,
+                            fuelType = item.fuelType,
+                            durationMs = item.durationMs,
+                            distanceMeters = item.distanceMeters,
+                            isNewPb = item.isNewPb,
+                            deltaMs = item.deltaVsPrevMs,
                             onClick = { onOpenTrip(item.tripId) },
                             onLongClick = { pendingDelete = item.tripId },
                         )
@@ -308,92 +307,6 @@ private fun DayHeader(dayEpoch: Long) {
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun RecentCard(item: RecentTripItem, onClick: () -> Unit, onLongClick: () -> Unit) {
-    val tokens = LocalDdTokens.current
-    val ddType = LocalDdType.current
-    val pb = item.isNewPb
-    val titleColor = if (pb) DdPurpleSector else MaterialTheme.colorScheme.onSurface
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(tokens.radiusCard))
-            .background(if (pb) DdPurpleRowBg else DdSurface)
-            .border(1.dp, if (pb) DdPurpleRowBorder else DdOutline, RoundedCornerShape(tokens.radiusCard))
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(tokens.spaceLg),
-        verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),
-    ) {
-        // Top: time · (car+fuel) or NEW PB pill
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                TIME_FORMAT.format(Date(item.startTime)),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            if (pb) {
-                NewPbPill()
-            } else if (item.carName != null) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(tokens.spaceXs)) {
-                    FuelIcon(item.fuelType)
-                    Text(item.carName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                }
-            }
-        }
-        // Middle: Origin → Destination
-        Text(
-            routeTitle(item.originName, item.destName, stringResource(R.string.trips_drive_fallback)),
-            style = MaterialTheme.typography.headlineMedium,
-            color = titleColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        // Bottom: duration + distance · delta / best
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "${formatClock(item.durationMs)}   ${String.format(Locale.US, "%.1f", item.distanceMeters / 1000f)} km",
-                style = ddType.numericMono,
-                color = if (pb) DdPurpleSector else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
-            )
-            when {
-                pb -> Text("★ best", style = ddType.numericMono, color = DdPurpleSector, fontWeight = FontWeight.SemiBold)
-                item.deltaVsPrevMs != null && item.deltaVsPrevMs != 0L -> {
-                    val faster = item.deltaVsPrevMs < 0
-                    Text(
-                        (if (faster) "▾ " else "▴ ") + formatClock(abs(item.deltaVsPrevMs)),
-                        style = ddType.numericMono,
-                        color = if (faster) DdDeltaFaster else DdError,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun NewPbPill() {
-    val tokens = LocalDdTokens.current
-    Box(
-        Modifier
-            .clip(RoundedCornerShape(tokens.radiusSm))
-            .border(1.dp, DdPurpleRowBorder, RoundedCornerShape(tokens.radiusSm))
-            .padding(horizontal = tokens.spaceMd, vertical = tokens.spaceXs),
-    ) {
-        Text(stringResource(R.string.trips_new_pb), style = MaterialTheme.typography.labelSmall, color = DdPurpleSector, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun FuelIcon(fuelType: FuelType?) {
-    if (fuelType == null) return
-    val icon = if (fuelType == FuelType.ELECTRIC) Icons.Filled.Bolt else Icons.Filled.LocalGasStation
-    Icon(icon, contentDescription = null, tint = fuelType.badgeColor, modifier = Modifier.size(18.dp))
-}
-
 // --- By-route tab -------------------------------------------------------------------------------
 
 @Composable
@@ -491,11 +404,6 @@ private fun Sparkline(series: List<Long>, color: Color, modifier: Modifier) {
 
 // --- Helpers ------------------------------------------------------------------------------------
 
-private fun routeTitle(origin: String?, dest: String?, fallback: String): String = when {
-    origin != null || dest != null -> "${origin ?: "—"} → ${dest ?: "—"}"
-    else -> fallback
-}
-
 @Composable
 private fun dayLabel(epochDay: Long): String {
     val today = LocalDate.now().toEpochDay()
@@ -505,13 +413,4 @@ private fun dayLabel(epochDay: Long): String {
         else -> LocalDate.ofEpochDay(epochDay)
             .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
     }
-}
-
-private fun formatClock(ms: Long): String {
-    val totalSec = ms / 1000
-    val h = totalSec / 3600
-    val m = (totalSec % 3600) / 60
-    val s = totalSec % 60
-    return if (h > 0) String.format(Locale.US, "%d:%02d:%02d", h, m, s)
-    else String.format(Locale.US, "%d:%02d", m, s)
 }

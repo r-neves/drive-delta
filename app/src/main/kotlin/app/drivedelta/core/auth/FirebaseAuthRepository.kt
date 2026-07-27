@@ -17,6 +17,12 @@ class FirebaseAuthRepository @Inject constructor(
     override val currentUserId: String?
         get() = firebaseAuth.currentUser?.uid
 
+    override val currentUserName: String?
+        get() = firebaseAuth.currentUser?.let { user ->
+            user.displayName?.takeIf { it.isNotBlank() }
+                ?: user.email?.substringBefore('@')?.takeIf { it.isNotBlank() }
+        }
+
     override val isSignedIn: Boolean
         get() = firebaseAuth.currentUser != null
 

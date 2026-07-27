@@ -17,6 +17,13 @@ interface CarDao {
     @Query("UPDATE cars SET isDeleted = 1, syncedAt = NULL WHERE id = :id")
     suspend fun softDelete(id: String)
 
+    /**
+     * Hard delete: remove the row outright. Used to prune a tombstone (`isDeleted = 1`) once its
+     * deletion has been pushed to Firestore, so hidden rows don't accumulate locally forever.
+     */
+    @Query("DELETE FROM cars WHERE id = :id")
+    suspend fun hardDelete(id: String)
+
     @Query("SELECT * FROM cars WHERE userId = :userId AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getByUser(userId: String): Flow<List<CarEntity>>
 

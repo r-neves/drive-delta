@@ -15,14 +15,22 @@
 
     <!-- Dashboard -->
     <string name="dashboard_start_ride">Start Ride</string>
-    <string name="dashboard_recent_rides">RECENT RIDES</string>
+    <string name="dashboard_start_ride_subtitle">Free drive · no destination set</string>
+    <string name="dashboard_greeting_morning">Good morning</string>
+    <string name="dashboard_greeting_afternoon">Good afternoon</string>
+    <string name="dashboard_greeting_evening">Good evening</string>
+    <string name="dashboard_greeting">%1$s</string>
+    <string name="dashboard_greeting_named">%1$s, %2$s</string>
+    <string name="dashboard_recent_rides_title">Recent drives</string>
+    <string name="dashboard_personal_bests_title">Personal bests</string>
+    <string name="dashboard_see_all">See all</string>
+    <string name="dashboard_vs_best">vs best</string>
     <string name="dashboard_no_trips">No rides yet — tap Start Ride to record one.</string>
     <string name="dashboard_trip_summary">%1$.1f km · %2$d min</string>
     <string name="dashboard_this_week">THIS WEEK</string>
-    <string name="dashboard_personal_bests">PERSONAL BESTS</string>
     <string name="dashboard_week_distance">Distance</string>
     <string name="dashboard_week_time">Drive time</string>
-    <string name="dashboard_week_fuel">Fuel</string>
+    <string name="dashboard_week_fuel">Fuel cost</string>
     <string name="dashboard_route_summary">%1$.1f km · %2$d rides</string>
     <string name="dashboard_best_time">Best %1$s</string>
 
@@ -109,6 +117,7 @@
     <string name="nav_history">History</string>
     <string name="nav_trips">Trips</string>
     <string name="nav_vehicles">Vehicles</string>
+    <string name="nav_cars">Cars</string>
     <string name="nav_places">Places</string>
 
     <!-- Trips (F11) — Recent + By route -->
