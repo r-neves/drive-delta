@@ -59,6 +59,7 @@ fun MainScreen(
     onSignedOut: () -> Unit,
     onStartTracking: () -> Unit,
     onOpenTrip: (String) -> Unit,
+    onOpenRouteSummary: (String) -> Unit,
     onAddCar: () -> Unit,
     onEditCar: (String) -> Unit,
     onAddPlace: () -> Unit,
@@ -80,6 +81,7 @@ fun MainScreen(
                     onSignedOut = onSignedOut,
                     onStartTracking = onStartTracking,
                     onOpenTrip = onOpenTrip,
+                    onOpenRouteSummary = onOpenRouteSummary,
                 )
             }
             composable(NavDestinations.HISTORY) {

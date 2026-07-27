@@ -25,8 +25,15 @@ import javax.inject.Inject
 /** Current-calendar-week totals (F13). */
 data class WeeklyStats(val distanceKm: Float, val driveMinutes: Int, val fuelCost: Float)
 
-/** A frequently-driven route keyed by routeHash, with its best total time (F13). */
-data class PersonalBest(val routeHash: String, val rideCount: Int, val bestDurationMs: Long, val distanceKm: Float)
+/** A frequently-driven route keyed by routeHash, with its best total time (F13). [bestTripId] is the
+ *  fastest ride on the route — the Route Summary entry point. */
+data class PersonalBest(
+    val routeHash: String,
+    val rideCount: Int,
+    val bestDurationMs: Long,
+    val distanceKm: Float,
+    val bestTripId: String,
+)
 
 /**
  * Dashboard state (F13): recent rides (the Trip Detail entry point), the current week's totals, and
@@ -72,11 +79,13 @@ class DashboardViewModel @Inject constructor(
         trips.filter { it.routeHash.isNotBlank() }
             .groupBy { it.routeHash }
             .map { (hash, group) ->
+                val best = group.minBy { it.durationMs }
                 PersonalBest(
                     routeHash = hash,
                     rideCount = group.size,
-                    bestDurationMs = group.minOf { it.durationMs },
+                    bestDurationMs = best.durationMs,
                     distanceKm = group.first().distanceMeters / 1000f,
+                    bestTripId = best.id,
                 )
             }
             .filter { it.rideCount >= 2 }
