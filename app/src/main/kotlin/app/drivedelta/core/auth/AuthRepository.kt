@@ -11,6 +11,9 @@ interface AuthRepository {
     /** Firebase UID of the signed-in user, or null when signed out. */
     val currentUserId: String?
 
+    /** The signed-in user's display name (or email local-part fallback), or null when signed out. */
+    val currentUserName: String?
+
     /** True when a user is currently signed in. */
     val isSignedIn: Boolean
 

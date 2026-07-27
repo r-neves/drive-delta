@@ -78,6 +78,22 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Dashboard redesigned to match `dashboard.png`; shared `RecentTripCard`; nav label
+  "Vehicles" → "Cars".** The old Dashboard (plain "Dashboard" title, Start-Ride FAB, simple text
+  trip rows) was rebuilt: a date + time-of-day greeting header with an avatar (initial of
+  `AuthRepository.currentUserName`, newly added — Firebase displayName or email local-part), a blue
+  **Start Ride hero card**, a THIS WEEK totals card (locale currency, `h:mm` drive time), a **Recent
+  drives** section (rich cards + "See all" → Trips tab) and **Personal bests** (→ Route Summary).
+  The rich trip card was extracted to a shared `ui/components/RecentTripCard.kt` (+ `routeTitle`/
+  `formatClock`) and both Trips-Recent and the Dashboard now use it — the Dashboard passes a
+  **vs-best** delta (this drive − best of the route's *other* drives, so a record shows green ▾),
+  Trips passes vs-previous. Bottom-nav tab renamed **Vehicles → Cars** (`nav_cars`) to match the
+  mockup; the Cars *screen* title still reads "Vehicles" (left as-is — out of the pointed-at scope).
+  Verified on emulator (injected multi-route data): greeting/avatar, hero card, weekly card, and
+  green/red "vs best" recent cards all render per the mockup. **Design-drift sweep note:** only the
+  Dashboard was rebuilt this pass (highest-value, clearly-drifted landing screen). Auth / Car-edit /
+  Place-edit / Cars / Places / Fuel-log screens were NOT re-checked against their mockups — a
+  follow-up sweep is recommended if full design parity is wanted.
 - `2026-07-27` — **Trips screen redesigned to match `trips-recent.png` + `trips-by-route.png`.**
   The old History screen (month-grouped plain list + vehicle chips) was replaced by a two-tab
   **Trips** screen. Files: `ui/history/TripsOverview.kt` (pure builder + data classes, unit-tested),
@@ -329,16 +345,15 @@ Things noticed but deferred — so they aren't lost between sessions.
   when this ride beats the all-time segment record (new PB), else *faster*/*slower* vs the previous
   run. Scatter dots are only rides with a linked FuelLog cost + computable avg speed.
   **Also done:** `trip-summary.png` added to the CLAUDE.md design-asset list (14 → 15 PNGs).
-- **Soft-delete tombstones are never pruned (deferred from CP3).** Swipe-delete does
-  `CarDao.softDelete` (isDeleted=true, syncedAt=NULL) and the worker pushes the `isDeleted:true`
-  doc to Firestore — this is correct and intended: the tombstone propagates the deletion to other
-  devices (pull re-inserts it into Room, `getByUser` filters `isDeleted=0` so it stays hidden). What
-  the plan's F2 flow also calls for but CP3 does NOT yet implement is the final step — **hard-delete
-  the Room row once the deletion has synced.** Consequence today: deleted cars linger forever as
-  hidden `isDeleted=true` rows in both Room and Firestore (verified: Tesla M3 sits in Firestore with
-  isDeleted=true). Harmless for the POC but unbounded growth. Do this with the sync-completion logic
-  when the sync layer (thin since CP2) is fleshed out — a `hardDeleteSyncedTombstones()` pass after a
-  successful push, applied to cars/places (and any other soft-deleted entity). Not a CP3 bolt-on.
+- ✅ **RESOLVED (2026-07-27) — soft-delete tombstone pruning.** `SyncManager.pushPending()` now, after
+  pushing a pending car, checks `isDeleted`: a tombstone is pushed (so other devices pull it and hide
+  the car) and then **hard-deleted from Room** via `CarDao.hardDelete(id)`, instead of being
+  re-inserted with `syncedAt`. So hidden `isDeleted=1` rows no longer accumulate locally. The
+  Firestore tombstone doc is intentionally kept (it's how other devices learn of the deletion; a
+  single-user serverless app can't know when all devices have synced, so server-side pruning stays
+  out of scope). Only cars have soft-delete tombstones — places use a hard delete (no `isDeleted`
+  column), so nothing to prune there. Covered by `SyncManagerTest` (2 tests: tombstone → push +
+  hardDelete, no re-insert; live car → push + `syncedAt` stamp, no delete).
 - ✅ RESOLVED — CP1 now builds and runs in Android Studio. The one fix needed vs. the authored
   scaffold: `kotlin { jvmToolchain(17) }` demanded a JDK-17 toolchain that isn't installed →
   replaced with `compilerOptions { jvmTarget = JVM_17 }` (compiles on the JBR 21 that runs Gradle).

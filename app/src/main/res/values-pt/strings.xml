@@ -6,6 +6,15 @@
     <string name="auth_sign_in_google">Iniciar sessão com Google</string>
     <string name="auth_error_generic">Falha ao iniciar sessão. Tenta novamente.</string>
     <string name="dashboard_title">Início</string>
+    <string name="dashboard_start_ride_subtitle">Condução livre · sem destino definido</string>
+    <string name="dashboard_greeting_morning">Bom dia</string>
+    <string name="dashboard_greeting_afternoon">Boa tarde</string>
+    <string name="dashboard_greeting_evening">Boa noite</string>
+    <string name="dashboard_recent_rides_title">Viagens recentes</string>
+    <string name="dashboard_personal_bests_title">Recordes pessoais</string>
+    <string name="dashboard_see_all">Ver tudo</string>
+    <string name="dashboard_vs_best">vs melhor</string>
+    <string name="dashboard_week_fuel">Custo combustível</string>
     <string name="action_sign_out">Terminar sessão</string>
 
     <!-- Navegação -->
@@ -13,6 +22,7 @@
     <string name="nav_history">Histórico</string>
     <string name="nav_trips">Viagens</string>
     <string name="nav_vehicles">Veículos</string>
+    <string name="nav_cars">Carros</string>
     <string name="nav_places">Locais</string>
 
     <!-- Viagens (Recentes + Por percurso) -->

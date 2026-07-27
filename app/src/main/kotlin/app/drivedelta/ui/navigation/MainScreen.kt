@@ -45,7 +45,7 @@ private data class TabItem(
 private val tabs = listOf(
     TabItem(NavDestinations.DASHBOARD, R.string.nav_home, Icons.Outlined.Home),
     TabItem(NavDestinations.HISTORY, R.string.nav_trips, Icons.Outlined.Route),
-    TabItem(NavDestinations.CARS, R.string.nav_vehicles, Icons.Outlined.DirectionsCar),
+    TabItem(NavDestinations.CARS, R.string.nav_cars, Icons.Outlined.DirectionsCar),
     TabItem(NavDestinations.PLACES, R.string.nav_places, Icons.Outlined.Place),
 )
 
@@ -82,6 +82,13 @@ fun MainScreen(
                     onStartTracking = onStartTracking,
                     onOpenTrip = onOpenTrip,
                     onOpenRouteSummary = onOpenRouteSummary,
+                    onSeeAllTrips = {
+                        tabNavController.navigate(NavDestinations.HISTORY) {
+                            popUpTo(tabNavController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable(NavDestinations.HISTORY) {

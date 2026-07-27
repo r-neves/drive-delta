@@ -48,7 +48,13 @@ class SyncManager @Inject constructor(
             }
             carDao.getPendingSync(userId).forEach { car ->
                 remote.pushCar(car)
-                carDao.insertOrReplace(car.copy(syncedAt = now))
+                if (car.isDeleted) {
+                    // Tombstone is now on the server (other devices pull it and hide the car);
+                    // drop the local row so hidden tombstones don't grow unbounded.
+                    carDao.hardDelete(car.id)
+                } else {
+                    carDao.insertOrReplace(car.copy(syncedAt = now))
+                }
             }
             fuelLogDao.getPendingSync(userId).forEach { log ->
                 remote.pushFuelLog(log)
