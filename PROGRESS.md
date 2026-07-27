@@ -14,8 +14,10 @@
 
 ## Current status
 
-- **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening. Latest HEAD `0aea747`.
-  Everything below CP is committed **and pushed** to `origin/main`.
+- **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
+  bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
+  By-route), Car-edit, Place-edit, Route Summary, and now the **Tracking HUD**. Still to sweep: Auth,
+  Trip Detail, ride-moments sheets, Fuel Log. Everything below is committed **and pushed** to `origin/main`.
 - **Last completed (this session, 2026-07-27):**
   1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
      dead) and segments were never pushed. Wired `SyncTrigger.requestInitialSync()` (push-then-pull)
@@ -78,6 +80,29 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep cont'd: Tracking HUD rebuilt to match `tracking-hud-{ahead,behind}.png`.**
+  The signature screen was restructured from a top-anchored HUD + separate centered STOP button to the
+  mockup's **bottom glass panel**. `HudOverlay` (`ui/tracking/components/`) is now: a **header row**
+  with a pulsing **RECORDING** dot (amber **SEARCHING** while acquiring GPS) on the left + the current
+  road name (uppercased, right-aligned, "—" placeholder) on the right; a **two-column main row** —
+  the big speed readout + `KM/H` (left) beside the segment time, `AHEAD/BEHIND BEST` status label and
+  a coloured **seconds delta** (`▾ −2.4s` / `▴ +1.9s`) (right); a divider; and a **footer row** with
+  `ELAPSED`/`DISTANCE` stat blocks and the **STOP button moved inside the panel** (bordered red pill +
+  square glyph per tokens.md §7). The segment status/best/delta only render once `bestSegmentMs` is
+  known — live splits stay **deferred by design** (so the right column shows just the segment time in
+  the running app; split-vs-best is delivered post-ride in Trip Detail). `TrackingScreen` moved the
+  HUD to `BottomCenter` (12dp side margins), and the top overlay is now a mockup-style **"◆ X.X km
+  left" destination chip** (left) + a **recenter button** (right, `MyLocation`, animates camera to the
+  latest follow target). New en+pt strings (`tracking_recording`, `_searching`, `_unit_kmh`,
+  `_label_elapsed/_distance`, `_ahead/_behind/_new_best`, `_best_caption`, `_km_left`, `_recenter`).
+  `HudOverlay` gained an `onStop` param. **Verified on emulator** via a real Start Ride → live GPS
+  track: SEARCHING/acquiring state (`--` km/h, `--:--`, amber dot) then RECORDING state (red dot,
+  road "—", speed, segment `0:00.0`, `ELAPSED`/`DISTANCE`, in-panel STOP, recenter button) confirmed
+  by screenshot + uiautomator node dump. The throwaway test trip was deleted from Room afterward.
+  Notes: the pre-ride & stop-confirm `ModalBottomSheet`s are flaky to open on this emulator (need a
+  clean single tap + a couple of tries); emulator `geo fix` carries no speed so the HUD speed reads 0.
+  Remaining un-swept: **Auth, Trip Detail, ride-moments sheets, Fuel Log** (+ Cars-screen title still
+  "Vehicles").
 - `2026-07-27` — **Design sweep cont'd: Car-edit + Place-edit rebuilt to match their mockups.**
   **Car-edit** (`car-edit.png`): a live **preview card** (car tile + name + plate + fuel badge), uppercase
   section labels over filled fields, a custom **colored-icon fuel-type selector** (Petrol/Diesel/Hybrid/

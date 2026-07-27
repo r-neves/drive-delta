@@ -144,6 +144,17 @@
     <string name="tracking_stat_time">Tempo</string>
     <string name="tracking_stat_distance">Distância</string>
     <string name="tracking_stat_avg_speed">Vel. média</string>
+    <string name="tracking_km_left">faltam %1$.1f km</string>
+    <string name="tracking_recording">A GRAVAR</string>
+    <string name="tracking_searching">A PROCURAR</string>
+    <string name="tracking_unit_kmh">KM/H</string>
+    <string name="tracking_label_elapsed">DECORRIDO</string>
+    <string name="tracking_label_distance">DISTÂNCIA</string>
+    <string name="tracking_ahead_of_best">À FRENTE DO MELHOR</string>
+    <string name="tracking_behind_best">ATRÁS DO MELHOR</string>
+    <string name="tracking_new_best">NOVO RECORDE</string>
+    <string name="tracking_best_caption">MELHOR %1$s</string>
+    <string name="tracking_recenter">Centrar mapa</string>
     <string name="tracking_notification_title">DriveDelta — a gravar viagem</string>
     <string name="tracking_notification_starting">A obter GPS…</string>
 
