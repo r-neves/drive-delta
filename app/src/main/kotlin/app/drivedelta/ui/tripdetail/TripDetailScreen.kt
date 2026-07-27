@@ -1,5 +1,7 @@
 package app.drivedelta.ui.tripdetail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,23 +9,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CompareArrows
-import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.CompareArrows
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -31,24 +41,34 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
 import app.drivedelta.domain.model.Segment
+import app.drivedelta.domain.model.Trip
 import app.drivedelta.domain.model.TripDetail
+import app.drivedelta.ui.components.routeTitle
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdError
+import app.drivedelta.ui.theme.DdPurpleRowBg
+import app.drivedelta.ui.theme.DdPurpleRowBorder
+import app.drivedelta.ui.theme.DdPurpleRowMuted
+import app.drivedelta.ui.theme.DdPurpleRowText
 import app.drivedelta.ui.theme.DdPurpleSector
 import app.drivedelta.ui.theme.DdSuccess
+import app.drivedelta.ui.theme.DdTextTertiary
 import app.drivedelta.ui.theme.LocalDdTokens
 import app.drivedelta.ui.theme.LocalDdType
 import com.google.android.gms.maps.model.CameraPosition
@@ -59,8 +79,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_replay)
@@ -75,28 +99,35 @@ fun TripDetailScreen(
     viewModel: TripDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    // Splits is the designed default tab (design/tokens.md §7).
+    var selectedTab by rememberSaveable { mutableIntStateOf(1) }
 
     androidx.compose.material3.Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.trip_detail_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                title = {
+                    Column {
+                        Text(
+                            routeTitle(state.originName, state.destName, stringResource(R.string.trip_detail_title)),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        state.detail?.trip?.let { trip ->
+                            Text(
+                                tripSubtitle(trip, state.carName),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 },
+                navigationIcon = { CircleIconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                } },
                 actions = {
                     val trip = state.detail?.trip
-                    if (trip != null) {
-                        IconButton(onClick = { onRouteSummary(trip.id) }) {
-                            Icon(Icons.Filled.Insights, contentDescription = stringResource(R.string.route_summary_title))
-                        }
-                        IconButton(onClick = { onCompare(trip.id) }) {
-                            Icon(Icons.Filled.CompareArrows, contentDescription = stringResource(R.string.trip_compare))
-                        }
-                    }
+                    if (trip != null) OverflowMenu(onInsights = { onRouteSummary(trip.id) }, onCompare = { onCompare(trip.id) })
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -117,12 +148,29 @@ fun TripDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 else -> Column(Modifier.fillMaxSize()) {
-                    TabRow(selectedTabIndex = selectedTab, containerColor = MaterialTheme.colorScheme.background) {
+                    SummaryHeader(detail)
+                    TabRow(
+                        selectedTabIndex = selectedTab,
+                        containerColor = MaterialTheme.colorScheme.background,
+                        indicator = { positions ->
+                            TabRowDefaults.SecondaryIndicator(
+                                Modifier.tabIndicatorOffset(positions[selectedTab]),
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        },
+                    ) {
                         TABS.forEachIndexed { i, labelRes ->
                             Tab(
                                 selected = selectedTab == i,
                                 onClick = { selectedTab = i },
-                                text = { Text(stringResource(labelRes)) },
+                                selectedContentColor = MaterialTheme.colorScheme.onSurface,
+                                unselectedContentColor = DdTextTertiary,
+                                text = {
+                                    Text(
+                                        stringResource(labelRes),
+                                        fontWeight = if (selectedTab == i) FontWeight.SemiBold else FontWeight.Normal,
+                                    )
+                                },
                             )
                         }
                     }
@@ -185,20 +233,14 @@ private fun SplitsTab(
     onBaseline: (CompareBaseline) -> Unit,
 ) {
     val tokens = LocalDdTokens.current
-    val ddType = LocalDdType.current
     val baselineMap = if (state.baseline == CompareBaseline.PREVIOUS) state.previousPerRoadKey else detail.bestPerRoadKey
 
-    Column(Modifier.fillMaxSize().padding(tokens.screenPadding)) {
-        // Summary header
-        val total = detail.segments.sumOf { it.durationMs }
-        val bestTotal = detail.bestPerRoadKey.values.sum()
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            SummaryStat(stringResource(R.string.trip_total_time), formatTime(total))
-            SummaryStat(stringResource(R.string.trip_best_total), formatTime(bestTotal))
-            SummaryStat(stringResource(R.string.trip_delta), formatDelta(total - bestTotal))
-        }
-
-        Row(Modifier.padding(vertical = tokens.spaceMd), horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+    Column(Modifier.fillMaxSize()) {
+        // vs-best / vs-previous baseline toggle (functional; not in the mockup, kept compact).
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceSm),
+            horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm),
+        ) {
             FilterChip(
                 selected = state.baseline == CompareBaseline.BEST,
                 onClick = { onBaseline(CompareBaseline.BEST) },
@@ -212,51 +254,154 @@ private fun SplitsTab(
             )
         }
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+        // Column header
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceSm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.trip_col_segment), style = MaterialTheme.typography.labelSmall, color = DdTextTertiary, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.trip_col_time), style = MaterialTheme.typography.labelSmall, color = DdTextTertiary, modifier = Modifier.width(84.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+            Text(stringResource(R.string.trip_col_delta), style = MaterialTheme.typography.labelSmall, color = DdTextTertiary, modifier = Modifier.width(96.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+        }
+
+        LazyColumn {
             itemsIndexed(detail.segments) { index, segment ->
-                SegmentSplitRow(index, segment, baselineMap[segment.roadKey], detail.bestPerRoadKey[segment.roadKey])
+                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                SegmentSplitRow(segment, baselineMap[segment.roadKey], detail.bestPerRoadKey[segment.roadKey])
             }
         }
     }
 }
 
 @Composable
-private fun SegmentSplitRow(index: Int, segment: Segment, baselineMs: Long?, bestMs: Long?) {
+private fun SegmentSplitRow(segment: Segment, baselineMs: Long?, bestMs: Long?) {
     val tokens = LocalDdTokens.current
     val ddType = LocalDdType.current
     val isPersonalBest = bestMs != null && segment.durationMs <= bestMs
-    Row(
-        modifier = Modifier
+    val timeStyle = ddType.numericMono.copy(fontSize = 22.sp)
+
+    val rowModifier = if (isPersonalBest) {
+        Modifier
             .fillMaxWidth()
-            .padding(vertical = tokens.spaceSm),
+            .background(DdPurpleRowBg)
+            .border(1.dp, DdPurpleRowBorder)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
+    Row(
+        modifier = rowModifier.padding(horizontal = tokens.screenPadding, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("${index + 1}", style = ddType.numericMono, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = tokens.spaceMd))
         Column(Modifier.weight(1f)) {
             Text(
                 segment.roadName,
                 style = MaterialTheme.typography.titleMedium,
-                color = if (isPersonalBest) DdPurpleSector else MaterialTheme.colorScheme.onSurface,
+                color = if (isPersonalBest) DdPurpleRowText else MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                stringResource(R.string.trip_segment_dist, segment.distanceMeters.roundToInt()),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                stringResource(R.string.trip_seg_dist_km, segment.distanceMeters / 1000f),
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.sp),
+                color = if (isPersonalBest) DdPurpleRowMuted else DdTextTertiary,
             )
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Text(formatTime(segment.durationMs), style = ddType.numericMono, color = MaterialTheme.colorScheme.onSurface)
-            val delta = baselineMs?.let { segment.durationMs - it }
-            if (delta != null) {
-                val faster = delta < 0
-                Text(
-                    (if (faster) "▾ −" else "▴ +") + formatTime(kotlin.math.abs(delta)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (faster) DdDeltaFaster else DdError,
-                    fontWeight = FontWeight.SemiBold,
-                )
+        Text(
+            formatTime(segment.durationMs),
+            style = timeStyle,
+            color = if (isPersonalBest) DdPurpleRowText else MaterialTheme.colorScheme.onSurface,
+            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            modifier = Modifier.width(84.dp),
+        )
+        Column(Modifier.width(96.dp), horizontalAlignment = Alignment.End) {
+            if (isPersonalBest) {
+                Text("★ ${stringResource(R.string.trip_pb)}", style = ddType.deltaValue.copy(fontSize = 18.sp), color = DdPurpleSector, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.trip_new_best), style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.sp), color = DdPurpleRowMuted)
+            } else {
+                val delta = baselineMs?.let { segment.durationMs - it }
+                if (delta != null) {
+                    val faster = delta < 0
+                    Text(
+                        (if (faster) "▾" else "▴") + formatDeltaSeconds(abs(delta)),
+                        style = ddType.deltaValue.copy(fontSize = 18.sp),
+                        color = if (faster) DdDeltaFaster else DdError,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                if (bestMs != null) {
+                    Text(
+                        stringResource(R.string.trip_best_caption, formatTime(bestMs)),
+                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.sp),
+                        color = DdTextTertiary,
+                    )
+                }
             }
         }
+    }
+}
+
+// --- Summary header + app-bar helpers -----------------------------------------------------------
+
+@Composable
+private fun SummaryHeader(detail: TripDetail) {
+    val tokens = LocalDdTokens.current
+    val trip = detail.trip
+    val avgKph = if (trip.durationMs > 0) (trip.distanceMeters / (trip.durationMs / 1000f) * 3.6f).roundToInt() else 0
+    val total = detail.segments.sumOf { it.durationMs }
+    val bestTotal = detail.bestPerRoadKey.values.sum()
+    val deltaVsBest = if (bestTotal > 0) total - bestTotal else null
+
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceMd),
+        horizontalArrangement = Arrangement.spacedBy(tokens.spaceLg),
+    ) {
+        HeaderStat(formatClockShort(trip.durationMs), stringResource(R.string.trip_hdr_duration))
+        HeaderStat(String.format(Locale.US, "%.1f", trip.distanceMeters / 1000f), stringResource(R.string.trip_hdr_km))
+        HeaderStat(avgKph.toString(), stringResource(R.string.trip_hdr_avg))
+        if (deltaVsBest != null) {
+            val faster = deltaVsBest <= 0
+            HeaderStat(
+                (if (faster) "▾" else "▴") + formatClockShort(abs(deltaVsBest)),
+                stringResource(R.string.trip_hdr_vs_best),
+                valueColor = if (faster) DdDeltaFaster else DdError,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HeaderStat(value: String, label: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
+    Column {
+        Text(value, style = MaterialTheme.typography.headlineMedium, color = valueColor)
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun CircleIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surface),
+    ) { content() }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    CircleIconButton(onClick = { expanded = true }) {
+        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.trip_more))
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.trip_menu_insights)) },
+            leadingIcon = { Icon(Icons.Outlined.Insights, contentDescription = null) },
+            onClick = { expanded = false; onInsights() },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.trip_compare)) },
+            leadingIcon = { Icon(Icons.Outlined.CompareArrows, contentDescription = null) },
+            onClick = { expanded = false; onCompare() },
+        )
     }
 }
 
@@ -338,15 +483,6 @@ private fun FuelPromptSheet(onAddFuel: () -> Unit, onDismiss: () -> Unit) {
 // --- Shared helpers -----------------------------------------------------------------------------
 
 @Composable
-private fun SummaryStat(label: String, value: String) {
-    val ddType = LocalDdType.current
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, style = ddType.statValue, color = MaterialTheme.colorScheme.onSurface)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
 private fun CenteredHint(text: String) {
     Box(Modifier.fillMaxSize()) {
         Text(text, Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -374,4 +510,29 @@ private fun formatTime(ms: Long): String {
     return String.format(Locale.US, "%d:%02d.%d", m, s, tenths)
 }
 
-private fun formatDelta(ms: Long): String = (if (ms < 0) "−" else "+") + formatTime(kotlin.math.abs(ms))
+/** m:ss with no tenths — for the summary header (Duration, vs best). */
+private fun formatClockShort(ms: Long): String {
+    val totalSec = ms / 1000
+    val h = totalSec / 3600
+    val m = (totalSec % 3600) / 60
+    val s = totalSec % 60
+    return if (h > 0) String.format(Locale.US, "%d:%02d:%02d", h, m, s)
+    else String.format(Locale.US, "%d:%02d", m, s)
+}
+
+private fun formatDeltaSeconds(ms: Long): String = String.format(Locale.US, "%.1f", ms / 1000f)
+
+/** "Today · 18:24 · Model 3" — date · time · car (car omitted when null). */
+@Composable
+private fun tripSubtitle(trip: Trip, carName: String?): String {
+    val zone = ZoneId.systemDefault()
+    val start = Instant.ofEpochMilli(trip.startTime).atZone(zone)
+    val today = LocalDate.now(zone)
+    val day = when (start.toLocalDate()) {
+        today -> stringResource(R.string.trips_day_today)
+        today.minusDays(1) -> stringResource(R.string.trips_day_yesterday)
+        else -> start.format(DateTimeFormatter.ofPattern("d MMM", Locale.getDefault()))
+    }
+    val time = start.format(DateTimeFormatter.ofPattern("HH:mm"))
+    return listOfNotNull(day, time, carName).joinToString(" · ")
+}
