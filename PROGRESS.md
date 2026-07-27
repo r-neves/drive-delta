@@ -14,20 +14,30 @@
 
 ## Current status
 
-- **Active checkpoint:** MVP build complete (CP0–CP10 code done). Remaining work is release-ops +
-  manual verification the environment can't do from here (see "Manual checks" list handed to the user).
-- **Last completed:** ✅ Checkpoint 10 (Hardening) — code-side hardening done: Roads API exponential
-  backoff (unit-tested), cold-GPS "Acquiring GPS" HUD state, no-internet handled via WorkManager
-  network constraint, ProGuard/R8 rules staged, 18 unit tests. **Deferred/release-ops:** permission
-  permanently-denied rationale + settings deep-link, Firebase Crashlytics, keystore/signing/AAB +
-  Play Store internal track, minified-release verification.
-- **Next up:** user-side release-ops (keystore, Play Console, Crashlytics) + the manual verification
-  checklist (Firestore console, real-device arrival visual, populated compare, sign-out round-trip).
-- **Note:** the two leftover "Test Place / Debug insert" rows (from the removed CP2 sync-test button)
-  plus a test "Rossio" place created during CP4 verification are in Room/Firestore — deletable via
-  the Places UI. Harmless. A temporary **Start/Stop test trip** harness now lives on the Dashboard
-  (CP5) and is removed when the real Start Ride flow lands in CP6.
-- **Last updated by:** (machine / 2026-07-20)
+- **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening. Latest HEAD `0aea747`.
+  Everything below CP is committed **and pushed** to `origin/main`.
+- **Last completed (this session, 2026-07-27):**
+  1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
+     dead) and segments were never pushed. Wired `SyncTrigger.requestInitialSync()` (push-then-pull)
+     on sign-in + cold-start; push+pull now include segments; `pullAll` reads `Source.SERVER`.
+     **Verified**: empty-cache server pull restored trips/places/cars/fuel + a new trip's segments.
+     (The "only cars+fuel in console" report was a Firestore-console scroll/nav thing — data was there.)
+  2. **Closed CP9/CP10 code deferrals** — permission permanently-denied dialog (settings deep-link);
+     Dashboard weekly summary + personal bests; History by-vehicle filter chips. All verified on emulator.
+- **Next up (pick one; none are blocking — MVP is functionally complete):**
+  - **PRIORITY / needs YOU:** real-device pass — one real drive (HUD/tracking/ArrivalSheet visual +
+    populated Compare from two identical drives), then release-ops: **keystore + signing + AAB +
+    Play Store internal track**, **Firebase Crashlytics**, and verify a **minified release build**
+    before flipping `isMinifyEnabled=true` (ProGuard rules already staged).
+  - **Code backlog I can do without a device:** soft-delete tombstone pruning for cars/places (known
+    CP3 TODO, unbounded growth); History place-pair + date-range filters; finish pt translations
+    (only core strings done); a11y contentDescription audit. Live-split HUD delta stays **deferred by
+    design** (needs a live Roads call, barred by the cost rule).
+- **Note:** route points are **local-only by design** (never synced) → Trip Detail map/replay only
+  work on the recording device (post-MVP: Firebase Storage upload). Firestore security rules reviewed
+  and correct (per-user, not test mode). Emulator (`Medium_Phone`) was `pm clear`'d during sync
+  diagnosis, so it's freshly re-synced from server; old test trips lack route points (expected).
+- **Last updated by:** (machine / 2026-07-27)
 - **Working branch:** `main`
 
 ---
