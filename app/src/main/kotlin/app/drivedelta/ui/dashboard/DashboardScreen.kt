@@ -3,6 +3,7 @@ package app.drivedelta.ui.dashboard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,12 +40,11 @@ import app.drivedelta.ui.tracking.components.PreRideSheet
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.roundToInt
 
 /**
- * Dashboard. For now a "Start Ride" FAB that (after the tracking permission chain) opens the pre-ride
- * sheet; starting a ride navigates to the Live Tracking screen via [onStartTracking]. Recent trips,
- * personal bests, and weekly stats (F13) arrive in Checkpoint 9.
+ * Dashboard (F13): weekly summary, personal bests (most-driven routes + best times), and recent
+ * rides (the Trip Detail entry point). "Start Ride" opens the pre-ride sheet after the permission
+ * chain and navigates to Live Tracking.
  */
 @Composable
 fun DashboardScreen(
@@ -55,6 +55,8 @@ fun DashboardScreen(
 ) {
     var showPreRide by remember { mutableStateOf(false) }
     val recentTrips by viewModel.recentTrips.collectAsStateWithLifecycle()
+    val weekly by viewModel.weeklyStats.collectAsStateWithLifecycle()
+    val personalBests by viewModel.personalBests.collectAsStateWithLifecycle()
     val requestPermissionsThenSheet = rememberStartTrackingPermissionFlow(
         onAllGranted = { showPreRide = true },
     )
@@ -69,46 +71,53 @@ fun DashboardScreen(
             )
         },
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 24.dp),
+                .padding(horizontal = 20.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.dashboard_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.dashboard_recent_rides),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(8.dp))
-            if (recentTrips.isEmpty()) {
+            item {
                 Text(
-                    text = stringResource(R.string.dashboard_no_trips),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(R.string.dashboard_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                items(recentTrips) { trip -> TripCard(trip, onClick = { onOpenTrip(trip.id) }) }
+
+            item { SectionLabel(stringResource(R.string.dashboard_this_week)) }
+            item { WeeklyCard(weekly) }
+
+            if (personalBests.isNotEmpty()) {
+                item { SectionLabel(stringResource(R.string.dashboard_personal_bests)) }
+                items(personalBests, key = { it.routeHash }) { pb -> PersonalBestCard(pb) }
             }
-            Spacer(Modifier.height(12.dp))
-            OutlinedButton(
-                onClick = {
-                    viewModel.signOut()
-                    onSignedOut()
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            ) {
-                Text(stringResource(R.string.action_sign_out))
+
+            item { SectionLabel(stringResource(R.string.dashboard_recent_rides)) }
+            if (recentTrips.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.dashboard_no_trips),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(recentTrips, key = { it.id }) { trip -> TripCard(trip, onClick = { onOpenTrip(trip.id) }) }
+
+            item {
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = {
+                        viewModel.signOut()
+                        onSignedOut()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.action_sign_out))
+                }
             }
         }
     }
@@ -121,6 +130,68 @@ fun DashboardScreen(
                 onStartTracking()
             },
         )
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 8.dp),
+    )
+}
+
+@Composable
+private fun WeeklyCard(stats: WeeklyStats) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Stat(stringResource(R.string.dashboard_week_distance), String.format(Locale.US, "%.1f km", stats.distanceKm))
+            Stat(stringResource(R.string.dashboard_week_time), formatDuration(stats.driveMinutes))
+            Stat(stringResource(R.string.dashboard_week_fuel), String.format(Locale.US, "€%.0f", stats.fuelCost))
+        }
+    }
+}
+
+@Composable
+private fun Stat(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun PersonalBestCard(pb: PersonalBest) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_route_summary, pb.distanceKm, pb.rideCount),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.dashboard_best_time, formatBest(pb.bestDurationMs)),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 
@@ -140,13 +211,26 @@ private fun TripCard(trip: Trip, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(4.dp))
-            val km = trip.distanceMeters / 1000f
-            val mins = (trip.durationMs / 60000).toInt()
             Text(
-                text = stringResource(R.string.dashboard_trip_summary, km, mins),
+                text = stringResource(
+                    R.string.dashboard_trip_summary,
+                    trip.distanceMeters / 1000f,
+                    (trip.durationMs / 60000).toInt(),
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
+}
+
+private fun formatDuration(minutes: Int): String {
+    val h = minutes / 60
+    val m = minutes % 60
+    return if (h > 0) String.format(Locale.US, "%dh %02dm", h, m) else String.format(Locale.US, "%dm", m)
+}
+
+private fun formatBest(ms: Long): String {
+    val totalSec = ms / 1000
+    return String.format(Locale.US, "%d:%02d", totalSec / 60, totalSec % 60)
 }

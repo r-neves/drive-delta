@@ -13,9 +13,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import app.drivedelta.R
 
 /**
  * Wires the tracking permission suite as a sequential chain and returns an action to launch it. The
@@ -23,14 +32,15 @@ import androidx.core.content.ContextCompat
  * each request must be its own dialog. The chain is fine → background (API 29+) → notifications
  * (API 33+) → battery-optimisation exemption → [onAllGranted].
  *
- * For Checkpoint 5 a denied step simply doesn't advance (the trip won't start); the permanently-
- * denied rationale + settings deep-links are Checkpoint 10 hardening. [onAllGranted] fires once the
- * chain reaches the end regardless of the optional grants (background/notifications/battery), since
- * fine location alone is enough to record while the app is foreground.
+ * Fine location is required to record a ride, so if it's denied (including permanently) a rationale
+ * dialog with a deep-link to the app's system settings is shown (Checkpoint 10). Background,
+ * notifications and battery are optional — the chain proceeds regardless, since fine location alone
+ * is enough to record while the app is foreground.
  */
 @Composable
 fun rememberStartTrackingPermissionFlow(onAllGranted: () -> Unit): () -> Unit {
     val context = LocalContext.current
+    var showLocationDeniedDialog by remember { mutableStateOf(false) }
 
     // Steps are declared in reverse so each earlier launcher can reference the next one's callback.
     val batteryLauncher = rememberLauncherForActivityResult(StartActivityForResult()) {
@@ -51,7 +61,31 @@ fun rememberStartTrackingPermissionFlow(onAllGranted: () -> Unit): () -> Unit {
     val fineLauncher = rememberLauncherForActivityResult(RequestMultiplePermissions()) { result ->
         val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        if (granted) requestBackgroundThen(context, backgroundLauncher, afterLocation)
+        if (granted) {
+            requestBackgroundThen(context, backgroundLauncher, afterLocation)
+        } else {
+            // Denied (possibly permanently) — the ride can't record without location.
+            showLocationDeniedDialog = true
+        }
+    }
+
+    if (showLocationDeniedDialog) {
+        AlertDialog(
+            onDismissRequest = { showLocationDeniedDialog = false },
+            title = { Text(stringResource(R.string.perm_location_title)) },
+            text = { Text(stringResource(R.string.perm_location_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLocationDeniedDialog = false
+                    openAppSettings(context)
+                }) { Text(stringResource(R.string.perm_open_settings)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLocationDeniedDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 
     return {
@@ -112,6 +146,15 @@ private fun requestBatteryExemptionThen(
     )
     // Some OEMs/emulators don't resolve this action; fall through so tracking still starts.
     runCatching { launcher.launch(intent) }.onFailure { next() }
+}
+
+/** Deep-links to the app's system settings so the user can grant a permanently-denied permission. */
+private fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null),
+    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(intent) }
 }
 
 private fun hasPermission(context: Context, permission: String): Boolean =

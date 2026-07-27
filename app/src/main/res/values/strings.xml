@@ -8,11 +8,23 @@
     <string name="action_sign_out">Sign out</string>
 
 
+    <!-- Permissions -->
+    <string name="perm_location_title">Location needed</string>
+    <string name="perm_location_message">DriveDelta needs location access to record your ride. Enable it in Settings to start tracking.</string>
+    <string name="perm_open_settings">Open settings</string>
+
     <!-- Dashboard -->
     <string name="dashboard_start_ride">Start Ride</string>
     <string name="dashboard_recent_rides">RECENT RIDES</string>
     <string name="dashboard_no_trips">No rides yet — tap Start Ride to record one.</string>
     <string name="dashboard_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="dashboard_this_week">THIS WEEK</string>
+    <string name="dashboard_personal_bests">PERSONAL BESTS</string>
+    <string name="dashboard_week_distance">Distance</string>
+    <string name="dashboard_week_time">Drive time</string>
+    <string name="dashboard_week_fuel">Fuel</string>
+    <string name="dashboard_route_summary">%1$.1f km · %2$d rides</string>
+    <string name="dashboard_best_time">Best %1$s</string>
 
     <!-- Trip detail (F10) -->
     <string name="trip_detail_title">Ride</string>
@@ -82,6 +94,7 @@
     <!-- History (F11) -->
     <string name="history_empty">No rides yet.</string>
     <string name="history_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="history_filter_all">All</string>
     <string name="history_delete_title">Delete ride?</string>
     <string name="history_delete_message">This permanently removes the ride and its route.</string>
 
