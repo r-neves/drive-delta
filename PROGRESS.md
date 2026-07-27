@@ -25,6 +25,9 @@
   2. **Closed CP9/CP10 code deferrals** — permission permanently-denied dialog (settings deep-link);
      Dashboard weekly summary + personal bests; History by-vehicle filter chips. All verified on emulator.
 - **Next up (pick one; none are blocking — MVP is functionally complete):**
+  - **NEW — REQUIRED BEFORE PUBLISH (user request 2026-07-27):** build the **Route Summary / Trip
+    Summary screen** — see task spec in "Known issues / TODO carryover" + mockup
+    `design/mockups/trip-summary.png`. Route-level analytics for A→B (e.g. Home→Office).
   - **PRIORITY / needs YOU:** real-device pass — one real drive (HUD/tracking/ArrivalSheet visual +
     populated Compare from two identical drives), then release-ops: **keystore + signing + AAB +
     Play Store internal track**, **Firebase Crashlytics**, and verify a **minified release build**
@@ -265,6 +268,29 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
+- **[REQUIRED BEFORE PUBLISH] Route Summary screen** (user request 2026-07-27; mockup
+  `design/mockups/trip-summary.png`). A route-level analytics view for a place-pair A→B (e.g.
+  "Home → Office") aggregating **all rides on that route**. Not in the original CP0–10 plan — a new
+  screen to add. Reached from a completed ride and/or from Dashboard "personal bests".
+  **Layout from the mockup (dark theme):**
+  - Header: `Origin → Destination`, subtitle `date · time · car name`, back + **share** icons.
+  - Green **"Ride saved"** banner: `N segments timed · M new personal best(s)`.
+  - **Total-time card:** big total (`24:18`), **VS BEST** delta with ▾/▴ colour (`▾ 1:12`, green
+    faster / red slower) + `best 23:36`; stat row **Distance · Avg speed · Energy cost** (energy/fuel
+    cost from the linked `FuelLog`; £/€ per locale).
+  - **Three tiles:** `FASTER` (green) / `SLOWER` (red) / `PURPLE` (violet `DdPurpleSector`) counts —
+    per-segment comparison of THIS ride vs best-ever (purple = new personal-best segments).
+  - **"Speed vs. cost" scatter** with a `"42 drives"` count: each dot = one past drive on this route,
+    x = avg speed (~40–100 km/h), y = energy cost (~£2–6), with a dashed U-curve trend line; highlight
+    **THIS DRIVE** (green), the personal best, and a purple point. Caption explains the U-curve
+    (cost rises when crawling and when pushing). Use a **custom Canvas** chart (same as Compare —
+    avoid Vico beta).
+  **Data:** all trips sharing the route (by `routeHash`, or the origin/destination place pair);
+  per-trip total time/distance/avgSpeed + energy cost via linked FuelLog; best total across them;
+  per-segment faster/slower/purple counts via `CompareSegmentsUseCase`/`bestSegmentDuration`. Likely
+  a new `RouteSummaryUseCase` + `RouteSummaryViewModel`/`Screen` + nav route (arg: routeHash or
+  place-pair). Reuses existing segment-comparison + fuel-efficiency logic. **Also:** add
+  `trip-summary.png` to the design-assets list in CLAUDE.md (was 14 PNGs → 15).
 - **Soft-delete tombstones are never pruned (deferred from CP3).** Swipe-delete does
   `CarDao.softDelete` (isDeleted=true, syncedAt=NULL) and the worker pushes the `isDeleted:true`
   doc to Firestore — this is correct and intended: the tombstone propagates the deletion to other
