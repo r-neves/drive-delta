@@ -16,9 +16,10 @@
 
 - **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
   bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
-  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, **Trip Detail**, and
-  the **ride-moments sheets** (StopConfirm/Arrival/PreRide). Still to sweep: Fuel Log. Everything below
-  is committed **and pushed** to `origin/main`.
+  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, **Trip Detail**, the
+  **ride-moments sheets** (StopConfirm/Arrival/PreRide), and **Fuel Log** — plus the Cars-screen title
+  fix. **The design-drift sweep is complete** across every mockup screen. Everything below is committed
+  **and pushed** to `origin/main`.
 - **Last completed (this session, 2026-07-27):**
   1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
      dead) and segments were never pushed. Wired `SyncTrigger.requestInitialSync()` (push-then-pull)
@@ -81,6 +82,19 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep FINAL: Fuel Log aligned to the Car-edit form language + Cars-screen
+  title fixed.** The **Fuel Log** (F12) has no dedicated mockup, so it was rebuilt to match the form
+  language established in `car-edit.png`: **uppercase field labels** (`LabeledField`) over **filled
+  surface inputs** (`DdSurface` container, `DdOutline` border, `DdPrimary` focus, `radiusInput`) with
+  **unit suffixes** (`L`, `kWh`, `km`), an **app-bar Save** action + a bold bottom **"Save fill-up"**
+  primary button, and the post-save result moved into a **bordered summary card** (green efficiency
+  text). The car selector + adaptive fuel/electric fields + auto-calc total were preserved. Also fixed
+  the leftover **Cars-screen title "Vehicles" → "Cars"** (`cars_title`, en+pt) to match the bottom-nav
+  label + mockups. New en+pt strings (`fuel_unit_l/_kwh/_km`, `fuel_save`). **Verified on emulator**:
+  the Cars screen title now reads "Cars"; opening a trip's fuel prompt → Add fill-up → the redesigned
+  Fuel Log renders (uppercase labels, filled fields with L/km suffixes, Save/Save-fill-up), and
+  entering 40 L × 1.80 auto-calculated 72.00 and showed the bordered saved-summary card. **The
+  design-drift sweep is now complete** across all mockup screens.
 - `2026-07-27` — **Design sweep cont'd: Ride-moments sheets rebuilt to match the `ride-moments-*` mockups.**
   (1) **StopConfirmSheet** (`ride-moments-stop-confirm.png`) — added a **red stop badge** (circle with
   a red-tinted fill/border + red rounded-square glyph), a **save-to-history subtitle**, and wrapped the

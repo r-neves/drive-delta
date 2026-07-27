@@ -99,10 +99,14 @@
     <string name="fuel_odometer">Quilómetros (odómetro)</string>
     <string name="fuel_saved_cost">Este abastecimento: %1$s</string>
     <string name="fuel_saved_efficiency">Eficiência: %1$s</string>
+    <string name="fuel_unit_l">L</string>
+    <string name="fuel_unit_kwh">kWh</string>
+    <string name="fuel_unit_km">km</string>
+    <string name="fuel_save">Guardar abastecimento</string>
     <string name="trip_fuel_add">Adicionar abastecimento</string>
 
     <!-- Veículos -->
-    <string name="cars_title">Veículos</string>
+    <string name="cars_title">Carros</string>
     <string name="cars_add">Adicionar veículo</string>
     <string name="cars_empty_title">Ainda não há veículos</string>
     <string name="cars_empty_subtitle">Adiciona um carro para registar combustível e viagens.</string>
