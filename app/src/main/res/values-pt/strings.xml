@@ -15,6 +15,17 @@
     <string name="dashboard_see_all">Ver tudo</string>
     <string name="dashboard_vs_best">vs melhor</string>
     <string name="dashboard_week_fuel">Custo combustível</string>
+
+    <!-- Edição de carro -->
+    <string name="car_set_default_subtitle">Usado automaticamente em novas viagens</string>
+    <string name="car_edit_save_changes">Guardar alterações</string>
+    <string name="car_battery_helper">Campos de bateria mostrados para veículos elétricos.</string>
+    <string name="car_label_name">NOME DO CARRO</string>
+    <string name="car_label_plate">MATRÍCULA</string>
+    <string name="car_label_fuel">COMBUSTÍVEL</string>
+    <string name="car_label_battery">BATERIA</string>
+    <string name="car_label_tank">DEPÓSITO</string>
+    <string name="car_label_consumption">CONSUMO</string>
     <string name="action_sign_out">Terminar sessão</string>
 
     <!-- Navegação -->
