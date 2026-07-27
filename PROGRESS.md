@@ -16,7 +16,7 @@
 
 - **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
   bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
-  By-route), Car-edit, Place-edit, Route Summary, and now the **Tracking HUD**. Still to sweep: Auth,
+  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, and **Auth**. Still to sweep:
   Trip Detail, ride-moments sheets, Fuel Log. Everything below is committed **and pushed** to `origin/main`.
 - **Last completed (this session, 2026-07-27):**
   1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
@@ -80,6 +80,22 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep cont'd: Auth screen rebuilt to match `auth.png`.** Swapped the
+  placeholder `Δ` glyph for a proper **apex mark** — a new `ic_apex_logo.xml` vector drawing two
+  overlapping triangle strokes (brand blue `#5B8DEF` + success green `#37D67A`) inside the rounded
+  surface tile. Layout re-anchored to the mockup: the brand block (logo/wordmark/tagline) sits in the
+  upper-middle via weights, and the **"Continue with Google" button is pinned near the bottom** with a
+  new `ic_google_g.xml` (official 4-colour Google G) + a **Terms/Privacy caption** below it (blue link
+  spans on `DdSecondary`). Wordmark bumped to 38sp bold; button 64dp with a hairline border. Button
+  copy changed from "Sign in with Google" → **"Continue with Google"** (+pt "Continuar com Google").
+  **Gotcha fixed:** Android trims leading/trailing whitespace in string resources, so the caption
+  words ran together ("ourTermsandPrivacy") — moved the spaces into the `buildAnnotatedString` and kept
+  the string pieces whitespace-free. New strings `auth_terms_prefix/_terms/_terms_conj/_privacy/
+  _logo_desc` (en+pt). **Verified on emulator** end-to-end: signed out → Auth screen renders per the
+  mockup (apex tile, wordmark, tagline, bottom Google button, correctly-spaced caption) → "Continue
+  with Google" → silent SSO → back to Dashboard; the sign-out cleared the local cache and the
+  **initial Firestore pull restored all 9 trips / 3 cars / 3 places** (route_points were already 0, so
+  nothing local-only was lost; a full DB backup was taken beforehand as a safety net regardless).
 - `2026-07-27` — **Design sweep cont'd: Tracking HUD rebuilt to match `tracking-hud-{ahead,behind}.png`.**
   The signature screen was restructured from a top-anchored HUD + separate centered STOP button to the
   mockup's **bottom glass panel**. `HudOverlay` (`ui/tracking/components/`) is now: a **header row**
