@@ -16,8 +16,9 @@
 
 - **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
   bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
-  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, and **Trip Detail**.
-  Still to sweep: ride-moments sheets, Fuel Log. Everything below is committed **and pushed** to `origin/main`.
+  By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, **Trip Detail**, and
+  the **ride-moments sheets** (StopConfirm/Arrival/PreRide). Still to sweep: Fuel Log. Everything below
+  is committed **and pushed** to `origin/main`.
 - **Last completed (this session, 2026-07-27):**
   1. **Fixed broken Firestore sync** — `pullAll` was never called (restore-on-sign-in/new-device was
      dead) and segments were never pushed. Wired `SyncTrigger.requestInitialSync()` (push-then-pull)
@@ -80,6 +81,29 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Design sweep cont'd: Ride-moments sheets rebuilt to match the `ride-moments-*` mockups.**
+  (1) **StopConfirmSheet** (`ride-moments-stop-confirm.png`) — added a **red stop badge** (circle with
+  a red-tinted fill/border + red rounded-square glyph), a **save-to-history subtitle**, and wrapped the
+  stats in a **bordered card with vertical dividers** showing `Elapsed / Distance / Avg` with small unit
+  suffixes (km, km/h); Finish Ride stays red, Keep Going outlined. (2) **ArrivalSheet**
+  (`ride-moments-auto-finish.png`) — replaced the plain countdown text with a **green countdown ring**
+  (Canvas arc, "30"/"SEC" centre) + a **depleting green progress bar**, an "Auto-finishing this ride…"
+  subtitle, and a **green** Finish Ride button (dark text). (3) **PreRideSheet** (`ride-moments-pre-ride.png`)
+  — targeted polish: added the **ⓘ "Set a destination to auto-finish…" hint** line and a **▶ play icon**
+  on the bold Start Ride button (the dropdown selectors were kept functional rather than rebuilt into
+  the mockup's rich vehicle/place cards — a fuller pass is possible later). New en+pt strings
+  (`tracking_stop_subtitle`, `_arrived_subtitle`, `_countdown_unit`, `_stat_elapsed`, `_stat_avg`,
+  `preride_hint`). **Verified on emulator**: started a ride → the polished pre-ride sheet (hint + play
+  button) → HUD → **STOP → the redesigned StopConfirmSheet** (red badge, subtitle, bordered
+  Elapsed/Distance/Avg card, red/outlined buttons) rendered pixel-close to the mockup; Finish Ride
+  completed cleanly. **ArrivalSheet not captured on-emulator** — the geofence 5-consecutive-fix arrival
+  debounce is unreliable under `adb emu geo fix` (established CP6 limitation: fixes arrive irregularly
+  and interpolated points don't count; held at the destination for minutes at "0.0 km left" without
+  firing). It compiles, uses the same `ModalBottomSheet` path StopConfirm just rendered, and its logic
+  is unit-tested (`DetectArrivalUseCaseTest`). Two dangling in-progress trips (one a resurrected
+  HUD-test trip, one from force-stopping mid-finish) were finished + cleaned in Room afterward.
+  The acquiring-GPS state (`ride-moments-acquiring-gps.png`) was already covered by the HUD sweep
+  (SEARCHING amber pill + `--` placeholders).
 - `2026-07-27` — **Design sweep cont'd: Trip Detail rebuilt to match `trip-detail.png`.** The screen
   was restructured to the mockup's shape: (1) **app bar** now shows the dynamic **"Origin → Destination"**
   route title (via the shared `routeTitle` helper; falls back to "Ride" when a trip has no linked
