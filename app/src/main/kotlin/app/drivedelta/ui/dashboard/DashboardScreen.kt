@@ -51,6 +51,7 @@ fun DashboardScreen(
     onSignedOut: () -> Unit,
     onStartTracking: () -> Unit,
     onOpenTrip: (String) -> Unit,
+    onOpenRouteSummary: (String) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     var showPreRide by remember { mutableStateOf(false) }
@@ -92,7 +93,9 @@ fun DashboardScreen(
 
             if (personalBests.isNotEmpty()) {
                 item { SectionLabel(stringResource(R.string.dashboard_personal_bests)) }
-                items(personalBests, key = { it.routeHash }) { pb -> PersonalBestCard(pb) }
+                items(personalBests, key = { it.routeHash }) { pb ->
+                    PersonalBestCard(pb, onClick = { onOpenRouteSummary(pb.bestTripId) })
+                }
             }
 
             item { SectionLabel(stringResource(R.string.dashboard_recent_rides)) }
@@ -170,9 +173,9 @@ private fun Stat(label: String, value: String) {
 }
 
 @Composable
-private fun PersonalBestCard(pb: PersonalBest) {
+private fun PersonalBestCard(pb: PersonalBest, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {

@@ -122,4 +122,23 @@
     <!-- Comparação -->
     <string name="compare_title">Comparar viagens</string>
     <string name="compare_no_matches">Ainda não há outras viagens neste percurso. Conduz de novo para comparar.</string>
+
+    <!-- Resumo do percurso -->
+    <string name="route_summary_title">Resumo do percurso</string>
+    <string name="route_summary_share">Partilhar</string>
+    <string name="route_summary_ride_saved">Viagem guardada</string>
+    <string name="route_summary_ride_saved_detail">%1$d troços cronometrados · %2$d novo(s) recorde(s) pessoal(is)</string>
+    <string name="route_summary_total_time">TEMPO TOTAL</string>
+    <string name="route_summary_vs_best">VS MELHOR</string>
+    <string name="route_summary_best_caption">melhor %1$s</string>
+    <string name="route_summary_distance">Distância</string>
+    <string name="route_summary_avg_speed">Vel. média</string>
+    <string name="route_summary_energy_cost">Custo energia</string>
+    <string name="route_summary_faster">MAIS RÁPIDO</string>
+    <string name="route_summary_slower">MAIS LENTO</string>
+    <string name="route_summary_purple">RECORDE</string>
+    <string name="route_summary_speed_cost">Velocidade vs. custo</string>
+    <string name="route_summary_drive_count">%1$d viagens</string>
+    <string name="route_summary_scatter_caption">Cada ponto é uma viagem neste percurso. Ao longo do tempo os pontos traçam uma curva — o custo sobe quando andas devagar e quando forças.</string>
+    <string name="route_summary_scatter_empty">Regista combustível em algumas viagens deste percurso para ver a curva velocidade-custo.</string>
 </resources>

@@ -22,12 +22,14 @@ object NavDestinations {
     const val CAR_EDIT_ROUTE = "car_edit?${NavArgs.CAR_ID}={${NavArgs.CAR_ID}}"
     const val PLACE_EDIT_ROUTE = "place_edit?${NavArgs.PLACE_ID}={${NavArgs.PLACE_ID}}"
 
-    // Trip detail + compare (outer graph)
+    // Trip detail + compare + route summary (outer graph)
     const val TRIP_DETAIL_ROUTE = "trip_detail/{${NavArgs.TRIP_ID}}"
     const val COMPARE_ROUTE = "compare/{${NavArgs.TRIP_ID}}"
+    const val ROUTE_SUMMARY_ROUTE = "route_summary/{${NavArgs.TRIP_ID}}"
 
     fun tripDetail(tripId: String): String = "trip_detail/$tripId"
     fun compare(tripId: String): String = "compare/$tripId"
+    fun routeSummary(tripId: String): String = "route_summary/$tripId"
 
     // Fuel log (outer graph); optional tripId to pre-link a ride.
     const val FUEL_LOG_ROUTE = "fuel_log?${NavArgs.TRIP_ID}={${NavArgs.TRIP_ID}}"

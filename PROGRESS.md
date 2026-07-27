@@ -24,10 +24,18 @@
      (The "only cars+fuel in console" report was a Firestore-console scroll/nav thing — data was there.)
   2. **Closed CP9/CP10 code deferrals** — permission permanently-denied dialog (settings deep-link);
      Dashboard weekly summary + personal bests; History by-vehicle filter chips. All verified on emulator.
+  3. **✅ Built the Route Summary screen** (the REQUIRED-BEFORE-PUBLISH task) — route-level A→B
+     analytics aggregating all rides on a route by `routeHash`. New `RouteSummaryUseCase` (+ model),
+     `RouteSummaryViewModel`/`Screen`, nav route `route_summary/{tripId}`, reached from the **Trip
+     Detail app-bar Insights icon** and from **Dashboard personal-best cards**. Header + green "Ride
+     saved" banner + total-time card (vs-best ▾/▴ delta + Distance/Avg speed/Energy cost) + FASTER/
+     SLOWER/PURPLE tiles + custom-Canvas **speed-vs-cost scatter** (this-drive/fastest-purple/
+     cheapest-green markers, dashed quadratic U-curve). Reuses the segment-comparison baselines and
+     the linked-FuelLog cost. 3 unit tests (`RouteSummaryUseCaseTest`), share intent, en+pt strings.
+     **Verified on emulator** via an injected 6-ride synthetic route: 3/2/1 tiles + full scatter from
+     the Insights entry (red ▴ delta), and green ▾ delta from the Dashboard PB-card entry (fastest
+     ride). Synthetic rows cleaned up afterward.
 - **Next up (pick one; none are blocking — MVP is functionally complete):**
-  - **NEW — REQUIRED BEFORE PUBLISH (user request 2026-07-27):** build the **Route Summary / Trip
-    Summary screen** — see task spec in "Known issues / TODO carryover" + mockup
-    `design/mockups/trip-summary.png`. Route-level analytics for A→B (e.g. Home→Office).
   - **PRIORITY / needs YOU:** real-device pass — one real drive (HUD/tracking/ArrivalSheet visual +
     populated Compare from two identical drives), then release-ops: **keystore + signing + AAB +
     Play Store internal track**, **Firebase Crashlytics**, and verify a **minified release build**
@@ -70,6 +78,23 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **Route Summary screen — design decisions.** (1) **Keyed on `tripId`** (the drive
+  in focus), not routeHash/place-pair — the mockup centres on one drive ("this drive"), and the
+  group of comparable rides is derived internally by `routeHash` equality (blank hash → the drive
+  stands alone). (2) **Totals use `Trip.durationMs`** (wall-clock, always present) for cross-ride
+  comparison, not segment sums (some rides have no segments). `bestTotal` = min duration of the
+  **other** rides (the standing record) so a genuine PB shows a green ▾ delta; if the drive is alone,
+  delta is 0. (3) **Per-segment tiles are a strict partition** of this ride's segments: *purple* if
+  it beats the all-time record for that road (new PB, using `bestSegmentDuration`-style min over
+  OTHER rides), else *faster*/*slower* vs the **previous run**'s time on that road (same "previous
+  run" baseline the Trip Detail splits already compute). So faster+slower+purple == segmentsTimed,
+  and `newPersonalBests == purpleCount`. (4) **Scatter** = only rides with a linked FuelLog cost AND
+  a computable avg speed; markers: this-drive (green, priority), fastest-by-time (purple ring),
+  cheapest-by-cost (green ring); trend = least-squares **quadratic** drawn only when it's an upward
+  U (`a > 0`) with ≥3 points. (5) **Entry points:** Trip Detail app-bar Insights icon (primary,
+  matches mockup) + Dashboard PB cards (→ the route's fastest ride). (6) Emulator GPS can't produce
+  a multi-ride same-`routeHash` route on demand, so the full screen was **verified by injecting a
+  synthetic 6-ride route** into Room (push modified DB via `run-as`, per the CP5 note), then removed.
 - `2026-07-27` — **Sync bug hunt (user report: "only cars + fuel_logs in Firestore").** Diagnosed on
   emulator by wiping local (sign-out) and observing what a pull restores. Findings + fixes:
   (1) **`SyncManager.pullAll()` was NEVER called** anywhere — restore-on-sign-in / new-device was
@@ -268,29 +293,22 @@ Example entries you might add later:
 
 Things noticed but deferred — so they aren't lost between sessions.
 
-- **[REQUIRED BEFORE PUBLISH] Route Summary screen** (user request 2026-07-27; mockup
-  `design/mockups/trip-summary.png`). A route-level analytics view for a place-pair A→B (e.g.
-  "Home → Office") aggregating **all rides on that route**. Not in the original CP0–10 plan — a new
-  screen to add. Reached from a completed ride and/or from Dashboard "personal bests".
-  **Layout from the mockup (dark theme):**
-  - Header: `Origin → Destination`, subtitle `date · time · car name`, back + **share** icons.
-  - Green **"Ride saved"** banner: `N segments timed · M new personal best(s)`.
-  - **Total-time card:** big total (`24:18`), **VS BEST** delta with ▾/▴ colour (`▾ 1:12`, green
-    faster / red slower) + `best 23:36`; stat row **Distance · Avg speed · Energy cost** (energy/fuel
-    cost from the linked `FuelLog`; £/€ per locale).
-  - **Three tiles:** `FASTER` (green) / `SLOWER` (red) / `PURPLE` (violet `DdPurpleSector`) counts —
-    per-segment comparison of THIS ride vs best-ever (purple = new personal-best segments).
-  - **"Speed vs. cost" scatter** with a `"42 drives"` count: each dot = one past drive on this route,
-    x = avg speed (~40–100 km/h), y = energy cost (~£2–6), with a dashed U-curve trend line; highlight
-    **THIS DRIVE** (green), the personal best, and a purple point. Caption explains the U-curve
-    (cost rises when crawling and when pushing). Use a **custom Canvas** chart (same as Compare —
-    avoid Vico beta).
-  **Data:** all trips sharing the route (by `routeHash`, or the origin/destination place pair);
-  per-trip total time/distance/avgSpeed + energy cost via linked FuelLog; best total across them;
-  per-segment faster/slower/purple counts via `CompareSegmentsUseCase`/`bestSegmentDuration`. Likely
-  a new `RouteSummaryUseCase` + `RouteSummaryViewModel`/`Screen` + nav route (arg: routeHash or
-  place-pair). Reuses existing segment-comparison + fuel-efficiency logic. **Also:** add
-  `trip-summary.png` to the design-assets list in CLAUDE.md (was 14 PNGs → 15).
+- ✅ **RESOLVED (2026-07-27) — Route Summary screen built + verified.** Route-level A→B analytics
+  aggregating all rides on a route by `routeHash`. Files: `domain/model/RouteSummary.kt`
+  (+ `RouteDrivePoint`), `domain/usecase/segment/RouteSummaryUseCase.kt`,
+  `ui/routesummary/RouteSummary{ViewModel,Screen}.kt`; nav route `route_summary/{tripId}` wired in
+  `AppNavGraph`/`NavDestinations`. Entry points: Trip Detail app-bar **Insights** icon and clickable
+  **Dashboard personal-best cards** (`PersonalBest.bestTripId` = the route's fastest ride). Layout
+  matches `design/mockups/trip-summary.png`: header + green "Ride saved" banner + total-time card
+  (vs-best ▾/▴ delta + Distance/Avg speed/Energy cost) + FASTER/SLOWER/PURPLE tiles + custom-Canvas
+  speed-vs-cost scatter (this-drive green + fastest purple-ring + cheapest green-ring + dashed
+  quadratic **U-curve**). Share via `ACTION_SEND`. Currency symbol is locale-derived. 3 unit tests
+  (`RouteSummaryUseCaseTest`); en + pt strings. **Design semantics chosen** (see decisions log):
+  `bestTotal`/`deltaVsBest` compare THIS ride against the best of the OTHER rides (the standing
+  record) so a genuine PB reads green ▾; per-segment classification is a clean partition — *purple*
+  when this ride beats the all-time segment record (new PB), else *faster*/*slower* vs the previous
+  run. Scatter dots are only rides with a linked FuelLog cost + computable avg speed.
+  **Also done:** `trip-summary.png` added to the CLAUDE.md design-asset list (14 → 15 PNGs).
 - **Soft-delete tombstones are never pruned (deferred from CP3).** Swipe-delete does
   `CarDao.softDelete` (isDeleted=true, syncedAt=NULL) and the worker pushes the `isDeleted:true`
   doc to Firestore — this is correct and intended: the tombstone propagates the deletion to other

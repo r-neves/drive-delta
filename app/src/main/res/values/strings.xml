@@ -49,6 +49,25 @@
     <string name="trip_fuel_prompt_body">Log fuel or charging for this ride to track consumption.</string>
     <string name="trip_fuel_skip">Skip</string>
 
+    <!-- Route Summary (route-level A→B analytics) -->
+    <string name="route_summary_title">Route summary</string>
+    <string name="route_summary_share">Share</string>
+    <string name="route_summary_ride_saved">Ride saved</string>
+    <string name="route_summary_ride_saved_detail">%1$d segments timed · %2$d new personal best(s)</string>
+    <string name="route_summary_total_time">TOTAL TIME</string>
+    <string name="route_summary_vs_best">VS BEST</string>
+    <string name="route_summary_best_caption">best %1$s</string>
+    <string name="route_summary_distance">Distance</string>
+    <string name="route_summary_avg_speed">Avg speed</string>
+    <string name="route_summary_energy_cost">Energy cost</string>
+    <string name="route_summary_faster">FASTER</string>
+    <string name="route_summary_slower">SLOWER</string>
+    <string name="route_summary_purple">PURPLE</string>
+    <string name="route_summary_speed_cost">Speed vs. cost</string>
+    <string name="route_summary_drive_count">%1$d drives</string>
+    <string name="route_summary_scatter_caption">Each dot is one drive on this route. Over time the dots trace a curve — cost rises when you crawl and when you push.</string>
+    <string name="route_summary_scatter_empty">Log fuel on a few drives of this route to see the speed-vs-cost curve.</string>
+
     <!-- Compare (F8) -->
     <string name="compare_title">Compare rides</string>
     <string name="compare_loading">Loading…</string>

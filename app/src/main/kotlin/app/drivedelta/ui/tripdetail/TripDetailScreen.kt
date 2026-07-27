@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CompareArrows
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
@@ -69,6 +70,7 @@ private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.str
 fun TripDetailScreen(
     onBack: () -> Unit,
     onCompare: (String) -> Unit,
+    onRouteSummary: (String) -> Unit,
     onAddFuel: (String) -> Unit,
     viewModel: TripDetailViewModel = hiltViewModel(),
 ) {
@@ -88,6 +90,9 @@ fun TripDetailScreen(
                 actions = {
                     val trip = state.detail?.trip
                     if (trip != null) {
+                        IconButton(onClick = { onRouteSummary(trip.id) }) {
+                            Icon(Icons.Filled.Insights, contentDescription = stringResource(R.string.route_summary_title))
+                        }
                         IconButton(onClick = { onCompare(trip.id) }) {
                             Icon(Icons.Filled.CompareArrows, contentDescription = stringResource(R.string.trip_compare))
                         }
