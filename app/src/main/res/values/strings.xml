@@ -2,8 +2,13 @@
 <resources>
     <string name="app_name">DriveDelta</string>
     <string name="auth_tagline">Your drive, analysed.</string>
-    <string name="auth_sign_in_google">Sign in with Google</string>
+    <string name="auth_sign_in_google">Continue with Google</string>
     <string name="auth_error_generic">Sign-in failed. Please try again.</string>
+    <string name="auth_terms_prefix">By continuing you agree to our</string>
+    <string name="auth_terms">Terms</string>
+    <string name="auth_terms_conj">and</string>
+    <string name="auth_privacy">Privacy Policy</string>
+    <string name="auth_logo_desc">DriveDelta logo</string>
     <string name="dashboard_title">Dashboard</string>
     <string name="action_sign_out">Sign out</string>
 

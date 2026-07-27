@@ -2,15 +2,19 @@ package app.drivedelta.ui.auth
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,15 +32,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
-import app.drivedelta.ui.theme.DdPrimary
+import app.drivedelta.ui.theme.DdSecondary
 import app.drivedelta.ui.theme.DdSurfaceElevated
+import app.drivedelta.ui.theme.DdTextDim
+import app.drivedelta.ui.theme.LocalDdTokens
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -94,6 +105,8 @@ fun AuthScreen(
         }
     }
 
+    val tokens = LocalDdTokens.current
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background,
@@ -102,40 +115,48 @@ fun AuthScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 32.dp, vertical = 40.dp),
+                .padding(horizontal = tokens.screenPadding)
+                .padding(top = 40.dp, bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
         ) {
-            // Logo tile with the delta motif.
+            // Brand block sits in the upper-middle; the button + notice are pinned to the bottom.
+            Spacer(Modifier.weight(1f))
+
             Surface(
-                modifier = Modifier.size(74.dp),
-                shape = RoundedCornerShape(22.dp),
+                modifier = Modifier.size(88.dp),
+                shape = RoundedCornerShape(tokens.radiusCard),
                 color = DdSurfaceElevated,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(text = "Δ", color = DdPrimary, fontSize = 36.sp)
+                    Image(
+                        painter = painterResource(R.drawable.ic_apex_logo),
+                        contentDescription = stringResource(R.string.auth_logo_desc),
+                        modifier = Modifier.size(44.dp),
+                    )
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(tokens.spaceXl))
 
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                fontSize = 38.sp,
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(tokens.spaceMd))
 
             Text(
                 text = stringResource(R.string.auth_tagline),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
+                fontSize = 18.sp,
             )
 
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.weight(1.4f))
 
             Button(
                 onClick = {
@@ -145,8 +166,9 @@ fun AuthScreen(
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(64.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(tokens.radiusMd)),
+                shape = RoundedCornerShape(tokens.radiusMd),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DdSurfaceElevated,
                     contentColor = MaterialTheme.colorScheme.onSurface,
@@ -159,13 +181,44 @@ fun AuthScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 } else {
-                    Text(
-                        text = stringResource(R.string.auth_sign_in_google),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontSize = 16.sp,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_google_g),
+                            contentDescription = null,
+                            modifier = Modifier.size(22.dp),
+                        )
+                        Spacer(Modifier.width(tokens.spaceMd))
+                        Text(
+                            text = stringResource(R.string.auth_sign_in_google),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                        )
+                    }
                 }
             }
+
+            Spacer(Modifier.height(tokens.spaceLg))
+
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(R.string.auth_terms_prefix))
+                    append(" ")
+                    withStyle(SpanStyle(color = DdSecondary)) {
+                        append(stringResource(R.string.auth_terms))
+                    }
+                    append(" ")
+                    append(stringResource(R.string.auth_terms_conj))
+                    append(" ")
+                    withStyle(SpanStyle(color = DdSecondary)) {
+                        append(stringResource(R.string.auth_privacy))
+                    }
+                    append(".")
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = DdTextDim,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

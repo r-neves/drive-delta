@@ -3,8 +3,13 @@
 <resources>
     <string name="app_name">DriveDelta</string>
     <string name="auth_tagline">A tua condução, analisada.</string>
-    <string name="auth_sign_in_google">Iniciar sessão com Google</string>
+    <string name="auth_sign_in_google">Continuar com Google</string>
     <string name="auth_error_generic">Falha ao iniciar sessão. Tenta novamente.</string>
+    <string name="auth_terms_prefix">Ao continuar concordas com os nossos</string>
+    <string name="auth_terms">Termos</string>
+    <string name="auth_terms_conj">e a</string>
+    <string name="auth_privacy">Política de Privacidade</string>
+    <string name="auth_logo_desc">Logótipo DriveDelta</string>
     <string name="dashboard_title">Início</string>
     <string name="dashboard_start_ride_subtitle">Condução livre · sem destino definido</string>
     <string name="dashboard_greeting_morning">Bom dia</string>

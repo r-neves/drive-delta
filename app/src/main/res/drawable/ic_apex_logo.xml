@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DriveDelta "apex" mark — two overlapping triangle strokes (brand blue + success green). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:strokeColor="#5B8DEF"
+        android:strokeWidth="7"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M46,24 L22,76 L70,76 Z" />
+    <path
+        android:strokeColor="#37D67A"
+        android:strokeWidth="7"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M56,24 L34,76 L82,76 Z" />
+</vector>
