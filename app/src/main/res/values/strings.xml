@@ -195,6 +195,10 @@
     <string name="fuel_odometer">Odometer (km)</string>
     <string name="fuel_saved_cost">This fill-up: %1$s</string>
     <string name="fuel_saved_efficiency">Efficiency: %1$s</string>
+    <string name="fuel_unit_l">L</string>
+    <string name="fuel_unit_kwh">kWh</string>
+    <string name="fuel_unit_km">km</string>
+    <string name="fuel_save">Save fill-up</string>
     <string name="trip_fuel_add">Add fill-up</string>
 
     <!-- Places list -->
@@ -224,7 +228,7 @@
     <string name="place_error_name_required">Name is required</string>
 
     <!-- Cars list -->
-    <string name="cars_title">Vehicles</string>
+    <string name="cars_title">Cars</string>
     <string name="cars_add">Add vehicle</string>
     <string name="cars_empty_title">No vehicles yet</string>
     <string name="cars_empty_subtitle">Add a car to log fuel and track drives.</string>
