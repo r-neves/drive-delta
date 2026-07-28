@@ -39,21 +39,79 @@
      **Verified on emulator** via an injected 6-ride synthetic route: 3/2/1 tiles + full scatter from
      the Insights entry (red ▴ delta), and green ▾ delta from the Dashboard PB-card entry (fastest
      ride). Synthetic rows cleaned up afterward.
-- **Next up (pick one; none are blocking — MVP is functionally complete):**
-  - **PRIORITY / needs YOU:** real-device pass — one real drive (HUD/tracking/ArrivalSheet visual +
-    populated Compare from two identical drives), then release-ops: **keystore + signing + AAB +
-    Play Store internal track**, **Firebase Crashlytics**, and verify a **minified release build**
-    before flipping `isMinifyEnabled=true` (ProGuard rules already staged).
-  - **Code backlog I can do without a device:** ~~soft-delete tombstone pruning~~ (done);
-    ~~History place-pair + date-range filters~~ (done 2026-07-28); ~~finish pt translations~~ (done
-    2026-07-28, full en/pt parity); ~~a11y contentDescription audit~~ (done 2026-07-28). Live-split
-    HUD delta stays **deferred by design** (needs a live Roads call, barred by the cost rule).
+- **Next up:** the app is functionally complete + polished; **everything remaining before a Play
+  Store release is captured in the "Pre-release checklist" below.** The device-free code backlog is
+  fully cleared: ~~soft-delete tombstone pruning~~, ~~History place-pair + date-range filters~~,
+  ~~pt translations (full en/pt parity)~~, ~~a11y contentDescription audit~~, ~~AA contrast~~,
+  ~~trip-delete undo~~, ~~in-app language picker~~ — all done. Live-split HUD delta stays **deferred
+  by design** (needs a live Roads call, barred by the cost rule).
 - **Note:** route points are **local-only by design** (never synced) → Trip Detail map/replay only
   work on the recording device (post-MVP: Firebase Storage upload). Firestore security rules reviewed
   and correct (per-user, not test mode). Emulator (`Medium_Phone`) was `pm clear`'d during sync
   diagnosis, so it's freshly re-synced from server; old test trips lack route points (expected).
 - **Last updated by:** (machine / 2026-07-28)
 - **Working branch:** `main`
+
+---
+
+## Pre-release checklist (Play Store)
+
+Everything left before an internal Play Store release. Grouped by who can do it. **None are code
+features** — the app is functionally complete; these are release-ops, signing, backend config,
+store compliance, and on-device verification. Items marked **[YOU]** need a human (console access,
+a real device, or credentials); **[ME]** can be done from Claude Code.
+
+### A. Signing & build config
+- [ ] **[YOU/ME]** Create an upload keystore (`keytool`), store it + passwords **outside git** (e.g.
+      `keystore.properties`, gitignored). I can wire the `signingConfigs { release }` in
+      `app/build.gradle.kts` once the keystore + a `keystore.properties` exist.
+- [ ] **[ME]** Verify a **minified release build** compiles + runs, then flip `isMinifyEnabled = true`
+      (currently `false`; ProGuard/R8 rules already staged in `proguard-rules.pro`). Smoke-test the
+      minified APK (Firebase/Retrofit/Room/Hilt/kotlinx-serialization/Maps reflection paths).
+- [ ] **[ME]** Bump `versionCode`/`versionName` for the release (currently `1` / `1.0.0`).
+- [ ] **[YOU/ME]** Build the signed **AAB** (`:app:bundleRelease`).
+
+### B. Firebase / Google Cloud (production)
+- [ ] **[YOU]** Register the **release keystore's SHA-1** (and SHA-256) in the Firebase project so
+      Google Sign-In works on the Play-signed build. **Play App Signing** re-signs the AAB, so also add
+      the **App-signing key SHA-1** from Play Console → Setup → App integrity.
+- [ ] **[YOU]** Restrict the Maps/Roads/Places **API key** to the release package + SHA-1 (currently
+      dev keys in `local.properties`). Confirm billing is enabled and quotas are sane.
+- [x] Firestore security rules published to the **named** DB `drivedelta-firestore` (per-user, not
+      test mode) — reviewed + correct.
+- [ ] **[YOU]** **Firebase Crashlytics** — add the Crashlytics Gradle plugin + enable in console
+      (deferred through CP10). Recommended before a public release. (I can wire the Gradle side.)
+
+### C. Play Console — listing & compliance
+- [ ] **[YOU]** Create the app in Play Console; complete the **store listing** (title, short + full
+      description — have pt-PT + en ready, app is bilingual), **screenshots** (phone), **feature
+      graphic**, **app icon**.
+- [ ] **[YOU]** **Privacy Policy URL** (required — app collects location + account/email via Firebase).
+- [ ] **[YOU]** **Data safety form** — declare: precise location, email/account, app activity; stored
+      in Firestore per-user; note location is used in the foreground service for trip recording.
+- [ ] **[YOU]** **Background/foreground location declaration** — Play requires a justification +
+      demo video for `ACCESS_BACKGROUND_LOCATION` + `foregroundServiceType=location`. Prepare the
+      "why background location" rationale (keeps recording while using nav apps).
+- [ ] **[YOU]** Content rating questionnaire, target audience, ads declaration (no ads), news/gov = no.
+- [ ] **[YOU]** Upload the AAB to the **internal testing** track; add testers.
+
+### D. On-device verification (needs a real phone — [YOU], I can script/assist)
+- [ ] **Real drive**: HUD/tracking live, foreground-service notification, **ArrivalSheet 30 s
+      auto-finish** at a real geofence (the 5-fix arrival debounce isn't drivable on the emulator).
+- [ ] **Populated Compare**: two genuinely identical drives → same `routeHash` → the Compare chart +
+      table render with data (only ever seen empty-state on the emulator).
+- [ ] **Trip-delete undo** live tap-and-hold (Compose `onLongClick` isn't triggerable via adb
+      `input swipe`; build-verified only).
+- [ ] **Sign-out → sign-back-in** full Firestore restore round-trip on a real account.
+- [ ] Permission chain on a fresh install (fine → background → notifications → battery), incl. the
+      permanently-denied → settings deep-link path (only the happy path was exercised on the emulator).
+
+### E. Known constraints to accept (or fix) before shipping
+- [ ] **Route points are local-only by design** → Trip Detail **Map/Replay only work on the recording
+      device**; a fresh install / other device shows "No route recorded". OK for MVP; fix is the
+      post-MVP Firebase Storage upload. **Decide** whether this is acceptable for a public listing.
+- [ ] **Live-split HUD delta** stays greyed out (deferred by the Roads-API cost rule) — split-vs-best
+      is delivered post-ride in Trip Detail. Acceptable, but note it in the listing if it looks unfinished.
 
 ---
 
