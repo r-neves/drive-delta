@@ -271,4 +271,52 @@
     <string name="fuel_hybrid">Hybrid</string>
     <string name="fuel_electric">Electric</string>
     <string name="fuel_lpg">LPG</string>
+
+    <!-- Energy logging (per-drive sheet) -->
+    <string name="energy_log_title_electric">Log energy used</string>
+    <string name="energy_log_title_fuel">Fuel used</string>
+    <string name="energy_log_optional">OPTIONAL</string>
+    <string name="energy_log_energy_used">Energy used</string>
+    <string name="energy_log_fuel_used">Fuel used</string>
+    <string name="energy_log_litres">litres</string>
+    <string name="energy_log_unit_l">L</string>
+    <string name="energy_log_unit_kwh_per_100">kWh/100 km</string>
+    <string name="energy_log_unit_l_per_100">L/100 km</string>
+    <string name="energy_log_works_out">That works out to %1$s %2$s for this drive.</string>
+    <string name="energy_log_estimated_from">Estimated from your %1$s %2$s average.</string>
+    <string name="energy_log_use_estimate">Use estimate</string>
+    <string name="energy_log_rate_tariff">Rate · %1$s</string>
+    <string name="energy_log_rate_fuel">%1$s price</string>
+    <string name="energy_log_cost_for_drive">Cost for this drive</string>
+    <string name="energy_log_save_energy">Save energy</string>
+    <string name="energy_log_save_fuel">Save fuel</string>
+    <string name="energy_log_skip">Skip for now</string>
+
+    <!-- Trip detail: fuel cost + speed-vs-cost -->
+    <string name="trip_tab_cost">Cost</string>
+    <string name="trip_fuel_not_logged">Fuel not logged</string>
+    <string name="trip_fuel_not_logged_body">Add it to see cost and plot this drive.</string>
+    <string name="trip_fuel_add_short">Add</string>
+    <string name="trip_cost_title">Speed vs. cost</string>
+    <string name="trip_cost_no_cost_yet">NO COST YET</string>
+    <string name="trip_cost_empty">Log fuel on this drive to see the speed-vs-cost curve.</string>
+    <string name="trip_cost_caption_pending">This drive sits on the speed axis only. Log its fuel to place it on the curve.</string>
+    <string name="trip_cost_caption_logged">This drive is placed on the curve by its logged cost.</string>
+
+    <!-- Energy prices settings -->
+    <string name="settings_title">Settings</string>
+    <string name="energy_prices_title">Energy prices</string>
+    <string name="energy_currency">Currency</string>
+    <string name="energy_section_electricity">ELECTRICITY</string>
+    <string name="energy_section_liquid">LIQUID FUEL</string>
+    <string name="energy_section_automation">AUTOMATION</string>
+    <string name="energy_price_home">Home tariff</string>
+    <string name="energy_price_public">Public charging</string>
+    <string name="energy_default_tariff">Default for new drives</string>
+    <string name="energy_tariff_hint">You can switch tariff per drive when logging energy.</string>
+    <string name="energy_price_per_kwh">/kWh</string>
+    <string name="energy_estimate_title">Estimate when not logged</string>
+    <string name="energy_estimate_body">Use the car\'s average consumption to fill gaps.</string>
+    <string name="energy_ask_title">Ask after every drive</string>
+    <string name="energy_ask_body">Show the log sheet when a ride finishes.</string>
 </resources>

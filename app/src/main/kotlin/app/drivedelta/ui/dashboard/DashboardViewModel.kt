@@ -10,6 +10,7 @@ import app.drivedelta.domain.model.FuelType
 import app.drivedelta.domain.model.Place
 import app.drivedelta.domain.model.Trip
 import app.drivedelta.domain.repository.CarRepository
+import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.repository.FuelLogRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
@@ -66,10 +67,16 @@ class DashboardViewModel @Inject constructor(
     carRepository: CarRepository,
     placeRepository: PlaceRepository,
     fuelLogRepository: FuelLogRepository,
+    energyPricesRepository: EnergyPricesRepository,
 ) : ViewModel() {
 
     /** The signed-in user's first name (for the greeting + avatar). Read once; auth is stable here. */
     val userName: String? = authRepository.currentUserName
+
+    /** The user's configured currency code (for the weekly fuel-cost total). */
+    val currencyCode: StateFlow<String> = energyPricesRepository.observePrices()
+        .map { it.currencyCode }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "EUR")
 
     private val endedTrips = tripRepository.observeTrips().map { trips -> trips.filter { it.endTime != null } }
 

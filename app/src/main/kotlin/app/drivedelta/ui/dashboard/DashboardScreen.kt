@@ -19,7 +19,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -67,6 +69,7 @@ fun DashboardScreen(
     onStartTracking: () -> Unit,
     onOpenTrip: (String) -> Unit,
     onOpenRouteSummary: (String) -> Unit,
+    onOpenSettings: () -> Unit,
     onSeeAllTrips: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -75,6 +78,7 @@ fun DashboardScreen(
     val recentItems by viewModel.recentItems.collectAsStateWithLifecycle()
     val weekly by viewModel.weeklyStats.collectAsStateWithLifecycle()
     val personalBests by viewModel.personalBests.collectAsStateWithLifecycle()
+    val currencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
     val requestPermissionsThenSheet = rememberStartTrackingPermissionFlow(onAllGranted = { showPreRide = true })
 
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
@@ -83,9 +87,9 @@ fun DashboardScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = tokens.spaceXl),
             verticalArrangement = Arrangement.spacedBy(tokens.spaceLg),
         ) {
-            item { GreetingHeader(viewModel.userName) }
+            item { GreetingHeader(viewModel.userName, onOpenSettings) }
             item { StartRideCard(onClick = requestPermissionsThenSheet) }
-            item { WeeklyCard(weekly) }
+            item { WeeklyCard(weekly, currencyCode) }
 
             item {
                 SectionHeader(
@@ -144,7 +148,7 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun GreetingHeader(name: String?) {
+private fun GreetingHeader(name: String?, onOpenSettings: () -> Unit) {
     val tokens = LocalDdTokens.current
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -158,6 +162,13 @@ private fun GreetingHeader(name: String?) {
                 else stringResource(R.string.dashboard_greeting, greetingWord()),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        IconButton(onClick = onOpenSettings) {
+            Icon(
+                Icons.Outlined.Settings,
+                contentDescription = stringResource(R.string.settings_title),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Box(
@@ -199,7 +210,7 @@ private fun StartRideCard(onClick: () -> Unit) {
 }
 
 @Composable
-private fun WeeklyCard(stats: WeeklyStats) {
+private fun WeeklyCard(stats: WeeklyStats, currencyCode: String) {
     val tokens = LocalDdTokens.current
     Column(
         Modifier
@@ -214,7 +225,7 @@ private fun WeeklyCard(stats: WeeklyStats) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Stat(String.format(Locale.US, "%.0f", stats.distanceKm), "km", stringResource(R.string.dashboard_week_distance))
             Stat(formatDriveTime(stats.driveMinutes), "h", stringResource(R.string.dashboard_week_time))
-            Stat(formatMoney(stats.fuelCost), null, stringResource(R.string.dashboard_week_fuel))
+            Stat(formatMoney(stats.fuelCost, currencyCode), null, stringResource(R.string.dashboard_week_fuel))
         }
     }
 }
@@ -292,10 +303,11 @@ private fun formatBest(ms: Long): String {
     return String.format(Locale.US, "%d:%02d", totalSec / 60, totalSec % 60)
 }
 
-private fun currencySymbol(): String = try {
-    Currency.getInstance(Locale.getDefault()).symbol
+private fun currencySymbol(code: String): String = try {
+    Currency.getInstance(code).symbol
 } catch (e: Exception) {
     "€"
 }
 
-private fun formatMoney(v: Float): String = currencySymbol() + String.format(Locale.US, "%.2f", v)
+private fun formatMoney(v: Float, code: String): String =
+    currencySymbol(code) + String.format(Locale.US, "%.2f", v)

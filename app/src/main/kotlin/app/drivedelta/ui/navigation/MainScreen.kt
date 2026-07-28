@@ -60,6 +60,7 @@ fun MainScreen(
     onStartTracking: () -> Unit,
     onOpenTrip: (String) -> Unit,
     onOpenRouteSummary: (String) -> Unit,
+    onOpenSettings: () -> Unit,
     onAddCar: () -> Unit,
     onEditCar: (String) -> Unit,
     onAddPlace: () -> Unit,
@@ -82,6 +83,7 @@ fun MainScreen(
                     onStartTracking = onStartTracking,
                     onOpenTrip = onOpenTrip,
                     onOpenRouteSummary = onOpenRouteSummary,
+                    onOpenSettings = onOpenSettings,
                     onSeeAllTrips = {
                         tabNavController.navigate(NavDestinations.HISTORY) {
                             popUpTo(tabNavController.graph.findStartDestination().id) { saveState = true }

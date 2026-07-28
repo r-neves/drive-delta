@@ -1,7 +1,6 @@
 package app.drivedelta.ui.routesummary
 
 import android.content.Intent
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,32 +32,25 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
 import app.drivedelta.domain.model.RouteDrivePoint
 import app.drivedelta.domain.model.RouteSummary
+import app.drivedelta.ui.components.ScatterKind
+import app.drivedelta.ui.components.ScatterPoint
+import app.drivedelta.ui.components.SpeedCostScatter
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdError
 import app.drivedelta.ui.theme.DdOutline
-import app.drivedelta.ui.theme.DdPrimary
 import app.drivedelta.ui.theme.DdPurpleSector
 import app.drivedelta.ui.theme.DdSuccess
 import app.drivedelta.ui.theme.DdTextTertiary
@@ -69,8 +61,6 @@ import java.util.Currency
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -151,9 +141,9 @@ fun RouteSummaryScreen(
                 ) {
                     Spacer(Modifier.height(tokens.spaceXs))
                     RideSavedBanner(summary)
-                    TotalTimeCard(summary)
+                    TotalTimeCard(summary, state.currencyCode)
                     SegmentTiles(summary)
-                    ScatterSection(summary)
+                    ScatterSection(summary, state.currencyCode)
                 }
             }
         }
@@ -204,7 +194,7 @@ private fun RideSavedBanner(summary: RouteSummary) {
 // --- Total-time card ----------------------------------------------------------------------------
 
 @Composable
-private fun TotalTimeCard(summary: RouteSummary) {
+private fun TotalTimeCard(summary: RouteSummary, currencyCode: String) {
     val tokens = LocalDdTokens.current
     val ddType = LocalDdType.current
     Column(
@@ -269,7 +259,7 @@ private fun TotalTimeCard(summary: RouteSummary) {
                 label = stringResource(R.string.route_summary_avg_speed),
             )
             StatCell(
-                value = summary.energyCost?.let { formatMoney(it) } ?: "—",
+                value = summary.energyCost?.let { formatMoney(it, currencyCode) } ?: "—",
                 unit = "",
                 label = stringResource(R.string.route_summary_energy_cost),
             )
@@ -328,7 +318,7 @@ private fun SegmentTile(modifier: Modifier, count: Int, label: String, color: Co
 // --- Speed vs. cost scatter ---------------------------------------------------------------------
 
 @Composable
-private fun ScatterSection(summary: RouteSummary) {
+private fun ScatterSection(summary: RouteSummary, currencyCode: String) {
     val tokens = LocalDdTokens.current
     Column(verticalArrangement = Arrangement.spacedBy(tokens.spaceMd)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
@@ -365,164 +355,28 @@ private fun ScatterSection(summary: RouteSummary) {
                     modifier = Modifier.padding(vertical = tokens.spaceLg),
                 )
             } else {
-                ScatterChart(summary.scatter)
+                SpeedCostScatter(
+                    points = summary.scatter.map { it.toScatterPoint() },
+                    currencySymbol = currencySymbol(currencyCode),
+                )
             }
         }
     }
 }
 
-@Composable
-private fun ScatterChart(points: List<RouteDrivePoint>) {
-    val density = LocalDensity.current
-    val axisPaint = remember(density) {
-        android.graphics.Paint().apply {
-            color = DdTextTertiary.toArgb()
-            textSize = with(density) { 11.sp.toPx() }
-            isAntiAlias = true
-        }
-    }
-    val labelPaint = remember(density) {
-        android.graphics.Paint().apply {
-            color = DdSuccess.toArgb()
-            textSize = with(density) { 10.sp.toPx() }
-            isFakeBoldText = true
-            isAntiAlias = true
-        }
-    }
-
-    // Domain (padded, with sensible fallbacks matching the design's 40–100 km/h × £2–6 range).
-    val speeds = points.map { it.avgSpeedKph }
-    val costs = points.map { it.energyCost }
-    var xMin = floor((speeds.min() - 5) / 10.0) * 10
-    var xMax = ceil((speeds.max() + 5) / 10.0) * 10
-    if (xMax - xMin < 20) { xMin -= 10; xMax += 10 }
-    var yMin = floor(costs.min().toDouble())
-    var yMax = ceil(costs.max().toDouble())
-    if (yMax - yMin < 2) { yMin -= 1; yMax += 1 }
-    if (yMin < 0) yMin = 0.0
-
-    val leftPad = with(density) { 34.dp.toPx() }
-    val bottomPad = with(density) { 22.dp.toPx() }
-    val topPad = with(density) { 18.dp.toPx() }
-    val trend = fitQuadratic(points.map { it.avgSpeedKph.toDouble() to it.energyCost.toDouble() })
-
-    Canvas(Modifier.fillMaxWidth().height(220.dp)) {
-        val plotLeft = leftPad
-        val plotRight = size.width
-        val plotTop = topPad
-        val plotBottom = size.height - bottomPad
-        val plotW = plotRight - plotLeft
-        val plotH = plotBottom - plotTop
-
-        fun sx(speed: Double) = plotLeft + ((speed - xMin) / (xMax - xMin) * plotW).toFloat()
-        fun sy(cost: Double) = plotBottom - ((cost - yMin) / (yMax - yMin) * plotH).toFloat()
-
-        // Horizontal gridlines + currency labels.
-        val ySteps = (yMax - yMin).toInt().coerceIn(1, 6)
-        for (i in 0..ySteps) {
-            val v = yMin + (yMax - yMin) * i / ySteps
-            val y = sy(v)
-            drawLine(DdOutline, Offset(plotLeft, y), Offset(plotRight, y), strokeWidth = 1f)
-            drawContext.canvas.nativeCanvas.drawText(
-                moneyAxisLabel(v.toFloat()), 0f, y + axisPaint.textSize / 3f, axisPaint,
-            )
-        }
-        // X-axis speed labels.
-        val xSteps = 4
-        for (i in 0..xSteps) {
-            val v = xMin + (xMax - xMin) * i / xSteps
-            val x = sx(v)
-            drawContext.canvas.nativeCanvas.drawText(
-                v.roundToInt().toString(), x - axisPaint.textSize, size.height - 2f, axisPaint,
-            )
-        }
-
-        // Trend U-curve (quadratic fit), dashed.
-        trend?.let { (a, b, c) ->
-            val path = Path()
-            var started = false
-            var xv = xMin
-            val stepX = (xMax - xMin) / 48.0
-            while (xv <= xMax + 1e-6) {
-                val yv = (a * xv * xv + b * xv + c).coerceIn(yMin, yMax)
-                val px = sx(xv); val py = sy(yv)
-                if (!started) { path.moveTo(px, py); started = true } else path.lineTo(px, py)
-                xv += stepX
-            }
-            drawPath(
-                path,
-                color = DdPrimary.copy(alpha = 0.7f),
-                style = Stroke(
-                    width = with(density) { 1.5.dp.toPx() },
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f)),
-                ),
-            )
-        }
-
-        // Points.
-        val r = with(density) { 4.dp.toPx() }
-        points.forEach { p ->
-            val cx = sx(p.avgSpeedKph.toDouble())
-            val cy = sy(p.energyCost.toDouble())
-            when {
-                p.isThisDrive -> {
-                    drawLine(
-                        DdSuccess.copy(alpha = 0.5f), Offset(cx, cy), Offset(cx, plotBottom),
-                        strokeWidth = with(density) { 1.dp.toPx() },
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)),
-                    )
-                    drawCircle(DdSuccess.copy(alpha = 0.18f), radius = r * 2.4f, center = Offset(cx, cy))
-                    drawCircle(DdSuccess, radius = r * 1.1f, center = Offset(cx, cy))
-                    drawContext.canvas.nativeCanvas.drawText("THIS DRIVE", cx - r * 5f, cy - r * 3f, labelPaint)
-                }
-                p.isFastest -> {
-                    drawCircle(DdPurpleSector, radius = r * 1.7f, center = Offset(cx, cy), style = Stroke(width = with(density) { 2.dp.toPx() }))
-                    drawCircle(DdPurpleSector, radius = r, center = Offset(cx, cy))
-                }
-                p.isCheapest -> {
-                    drawCircle(DdSuccess.copy(alpha = 0.7f), radius = r * 1.7f, center = Offset(cx, cy), style = Stroke(width = with(density) { 2.dp.toPx() }))
-                    drawCircle(DdTextTertiary, radius = r * 0.8f, center = Offset(cx, cy))
-                }
-                else -> drawCircle(DdTextTertiary, radius = r * 0.8f, center = Offset(cx, cy))
-            }
-        }
-    }
-}
+/** Maps a route drive to a scatter marker; this-drive wins over fastest/cheapest, matching the design. */
+private fun RouteDrivePoint.toScatterPoint(): ScatterPoint = ScatterPoint(
+    speedKph = avgSpeedKph,
+    cost = energyCost,
+    kind = when {
+        isThisDrive -> ScatterKind.THIS_DRIVE
+        isFastest -> ScatterKind.FASTEST
+        isCheapest -> ScatterKind.CHEAPEST
+        else -> ScatterKind.NORMAL
+    },
+)
 
 // --- Helpers ------------------------------------------------------------------------------------
-
-/** Least-squares quadratic fit y = a·x² + b·x + c; null if fewer than 3 points, singular, or not a U. */
-private fun fitQuadratic(pts: List<Pair<Double, Double>>): Triple<Double, Double, Double>? {
-    if (pts.size < 3) return null
-    var s0 = 0.0; var s1 = 0.0; var s2 = 0.0; var s3 = 0.0; var s4 = 0.0
-    var t0 = 0.0; var t1 = 0.0; var t2 = 0.0
-    for ((x, y) in pts) {
-        val x2 = x * x
-        s0 += 1; s1 += x; s2 += x2; s3 += x2 * x; s4 += x2 * x2
-        t0 += y; t1 += x * y; t2 += x2 * y
-    }
-    val m = arrayOf(
-        doubleArrayOf(s0, s1, s2),
-        doubleArrayOf(s1, s2, s3),
-        doubleArrayOf(s2, s3, s4),
-    )
-    val d = det3(m)
-    if (abs(d) < 1e-9) return null
-    val rhs = doubleArrayOf(t0, t1, t2)
-    val c = det3(replaceCol(m, 0, rhs)) / d
-    val b = det3(replaceCol(m, 1, rhs)) / d
-    val a = det3(replaceCol(m, 2, rhs)) / d
-    if (a <= 0) return null // draw only an upward (U-shaped) curve; a downward fit reads wrong
-    return Triple(a, b, c)
-}
-
-private fun det3(m: Array<DoubleArray>): Double =
-    m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
-        m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
-        m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
-
-private fun replaceCol(m: Array<DoubleArray>, col: Int, v: DoubleArray): Array<DoubleArray> =
-    Array(3) { r -> DoubleArray(3) { c -> if (c == col) v[r] else m[r][c] } }
 
 private val SUBTITLE_FORMAT = SimpleDateFormat("d MMM · HH:mm", Locale.getDefault())
 
@@ -558,12 +412,11 @@ private fun formatClock(ms: Long): String {
     else String.format(Locale.US, "%d:%02d", m, sec)
 }
 
-private fun currencySymbol(): String = try {
-    Currency.getInstance(Locale.getDefault()).symbol
+private fun currencySymbol(code: String): String = try {
+    Currency.getInstance(code).symbol
 } catch (e: Exception) {
     "€"
 }
 
-private fun formatMoney(v: Float): String = currencySymbol() + String.format(Locale.US, "%.2f", v)
-
-private fun moneyAxisLabel(v: Float): String = currencySymbol() + v.roundToInt()
+private fun formatMoney(v: Float, code: String): String =
+    currencySymbol(code) + String.format(Locale.US, "%.2f", v)

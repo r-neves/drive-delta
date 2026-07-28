@@ -4,9 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.drivedelta.domain.model.TripDetail
+import app.drivedelta.domain.usecase.fuel.GetTripCostChartUseCase
+import app.drivedelta.domain.usecase.fuel.TripCostChart
 import app.drivedelta.domain.usecase.segment.GetTripDetailUseCase
 import app.drivedelta.domain.usecase.segment.MatchSegmentsUseCase
 import app.drivedelta.domain.repository.CarRepository
+import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.ui.navigation.NavArgs
@@ -29,7 +32,8 @@ data class TripDetailUiState(
     val baseline: CompareBaseline = CompareBaseline.BEST,
     val previousPerRoadKey: Map<String, Long> = emptyMap(),
     val hasPreviousRun: Boolean = false,
-    val showFuelPrompt: Boolean = false,
+    val costChart: TripCostChart? = null,
+    val showEnergyLog: Boolean = false,
     val replayFraction: Float = 0f,
     val isPlaying: Boolean = false,
     val replaySpeed: Int = 1,
@@ -47,10 +51,12 @@ data class TripDetailUiState(
 class TripDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getTripDetail: GetTripDetailUseCase,
+    private val getTripCostChart: GetTripCostChartUseCase,
     private val matchSegments: MatchSegmentsUseCase,
     private val tripRepository: TripRepository,
     private val placeRepository: PlaceRepository,
     private val carRepository: CarRepository,
+    private val energyPricesRepository: EnergyPricesRepository,
 ) : ViewModel() {
 
     private val tripId: String = checkNotNull(savedStateHandle[NavArgs.TRIP_ID])
@@ -72,13 +78,23 @@ class TripDetailViewModel @Inject constructor(
             val originName = trip?.startPlaceId?.let { placeRepository.getPlace(it)?.name }
             val destName = trip?.endPlaceId?.let { placeRepository.getPlace(it)?.name }
             val carName = trip?.carId?.let { carRepository.getCar(it)?.name }
+            val costChart = getTripCostChart(tripId)
+            val askAfterEveryDrive = energyPricesRepository.getPrices().askAfterEveryDrive
+            // Auto-open the energy log sheet once per drive when it hasn't been logged, the "ask after
+            // every drive" setting is on, and the drive has a car to attribute the fuel to.
+            val autoAsk = detail != null &&
+                !detail.fuelPromptDismissed &&
+                detail.trip.carId != null &&
+                costChart?.loggedCost == null &&
+                askAfterEveryDrive
             _uiState.update {
                 it.copy(
                     detail = detail,
                     loading = false,
                     previousPerRoadKey = previous,
                     hasPreviousRun = previous.isNotEmpty(),
-                    showFuelPrompt = detail?.let { d -> !d.fuelPromptDismissed && d.trip.carId != null } ?: false,
+                    costChart = costChart,
+                    showEnergyLog = autoAsk,
                     originName = originName,
                     destName = destName,
                     carName = carName,
@@ -89,9 +105,21 @@ class TripDetailViewModel @Inject constructor(
 
     fun setBaseline(baseline: CompareBaseline) = _uiState.update { it.copy(baseline = baseline) }
 
-    fun dismissFuelPrompt() {
-        _uiState.update { it.copy(showFuelPrompt = false) }
+    /** Opens the energy log sheet from the "Fuel not logged" banner (Add). */
+    fun openEnergyLog() = _uiState.update { it.copy(showEnergyLog = true) }
+
+    /** Dismisses the sheet without saving; won't auto-reopen for this drive again. */
+    fun dismissEnergyLog() {
+        _uiState.update { it.copy(showEnergyLog = false) }
         viewModelScope.launch { tripRepository.markFuelPromptDismissed(tripId) }
+    }
+
+    /** Called after a fuel log is saved: hide the sheet and reload this drive's cost + chart. */
+    fun onEnergyLogged() {
+        viewModelScope.launch {
+            val costChart = getTripCostChart(tripId)
+            _uiState.update { it.copy(showEnergyLog = false, costChart = costChart) }
+        }
     }
 
     // --- Replay ---------------------------------------------------------------------------------

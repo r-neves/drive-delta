@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import app.drivedelta.data.local.AppDatabase
 import app.drivedelta.data.local.dao.CarDao
+import app.drivedelta.data.local.dao.EnergyPricesDao
 import app.drivedelta.data.local.dao.FuelLogDao
 import app.drivedelta.data.local.dao.PlaceDao
 import app.drivedelta.data.local.dao.RoutePointDao
@@ -23,7 +24,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, "drivedelta.db").build()
+        Room.databaseBuilder(context, AppDatabase::class.java, "drivedelta.db")
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
 
     // DAO providers delegate to the singleton database; they do not need @Singleton themselves.
     @Provides
@@ -43,4 +46,7 @@ object DatabaseModule {
 
     @Provides
     fun provideFuelLogDao(db: AppDatabase): FuelLogDao = db.fuelLogDao()
+
+    @Provides
+    fun provideEnergyPricesDao(db: AppDatabase): EnergyPricesDao = db.energyPricesDao()
 }

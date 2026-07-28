@@ -230,4 +230,52 @@
     <string name="route_summary_drive_count">%1$d viagens</string>
     <string name="route_summary_scatter_caption">Cada ponto é uma viagem neste percurso. Ao longo do tempo os pontos traçam uma curva — o custo sobe quando andas devagar e quando forças.</string>
     <string name="route_summary_scatter_empty">Regista combustível em algumas viagens deste percurso para ver a curva velocidade-custo.</string>
+
+    <!-- Energy logging (per-drive sheet) -->
+    <string name="energy_log_title_electric">Registar energia usada</string>
+    <string name="energy_log_title_fuel">Combustível usado</string>
+    <string name="energy_log_optional">OPCIONAL</string>
+    <string name="energy_log_energy_used">Energia usada</string>
+    <string name="energy_log_fuel_used">Combustível usado</string>
+    <string name="energy_log_litres">litros</string>
+    <string name="energy_log_unit_l">L</string>
+    <string name="energy_log_unit_kwh_per_100">kWh/100 km</string>
+    <string name="energy_log_unit_l_per_100">L/100 km</string>
+    <string name="energy_log_works_out">Dá %1$s %2$s nesta viagem.</string>
+    <string name="energy_log_estimated_from">Estimado a partir da tua média de %1$s %2$s.</string>
+    <string name="energy_log_use_estimate">Usar estimativa</string>
+    <string name="energy_log_rate_tariff">Tarifa · %1$s</string>
+    <string name="energy_log_rate_fuel">Preço %1$s</string>
+    <string name="energy_log_cost_for_drive">Custo desta viagem</string>
+    <string name="energy_log_save_energy">Guardar energia</string>
+    <string name="energy_log_save_fuel">Guardar combustível</string>
+    <string name="energy_log_skip">Ignorar por agora</string>
+
+    <!-- Trip detail: fuel cost + speed-vs-cost -->
+    <string name="trip_tab_cost">Custo</string>
+    <string name="trip_fuel_not_logged">Combustível não registado</string>
+    <string name="trip_fuel_not_logged_body">Regista para ver o custo e traçar esta viagem.</string>
+    <string name="trip_fuel_add_short">Adicionar</string>
+    <string name="trip_cost_title">Velocidade vs. custo</string>
+    <string name="trip_cost_no_cost_yet">SEM CUSTO AINDA</string>
+    <string name="trip_cost_empty">Regista combustível nesta viagem para ver a curva velocidade-custo.</string>
+    <string name="trip_cost_caption_pending">Esta viagem está apenas no eixo da velocidade. Regista o combustível para a colocar na curva.</string>
+    <string name="trip_cost_caption_logged">Esta viagem está colocada na curva pelo custo registado.</string>
+
+    <!-- Energy prices settings -->
+    <string name="settings_title">Definições</string>
+    <string name="energy_prices_title">Preços de energia</string>
+    <string name="energy_currency">Moeda</string>
+    <string name="energy_section_electricity">ELETRICIDADE</string>
+    <string name="energy_section_liquid">COMBUSTÍVEL LÍQUIDO</string>
+    <string name="energy_section_automation">AUTOMAÇÃO</string>
+    <string name="energy_price_home">Tarifa em casa</string>
+    <string name="energy_price_public">Carregamento público</string>
+    <string name="energy_default_tariff">Predefinição para novas viagens</string>
+    <string name="energy_tariff_hint">Podes mudar de tarifa em cada viagem ao registar energia.</string>
+    <string name="energy_price_per_kwh">/kWh</string>
+    <string name="energy_estimate_title">Estimar quando não registado</string>
+    <string name="energy_estimate_body">Usar a média de consumo do carro para preencher lacunas.</string>
+    <string name="energy_ask_title">Perguntar após cada viagem</string>
+    <string name="energy_ask_body">Mostrar a folha de registo quando uma viagem termina.</string>
 </resources>

@@ -18,6 +18,9 @@ object NavDestinations {
     // Full-screen live tracking (outer graph; covers the bottom bar)
     const val TRACKING = "tracking"
 
+    // Energy prices settings (outer graph)
+    const val ENERGY_PRICES = "energy_prices"
+
     // Full-screen editors (outer graph)
     const val CAR_EDIT_ROUTE = "car_edit?${NavArgs.CAR_ID}={${NavArgs.CAR_ID}}"
     const val PLACE_EDIT_ROUTE = "place_edit?${NavArgs.PLACE_ID}={${NavArgs.PLACE_ID}}"
@@ -30,11 +33,6 @@ object NavDestinations {
     fun tripDetail(tripId: String): String = "trip_detail/$tripId"
     fun compare(tripId: String): String = "compare/$tripId"
     fun routeSummary(tripId: String): String = "route_summary/$tripId"
-
-    // Fuel log (outer graph); optional tripId to pre-link a ride.
-    const val FUEL_LOG_ROUTE = "fuel_log?${NavArgs.TRIP_ID}={${NavArgs.TRIP_ID}}"
-    fun fuelLog(tripId: String? = null): String =
-        if (tripId == null) "fuel_log" else "fuel_log?${NavArgs.TRIP_ID}=$tripId"
 
     /** Builds the car-edit route: no argument for add, a car id for edit. */
     fun carEdit(carId: String? = null): String =

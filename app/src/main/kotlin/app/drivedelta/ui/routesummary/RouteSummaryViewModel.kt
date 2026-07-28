@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.drivedelta.domain.model.RouteSummary
+import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.usecase.segment.RouteSummaryUseCase
 import app.drivedelta.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import javax.inject.Inject
 data class RouteSummaryUiState(
     val loading: Boolean = true,
     val summary: RouteSummary? = null,
+    val currencyCode: String = "EUR",
 )
 
 /**
@@ -27,6 +29,7 @@ data class RouteSummaryUiState(
 class RouteSummaryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     routeSummary: RouteSummaryUseCase,
+    private val energyPricesRepository: EnergyPricesRepository,
 ) : ViewModel() {
 
     private val tripId: String = checkNotNull(savedStateHandle[NavArgs.TRIP_ID])
@@ -37,7 +40,8 @@ class RouteSummaryViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val summary = routeSummary(tripId)
-            _uiState.update { it.copy(loading = false, summary = summary) }
+            val currencyCode = energyPricesRepository.getPrices().currencyCode
+            _uiState.update { it.copy(loading = false, summary = summary, currencyCode = currencyCode) }
         }
     }
 }

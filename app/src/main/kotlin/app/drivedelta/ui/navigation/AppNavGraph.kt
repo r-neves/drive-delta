@@ -10,9 +10,9 @@ import androidx.navigation.navArgument
 import app.drivedelta.ui.auth.AuthScreen
 import app.drivedelta.ui.cars.CarEditScreen
 import app.drivedelta.ui.compare.CompareScreen
-import app.drivedelta.ui.fuel.FuelLogScreen
 import app.drivedelta.ui.places.PlaceEditScreen
 import app.drivedelta.ui.routesummary.RouteSummaryScreen
+import app.drivedelta.ui.settings.EnergyPricesScreen
 import app.drivedelta.ui.tracking.TrackingScreen
 import app.drivedelta.ui.tripdetail.TripDetailScreen
 
@@ -52,6 +52,7 @@ fun AppNavGraph(
                 onStartTracking = { navController.navigate(NavDestinations.TRACKING) },
                 onOpenTrip = { tripId -> navController.navigate(NavDestinations.tripDetail(tripId)) },
                 onOpenRouteSummary = { tripId -> navController.navigate(NavDestinations.routeSummary(tripId)) },
+                onOpenSettings = { navController.navigate(NavDestinations.ENERGY_PRICES) },
                 onAddCar = { navController.navigate(NavDestinations.carEdit()) },
                 onEditCar = { carId -> navController.navigate(NavDestinations.carEdit(carId)) },
                 onAddPlace = { navController.navigate(NavDestinations.placeEdit()) },
@@ -100,7 +101,7 @@ fun AppNavGraph(
                 onBack = { navController.popBackStack() },
                 onCompare = { tripId -> navController.navigate(NavDestinations.compare(tripId)) },
                 onRouteSummary = { tripId -> navController.navigate(NavDestinations.routeSummary(tripId)) },
-                onAddFuel = { tripId -> navController.navigate(NavDestinations.fuelLog(tripId)) },
+                onOpenEnergyPrices = { navController.navigate(NavDestinations.ENERGY_PRICES) },
             )
         }
         composable(
@@ -115,17 +116,8 @@ fun AppNavGraph(
         ) {
             RouteSummaryScreen(onBack = { navController.popBackStack() })
         }
-        composable(
-            route = NavDestinations.FUEL_LOG_ROUTE,
-            arguments = listOf(
-                navArgument(NavArgs.TRIP_ID) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-            ),
-        ) {
-            FuelLogScreen(onDone = { navController.popBackStack() })
+        composable(NavDestinations.ENERGY_PRICES) {
+            EnergyPricesScreen(onBack = { navController.popBackStack() })
         }
     }
 }

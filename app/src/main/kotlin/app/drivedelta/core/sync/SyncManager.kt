@@ -2,6 +2,7 @@ package app.drivedelta.core.sync
 
 import app.drivedelta.core.auth.AuthRepository
 import app.drivedelta.data.local.dao.CarDao
+import app.drivedelta.data.local.dao.EnergyPricesDao
 import app.drivedelta.data.local.dao.FuelLogDao
 import app.drivedelta.data.local.dao.PlaceDao
 import app.drivedelta.data.local.dao.SegmentDao
@@ -28,6 +29,7 @@ class SyncManager @Inject constructor(
     private val carDao: CarDao,
     private val fuelLogDao: FuelLogDao,
     private val segmentDao: SegmentDao,
+    private val energyPricesDao: EnergyPricesDao,
 ) {
 
     /** Pushes all locally-pending rows to Firestore. No-op when signed out. */
@@ -60,6 +62,10 @@ class SyncManager @Inject constructor(
                 remote.pushFuelLog(log)
                 fuelLogDao.insertOrReplace(log.copy(syncedAt = now))
             }
+            energyPricesDao.getPendingSync(userId).forEach { prices ->
+                remote.pushEnergyPrices(prices)
+                energyPricesDao.insertOrReplace(prices.copy(syncedAt = now))
+            }
         }
     }
 
@@ -79,6 +85,7 @@ class SyncManager @Inject constructor(
             snapshot.places.forEach { placeDao.insertOrReplace(it) }
             snapshot.cars.forEach { carDao.insertOrReplace(it) }
             snapshot.fuelLogs.forEach { fuelLogDao.insertOrReplace(it) }
+            snapshot.energyPrices?.let { energyPricesDao.insertOrReplace(it) }
         }
     }
 }
