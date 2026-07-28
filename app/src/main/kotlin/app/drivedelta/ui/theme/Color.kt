@@ -37,7 +37,8 @@ val DdMapBlocks = Color(0xFF0E1014)
 val DdTextBright = Color(0xFFE8EAED)
 val DdTextSecondary = Color(0xFF8A9099)
 val DdTextTertiary = Color(0xFF7E858F)
-val DdTextDim = Color(0xFF6B7178)
+// Bumped from #6B7178 (~4.0:1 on #0A0B0D, below WCAG AA) to ~5:1. Used for small dim captions.
+val DdTextDim = Color(0xFF787F89)
 
 // --- Purple-sector row (personal-best split) ---
 val DdPurpleRowText = Color(0xFFC8B3FF)

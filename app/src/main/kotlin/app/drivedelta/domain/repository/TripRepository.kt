@@ -66,4 +66,7 @@ interface TripRepository {
 
     /** Hard-deletes a trip and its segments + route points from Room (source of truth). */
     suspend fun deleteTrip(tripId: String)
+
+    /** Re-inserts a trip with its segments and route points (undo of [deleteTrip]). */
+    suspend fun restoreTrip(trip: Trip, segments: List<Segment>, routePoints: List<RoutePoint>)
 }

@@ -112,6 +112,7 @@
     <string name="history_filter_all">Todos</string>
     <string name="history_delete_title">Eliminar viagem?</string>
     <string name="history_delete_message">Remove permanentemente a viagem e o seu percurso.</string>
+    <string name="history_deleted">Viagem eliminada</string>
 
     <!-- Registo de combustível -->
     <string name="fuel_title">Registar abastecimento</string>
@@ -313,8 +314,12 @@
     <string name="trip_cost_caption_pending">Esta viagem está apenas no eixo da velocidade. Regista o combustível para a colocar na curva.</string>
     <string name="trip_cost_caption_logged">Esta viagem está colocada na curva pelo custo registado.</string>
 
-    <!-- Energy prices settings -->
+    <!-- Settings -->
     <string name="settings_title">Definições</string>
+    <string name="settings_section_language">IDIOMA</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_system">Predefinição do sistema</string>
+    <string name="energy_section_prices">MOEDA</string>
     <string name="energy_prices_title">Preços de energia</string>
     <string name="energy_currency">Moeda</string>
     <string name="energy_section_electricity">ELETRICIDADE</string>

@@ -7,7 +7,9 @@ import app.drivedelta.domain.repository.CarRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -117,7 +119,37 @@ class HistoryViewModel @Inject constructor(
         query.value = text
     }
 
+    /** Snapshot of the last deleted ride, held so an Undo snackbar can restore it in full. */
+    private var lastDeleted: DeletedTrip? = null
+
+    private val _undoSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    /** Emits after a delete completes, so the screen can show an "Undo" snackbar. */
+    val undoSignal: SharedFlow<Unit> = _undoSignal
+
     fun deleteTrip(tripId: String) {
-        viewModelScope.launch { tripRepository.deleteTrip(tripId) }
+        viewModelScope.launch {
+            val trip = tripRepository.getTrip(tripId) ?: return@launch
+            lastDeleted = DeletedTrip(
+                trip = trip,
+                segments = tripRepository.getSegments(tripId),
+                routePoints = tripRepository.getRoutePoints(tripId),
+            )
+            tripRepository.deleteTrip(tripId)
+            _undoSignal.emit(Unit)
+        }
+    }
+
+    fun undoDelete() {
+        val snapshot = lastDeleted ?: return
+        lastDeleted = null
+        viewModelScope.launch {
+            tripRepository.restoreTrip(snapshot.trip, snapshot.segments, snapshot.routePoints)
+        }
     }
 }
+
+private data class DeletedTrip(
+    val trip: app.drivedelta.domain.model.Trip,
+    val segments: List<app.drivedelta.domain.model.Segment>,
+    val routePoints: List<app.drivedelta.domain.model.RoutePoint>,
+)
