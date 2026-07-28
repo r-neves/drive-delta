@@ -112,6 +112,29 @@ Record anything that differs from the plan, or decisions made mid-build that a f
   (icons beside their own text label, empty-state art, text-field leading icons, nav icons with
   always-visible labels) and left null.
 
+- `2026-07-28` — **Small-polish sweep (4 items; NOT committed).** Build + 20 tests green; full en/pt parity.
+  (1) **WCAG AA contrast** — `DdTextDim` bumped `#6B7178` → `#787F89` (~4.0:1 → ~5:1 on `#0A0B0D`);
+  used for small dim captions. (`DdTextTertiary #7E858F`, used for nav labels, was already AA.)
+  (2) **Text-field error states** — **already implemented** (stale TODO): `CarTextField` wires
+  `isError` + `supportingText`, `CarEditViewModel` flips `nameError` on blank save, PlaceEdit name
+  field the same. No change needed; verified in code.
+  (3) **Undo for trip delete** — the History (Recent) long-press delete now shows a **"Ride deleted /
+  Undo" snackbar** (matches the cars pattern). `TripRepository.restoreTrip(trip, segments, routePoints)`
+  re-inserts all three from a snapshot captured before delete (`HistoryViewModel.deleteTrip` snapshots
+  via getTrip/getSegments/getRoutePoints, emits `undoSignal`; `undoDelete()` restores). New
+  `SnackbarHost` on the Trips screen. New string `history_deleted` (en/pt). **Trip Detail delete stays
+  confirm-only** (navigating back, no snackbar surface). **Build-verified; not driven live** — Compose
+  `onLongClick` isn't triggerable via adb `input swipe` (same gesture limitation noted elsewhere), but
+  the restore reuses the exact mappers used by verified append/finish/start paths.
+  (4) **In-app language picker** — the gear (Settings, reached from the Dashboard header) screen was
+  retitled **"Settings"** and gained a top **LANGUAGE** section with a **Language** dropdown (System
+  default / English / Português) using the framework **`LocaleManager.applicationLocales`** (API 33+;
+  guarded — below 33 users change the device language, no AppCompat backport added). Existing
+  energy/currency content kept below a new **CURRENCY** section label. New strings `settings_section_language`,
+  `settings_language`, `settings_language_system`, `energy_section_prices` (en/pt). **Verified live on
+  emulator (API 37)**: picking Português recreated the activity and relocalized the whole app
+  ("Definições / IDIOMA / Português / MOEDA / ELETRICIDADE"); switched back to System default after.
+
 - `2026-07-28` — **Two usability fixes: per-app language + discoverable trip delete (NOT committed).**
   (1) **OS per-app language picker enabled.** There was no in-app language switch AND no `localeConfig`,
   so the Android 13+ per-app Language screen (Settings → Apps → DriveDelta → Language) never appeared —

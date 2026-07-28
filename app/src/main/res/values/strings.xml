@@ -197,6 +197,7 @@
     <string name="history_filter_all">All</string>
     <string name="history_delete_title">Delete ride?</string>
     <string name="history_delete_message">This permanently removes the ride and its route.</string>
+    <string name="history_deleted">Ride deleted</string>
 
     <!-- Fuel log (F12) -->
     <string name="fuel_title">Log fuel</string>
@@ -317,8 +318,12 @@
     <string name="trip_cost_caption_pending">This drive sits on the speed axis only. Log its fuel to place it on the curve.</string>
     <string name="trip_cost_caption_logged">This drive is placed on the curve by its logged cost.</string>
 
-    <!-- Energy prices settings -->
+    <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <string name="settings_section_language">LANGUAGE</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="energy_section_prices">CURRENCY</string>
     <string name="energy_prices_title">Energy prices</string>
     <string name="energy_currency">Currency</string>
     <string name="energy_section_electricity">ELECTRICITY</string>

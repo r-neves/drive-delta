@@ -1,5 +1,10 @@
 package app.drivedelta.ui.settings
 
+import android.app.LocaleManager
+import android.content.Context
+import android.os.Build
+import android.os.LocaleList
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -90,7 +96,7 @@ fun EnergyPricesScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.energy_prices_title)) },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
@@ -113,6 +119,14 @@ fun EnergyPricesScreen(
                 .padding(bottom = tokens.spaceXl),
             verticalArrangement = Arrangement.spacedBy(tokens.spaceLg),
         ) {
+            // The OS per-app language API is only available on Android 13+ (below that, users change
+            // the device language). We target that surface here rather than an AppCompat backport.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                SectionLabel(stringResource(R.string.settings_section_language))
+                LanguageRow()
+            }
+
+            SectionLabel(stringResource(R.string.energy_section_prices))
             CurrencyRow(prices.currencyCode) { code -> viewModel.update { it.copy(currencyCode = code) } }
 
             SectionLabel(stringResource(R.string.energy_section_electricity))
@@ -309,7 +323,60 @@ private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onCheck
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+private fun LanguageRow() {
+    val tokens = LocalDdTokens.current
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    // Read on each recomposition; setting the locale recreates the activity, so this refreshes.
+    val currentTag = appLanguageTag(context)
+    val label = when (currentTag) {
+        "pt" -> "Português"
+        "en" -> "English"
+        else -> stringResource(R.string.settings_language_system)
+    }
+    SettingsCard {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(horizontal = tokens.spaceLg, vertical = tokens.spaceLg),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        androidx.compose.material3.DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text(stringResource(R.string.settings_language_system)) },
+                onClick = { setAppLanguage(context, null); expanded = false },
+            )
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text("English") },
+                onClick = { setAppLanguage(context, "en"); expanded = false },
+            )
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text("Português") },
+                onClick = { setAppLanguage(context, "pt"); expanded = false },
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private fun appLanguageTag(context: Context): String? {
+    val locales = context.getSystemService(LocaleManager::class.java).applicationLocales
+    return if (locales.isEmpty) null else locales.get(0)?.language
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private fun setAppLanguage(context: Context, tag: String?) {
+    context.getSystemService(LocaleManager::class.java).applicationLocales =
+        if (tag == null) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(tag)
+}
+
 @Composable
 private fun CurrencyRow(currencyCode: String, onSelect: (String) -> Unit) {
     val tokens = LocalDdTokens.current

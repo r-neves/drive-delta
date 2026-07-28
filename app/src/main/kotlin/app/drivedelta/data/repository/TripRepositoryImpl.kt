@@ -111,6 +111,14 @@ class TripRepositoryImpl @Inject constructor(
         tripDao.deleteById(tripId)
     }
 
+    override suspend fun restoreTrip(trip: Trip, segments: List<Segment>, routePoints: List<RoutePoint>) {
+        val userId = authRepository.currentUserId ?: return
+        tripDao.insertOrReplace(trip.toEntity(userId).copy(syncedAt = null))
+        if (segments.isNotEmpty()) segmentDao.insertAll(segments.map { it.toEntity() })
+        if (routePoints.isNotEmpty()) routePointDao.insertAll(routePoints.map(RoutePoint::toEntity))
+        syncTrigger.requestSync()
+    }
+
     override suspend fun markFuelPromptDismissed(tripId: String) {
         val current = tripDao.getById(tripId) ?: return
         if (current.notes.contains(FUEL_DISMISSED_FLAG)) return
