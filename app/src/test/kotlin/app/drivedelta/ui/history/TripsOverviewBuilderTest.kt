@@ -110,6 +110,49 @@ class TripsOverviewBuilderTest {
     }
 
     @Test
+    fun `place-pair filter narrows recent, routes and reports available pairs`() {
+        val trips = listOf(
+            trip("t1", 1 * DAY, 300_000, "H", origin = "p_home", dest = "p_office"),
+            trip("t2", 2 * DAY, 280_000, "H", origin = "p_home", dest = "p_office"),
+            trip("t3", 3 * DAY, 200_000, "G", origin = "p_home", dest = "p_gym"),
+        )
+
+        // Available pairs: home→office (2 drives) and home→gym (1), sorted by count desc.
+        val all = build(trips)
+        assertEquals(2, all.pairOptions.size)
+        assertEquals(RoutePair("p_home", "p_office"), all.pairOptions.first().pair)
+        assertEquals(2, all.pairOptions.first().count)
+
+        // Selecting home→office keeps only t1/t2, and only that route in By-route.
+        val filtered = TripsOverviewBuilder.build(
+            trips, cars, places, null, "", { it / DAY },
+            selectedPair = RoutePair("p_home", "p_office"),
+        )
+        assertEquals(2, filtered.stats.drives)
+        assertEquals(setOf("t1", "t2"), filtered.sections.flatMap { it.items }.map { it.tripId }.toSet())
+        assertEquals(listOf("H"), filtered.routes.map { it.routeHash })
+    }
+
+    @Test
+    fun `date-range filter narrows recent by start time but keeps route history for deltas`() {
+        val trips = listOf(
+            trip("t1", 1 * DAY, 300_000, "H"),
+            trip("t2", 2 * DAY, 280_000, "H"), // PB vs t1
+            trip("t3", 3 * DAY, 260_000, "H"), // PB vs t2
+        )
+        // Window covers only day 3.
+        val o = TripsOverviewBuilder.build(
+            trips, cars, places, null, "", { it / DAY },
+            dateRange = (3 * DAY)..(3 * DAY + 1_000),
+        )
+        val items = o.sections.flatMap { it.items }
+        assertEquals(listOf("t3"), items.map { it.tripId })
+        // t3's delta still references t2 (the real previous drive), even though t2 is outside the window.
+        assertEquals(-20_000L, items.single().deltaVsPrevMs)
+        assertEquals(1, o.stats.drives)
+    }
+
+    @Test
     fun `blank-hash trips appear in recent but not by-route`() {
         val trips = listOf(trip("t1", 1 * DAY, 300_000, hash = ""))
         val o = build(trips)

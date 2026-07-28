@@ -105,6 +105,14 @@ class TripDetailViewModel @Inject constructor(
 
     fun setBaseline(baseline: CompareBaseline) = _uiState.update { it.copy(baseline = baseline) }
 
+    /** Deletes this ride (soft-delete + Firestore sync + Room removal); caller navigates back. */
+    fun deleteTrip(onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            tripRepository.deleteTrip(tripId)
+            onDeleted()
+        }
+    }
+
     /** Opens the energy log sheet from the "Fuel not logged" banner (Add). */
     fun openEnergyLog() = _uiState.update { it.copy(showEnergyLog = true) }
 

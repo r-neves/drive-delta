@@ -44,15 +44,15 @@
     populated Compare from two identical drives), then release-ops: **keystore + signing + AAB +
     Play Store internal track**, **Firebase Crashlytics**, and verify a **minified release build**
     before flipping `isMinifyEnabled=true` (ProGuard rules already staged).
-  - **Code backlog I can do without a device:** soft-delete tombstone pruning for cars/places (known
-    CP3 TODO, unbounded growth); History place-pair + date-range filters; finish pt translations
-    (only core strings done); a11y contentDescription audit. Live-split HUD delta stays **deferred by
-    design** (needs a live Roads call, barred by the cost rule).
+  - **Code backlog I can do without a device:** ~~soft-delete tombstone pruning~~ (done);
+    ~~History place-pair + date-range filters~~ (done 2026-07-28); ~~finish pt translations~~ (done
+    2026-07-28, full en/pt parity); ~~a11y contentDescription audit~~ (done 2026-07-28). Live-split
+    HUD delta stays **deferred by design** (needs a live Roads call, barred by the cost rule).
 - **Note:** route points are **local-only by design** (never synced) → Trip Detail map/replay only
   work on the recording device (post-MVP: Firebase Storage upload). Firestore security rules reviewed
   and correct (per-user, not test mode). Emulator (`Medium_Phone`) was `pm clear`'d during sync
   diagnosis, so it's freshly re-synced from server; old test trips lack route points (expected).
-- **Last updated by:** (machine / 2026-07-27)
+- **Last updated by:** (machine / 2026-07-28)
 - **Working branch:** `main`
 
 ---
@@ -81,6 +81,55 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
+
+- `2026-07-28` — **Backlog #3: History filters + pt translations + a11y audit (NOT committed — awaiting go-ahead).**
+  Three self-contained tasks, all verified on the emulator; build + 20 unit tests green.
+  (1) **History place-pair + date-range filters.** The Trips filter icon now opens a **Filters
+  `ModalBottomSheet`** (replacing the vehicle-only `DropdownMenu`) using M3 **`FilterChip`** rows —
+  the same filter-chip language used in TripDetail/PreRide — with three sections: **Vehicle**
+  (All + cars), **Route** (All + auto-derived origin→destination pairs from the data), and **Date**
+  (Any time · Last 7 days · Last 30 days · This month · **Custom** → M3 `DateRangePicker` dialog).
+  `TripsOverviewBuilder.build` gained `selectedPair: RoutePair?` + `dateRange: LongRange?` params
+  and a `pairOptions` output; **design filters (route/date/search) narrow the display but delta/PB
+  history is still computed over the full vehicle-filtered set** (so a drive's vs-previous delta
+  references the real previous drive even when it's outside the window). Place-pair also filters the
+  By-route list; date-range narrows Recent only (route trend is inherently all-time). `HistoryViewModel`
+  folds the 4 filter inputs into one `Filters` flow to stay within `combine`'s 5-arg limit; filter
+  icon tints primary + shows an "N active" content-desc when any of vehicle/route/date is set.
+  `TripsOverviewBuilderTest` +2 cases (place-pair narrowing/pairOptions; date-range keeps delta base).
+  **Verified on emulator**: Route "SyncTest → Test Place" narrowed 11→1 drive; "Last 7 days" narrowed
+  11→4; Custom picker selected 26–28 Jul and the chip showed the formatted "26 Jul – 28 Jul"; Clear all
+  reset. (2) **pt-PT translations finished** — swept `values/strings.xml` vs `values-pt`, translated the
+  36 missing keys (perm dialogs, trip-detail replay/compare, tracking chips/notification, dashboard
+  week/greeting, places/cars content-descs, compare, preride chip, …) + the new filter strings, and
+  removed one stale pt-only key (`dashboard_recent_rides`, superseded by `_title`). **Now full en/pt
+  key parity, no duplicates.** (3) **a11y contentDescription audit** — walked every screen's
+  `Icon`/`IconButton`/`Image`. Found the app already well-labeled (all IconButtons + the swipe-delete
+  backgrounds + auth logo + recenter/share/stop already described). The one real gap: `RecentTripCard`'s
+  **fuel-type icon** (bolt/pump on Trips + Dashboard cards) conveyed the fuel type by icon+colour with
+  **no adjacent text** → added `contentDescription = stringResource(fuelType.labelRes)` (reusing the
+  existing `FuelTypeUi.labelRes`). All other `contentDescription = null` are genuinely decorative
+  (icons beside their own text label, empty-state art, text-field leading icons, nav icons with
+  always-visible labels) and left null.
+
+- `2026-07-28` — **Two usability fixes: per-app language + discoverable trip delete (NOT committed).**
+  (1) **OS per-app language picker enabled.** There was no in-app language switch AND no `localeConfig`,
+  so the Android 13+ per-app Language screen (Settings → Apps → DriveDelta → Language) never appeared —
+  the only way to get Portuguese was a device-wide language change. Fix: `android { androidResources {
+  generateLocaleConfig = true } }` + `resourceConfigurations += listOf("en", "pt")` in
+  `app/build.gradle.kts`, plus a required **`app/src/main/res/resources.properties`** with
+  `unqualifiedResLocale=en-US` (build fails without it: "No resources.properties file found"). AGP now
+  generates `_generated_res_locale_config.xml` (en-US, pt) and wires `android:localeConfig`.
+  **Verified on emulator**: `cmd locale set-app-locales app.drivedelta --locales pt` was accepted and the
+  whole app rendered in pt ("Boa tarde", "Iniciar viagem", "Custo combustível") without touching the
+  device locale; reset back to system after. (No in-app dropdown — the OS picker is the surface.)
+  (2) **Trip delete made discoverable.** Deleting a ride was long-press-only on Trips→Recent (nothing in
+  Trip Detail). Added a red **"Delete ride"** item (trash icon) to the Trip Detail app-bar ⋮ `OverflowMenu`
+  → confirm `AlertDialog` (reuses `history_delete_title/_message`) → `TripDetailViewModel.deleteTrip`
+  (delegates to the same `tripRepository.deleteTrip` as History) → `onBack`. New string `trip_menu_delete`
+  (en "Delete ride" / pt "Eliminar viagem"). **Verified on emulator**: ⋮ shows Route insights / Compare /
+  Delete ride (red); tapping Delete → "Delete ride?" confirm dialog; Cancelled (didn't destroy the real
+  restored trip). Full en/pt string parity maintained; build + 20 tests green.
 
 - `2026-07-27` — **NEW FEATURE: Energy Logging (per-drive fuel/energy cost) + Energy Prices settings.**
   Built the "record energy used per drive" flow from 4 new mockups (`design/mockups/Energy Logging-*.png`,

@@ -22,11 +22,25 @@ data class TripsUiState(
     val sections: List<DaySection> = emptyList(),
     val routes: List<RouteItem> = emptyList(),
     val cars: List<Car> = emptyList(),
+    val pairOptions: List<RoutePairOption> = emptyList(),
     val selectedCarId: String? = null,
+    val selectedPair: RoutePair? = null,
+    val dateRange: LongRange? = null,
     val query: String = "",
 ) {
     val isEmpty: Boolean get() = sections.isEmpty() && routes.isEmpty()
+    /** How many of the vehicle/route/date filters are active (drives the filter-icon highlight). */
+    val activeFilterCount: Int
+        get() = listOf(selectedCarId != null, selectedPair != null, dateRange != null).count { it }
 }
+
+/** The four narrowing inputs, folded together so the ui-state [combine] stays within its arity. */
+private data class Filters(
+    val carId: String?,
+    val pair: RoutePair?,
+    val dateRange: LongRange?,
+    val query: String,
+)
 
 /**
  * Backs the Trips screen (design/mockups/trips-recent.png, trips-by-route.png; F11). Streams the
@@ -43,35 +57,60 @@ class HistoryViewModel @Inject constructor(
 
     private val zone = ZoneId.systemDefault()
     private val selectedCarId = MutableStateFlow<String?>(null)
+    private val selectedPair = MutableStateFlow<RoutePair?>(null)
+    private val dateRange = MutableStateFlow<LongRange?>(null)
     private val query = MutableStateFlow("")
+
+    private val filters = combine(selectedCarId, selectedPair, dateRange, query) { carId, pair, range, q ->
+        Filters(carId, pair, range, q)
+    }
 
     val uiState: StateFlow<TripsUiState> = combine(
         tripRepository.observeTrips(),
         carRepository.observeCars(),
         placeRepository.observePlaces(),
-        selectedCarId,
-        query,
-    ) { trips, cars, places, carId, q ->
+        filters,
+    ) { trips, cars, places, f ->
         val overview = TripsOverviewBuilder.build(
             allTrips = trips,
             cars = cars,
             places = places,
-            selectedCarId = carId,
-            query = q,
+            selectedCarId = f.carId,
+            query = f.query,
             epochDayOf = { millis -> Instant.ofEpochMilli(millis).atZone(zone).toLocalDate().toEpochDay() },
+            selectedPair = f.pair,
+            dateRange = f.dateRange,
         )
         TripsUiState(
             stats = overview.stats,
             sections = overview.sections,
             routes = overview.routes,
             cars = cars,
-            selectedCarId = carId,
-            query = q,
+            pairOptions = overview.pairOptions,
+            selectedCarId = f.carId,
+            selectedPair = f.pair,
+            dateRange = f.dateRange,
+            query = f.query,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TripsUiState())
 
     fun selectCar(carId: String?) {
         selectedCarId.value = carId
+    }
+
+    fun selectPair(pair: RoutePair?) {
+        selectedPair.value = pair
+    }
+
+    fun setDateRange(range: LongRange?) {
+        dateRange.value = range
+    }
+
+    /** Clears vehicle, route and date filters (search is cleared separately with the search bar). */
+    fun clearFilters() {
+        selectedCarId.value = null
+        selectedPair.value = null
+        dateRange.value = null
     }
 
     fun setQuery(text: String) {
