@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import app.drivedelta.R
 import app.drivedelta.domain.model.FuelType
 import app.drivedelta.ui.cars.badgeColor
+import app.drivedelta.ui.cars.labelRes
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdError
 import app.drivedelta.ui.theme.DdOutline
@@ -148,7 +149,8 @@ private fun NewPbPill() {
 private fun FuelIcon(fuelType: FuelType?) {
     if (fuelType == null) return
     val icon = if (fuelType == FuelType.ELECTRIC) Icons.Filled.Bolt else Icons.Filled.LocalGasStation
-    Icon(icon, contentDescription = null, tint = fuelType.badgeColor, modifier = Modifier.size(18.dp))
+    // The fuel type is conveyed only by this icon (no adjacent label), so name it for screen readers.
+    Icon(icon, contentDescription = stringResource(fuelType.labelRes), tint = fuelType.badgeColor, modifier = Modifier.size(18.dp))
 }
 
 /** "Home → Office", or [fallback] when the trip has no linked places. */

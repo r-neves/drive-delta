@@ -68,6 +68,19 @@
     <string name="trips_trend_best">melhor de sempre</string>
     <string name="trips_day_today">Hoje</string>
     <string name="trips_day_yesterday">Ontem</string>
+    <string name="trips_filter_active">Filtro · %1$d ativos</string>
+    <string name="trips_filter_title">Filtros</string>
+    <string name="trips_filter_section_vehicle">Veículo</string>
+    <string name="trips_filter_section_route">Percurso</string>
+    <string name="trips_filter_section_date">Data</string>
+    <string name="trips_filter_route_unknown">Desconhecido</string>
+    <string name="trips_filter_date_any">Qualquer altura</string>
+    <string name="trips_filter_date_7d">Últimos 7 dias</string>
+    <string name="trips_filter_date_30d">Últimos 30 dias</string>
+    <string name="trips_filter_date_month">Este mês</string>
+    <string name="trips_filter_date_custom">Personalizado</string>
+    <string name="trips_filter_clear">Limpar tudo</string>
+    <string name="trips_filter_done">Concluído</string>
 
     <!-- Ações comuns -->
     <string name="action_delete">Eliminar</string>
@@ -78,13 +91,25 @@
 
     <!-- Painel -->
     <string name="dashboard_start_ride">Iniciar viagem</string>
-    <string name="dashboard_recent_rides">VIAGENS RECENTES</string>
     <string name="dashboard_no_trips">Ainda não há viagens — toca em Iniciar viagem para gravar uma.</string>
     <string name="dashboard_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="dashboard_greeting">%1$s</string>
+    <string name="dashboard_greeting_named">%1$s, %2$s</string>
+    <string name="dashboard_this_week">ESTA SEMANA</string>
+    <string name="dashboard_week_distance">Distância</string>
+    <string name="dashboard_week_time">Tempo ao volante</string>
+    <string name="dashboard_route_summary">%1$.1f km · %2$d viagens</string>
+    <string name="dashboard_best_time">Melhor %1$s</string>
+
+    <!-- Permissões -->
+    <string name="perm_location_title">Localização necessária</string>
+    <string name="perm_location_message">A DriveDelta precisa de acesso à localização para gravar a tua viagem. Ativa-o nas Definições para começar a seguir.</string>
+    <string name="perm_open_settings">Abrir definições</string>
 
     <!-- Histórico -->
     <string name="history_empty">Ainda não há viagens.</string>
     <string name="history_trip_summary">%1$.1f km · %2$d min</string>
+    <string name="history_filter_all">Todos</string>
     <string name="history_delete_title">Eliminar viagem?</string>
     <string name="history_delete_message">Remove permanentemente a viagem e o seu percurso.</string>
 
@@ -112,6 +137,9 @@
     <string name="cars_empty_subtitle">Adiciona um carro para registar combustível e viagens.</string>
     <string name="cars_default_chip">Predefinido</string>
     <string name="cars_deleted">Veículo eliminado</string>
+    <string name="car_delete_content_desc">Eliminar veículo</string>
+    <string name="car_consumption_fuel">%1$s L/100km</string>
+    <string name="car_consumption_electric">%1$s kWh/100km</string>
     <string name="car_edit_title_new">Adicionar veículo</string>
     <string name="car_edit_title_edit">Editar veículo</string>
     <string name="car_field_name">Nome</string>
@@ -134,10 +162,15 @@
     <string name="places_add">Adicionar local</string>
     <string name="places_empty_title">Ainda não há locais</string>
     <string name="places_empty_subtitle">Guarda casa, trabalho ou qualquer destino.</string>
+    <string name="places_radius_badge">%1$dm</string>
+    <string name="places_delete_content_desc">Eliminar local</string>
+    <string name="places_delete_title">Eliminar local?</string>
+    <string name="places_delete_message">Remover \"%1$s\"? Não pode ser anulado.</string>
     <string name="place_edit_title_new">Adicionar local</string>
     <string name="place_edit_title_edit">Editar local</string>
     <string name="place_field_name">Nome</string>
     <string name="place_field_search">Procurar morada</string>
+    <string name="place_search_unavailable">A pesquisa de morada precisa de uma chave da API Places.</string>
     <string name="place_field_radius">Raio da geocerca</string>
     <string name="place_use_my_location">Usar a minha localização</string>
     <string name="place_error_name_required">O nome é obrigatório</string>
@@ -169,8 +202,12 @@
     <string name="tracking_new_best">NOVO RECORDE</string>
     <string name="tracking_best_caption">MELHOR %1$s</string>
     <string name="tracking_recenter">Centrar mapa</string>
+    <string name="tracking_acquiring_gps">A obter GPS…</string>
+    <string name="tracking_destination_chip">🏁 %1$s — faltam %2$.1f km</string>
+    <string name="tracking_notification_channel">Seguimento de viagem</string>
     <string name="tracking_notification_title">DriveDelta — a gravar viagem</string>
     <string name="tracking_notification_starting">A obter GPS…</string>
+    <string name="tracking_notification_body">%1$s · %2$d km/h · %3$.1f km</string>
 
     <!-- Pré-viagem -->
     <string name="preride_title">Iniciar uma viagem</string>
@@ -179,6 +216,7 @@
     <string name="preride_origin">Origem (opcional)</string>
     <string name="preride_destination">Destino (opcional)</string>
     <string name="preride_place_none">Nenhum</string>
+    <string name="preride_nearby_chip">%1$s Perto de %2$s — usar como origem?</string>
     <string name="preride_start">Iniciar viagem</string>
     <string name="preride_hint">Define um destino para terminar a viagem automaticamente à chegada.</string>
 
@@ -187,9 +225,19 @@
     <string name="trip_tab_map">Mapa</string>
     <string name="trip_tab_splits">Tempos</string>
     <string name="trip_tab_replay">Repetição</string>
+    <string name="trip_compare">Comparar</string>
+    <string name="trip_not_found">Viagem não encontrada.</string>
+    <string name="trip_no_route">Sem percurso gravado.</string>
+    <string name="trip_start">Início</string>
+    <string name="trip_end">Fim</string>
     <string name="trip_total_time">Total</string>
     <string name="trip_best_total">Melhor</string>
+    <string name="trip_delta">Delta</string>
     <string name="trip_vs_best">vs melhor de sempre</string>
+    <string name="trip_segment_dist">%1$d m</string>
+    <string name="trip_replay_speed">%1$d km/h</string>
+    <string name="trip_replay_multiplier">%1$d×</string>
+    <string name="trip_play_pause">Reproduzir ou pausar</string>
     <string name="trip_vs_previous">vs viagem anterior</string>
     <string name="trip_hdr_duration">Duração</string>
     <string name="trip_hdr_km">km</string>
@@ -203,6 +251,7 @@
     <string name="trip_pb">RP</string>
     <string name="trip_new_best">novo recorde</string>
     <string name="trip_menu_insights">Estatísticas da rota</string>
+    <string name="trip_menu_delete">Eliminar viagem</string>
     <string name="trip_more">Mais</string>
     <string name="trip_fuel_prompt_title">Adicionar abastecimento?</string>
     <string name="trip_fuel_prompt_body">Regista combustível ou carregamento para acompanhar o consumo.</string>
@@ -210,7 +259,9 @@
 
     <!-- Comparação -->
     <string name="compare_title">Comparar viagens</string>
+    <string name="compare_loading">A carregar…</string>
     <string name="compare_no_matches">Ainda não há outras viagens neste percurso. Conduz de novo para comparar.</string>
+    <string name="compare_legend">Delta por segmento (A − B): verde = A mais rápido, vermelho = A mais lento.</string>
 
     <!-- Resumo do percurso -->
     <string name="route_summary_title">Resumo do percurso</string>

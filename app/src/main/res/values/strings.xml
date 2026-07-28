@@ -67,6 +67,7 @@
     <string name="trip_pb">PB</string>
     <string name="trip_new_best">new best</string>
     <string name="trip_menu_insights">Route insights</string>
+    <string name="trip_menu_delete">Delete ride</string>
     <string name="trip_more">More</string>
     <string name="trip_replay_speed">%1$d km/h</string>
     <string name="trip_replay_multiplier">%1$d×</string>
@@ -176,6 +177,19 @@
     <string name="trips_trend_best">best ever</string>
     <string name="trips_day_today">Today</string>
     <string name="trips_day_yesterday">Yesterday</string>
+    <string name="trips_filter_active">Filter · %1$d active</string>
+    <string name="trips_filter_title">Filters</string>
+    <string name="trips_filter_section_vehicle">Vehicle</string>
+    <string name="trips_filter_section_route">Route</string>
+    <string name="trips_filter_section_date">Date</string>
+    <string name="trips_filter_route_unknown">Unknown</string>
+    <string name="trips_filter_date_any">Any time</string>
+    <string name="trips_filter_date_7d">Last 7 days</string>
+    <string name="trips_filter_date_30d">Last 30 days</string>
+    <string name="trips_filter_date_month">This month</string>
+    <string name="trips_filter_date_custom">Custom</string>
+    <string name="trips_filter_clear">Clear all</string>
+    <string name="trips_filter_done">Done</string>
 
     <!-- History (F11) -->
     <string name="history_empty">No rides yet.</string>

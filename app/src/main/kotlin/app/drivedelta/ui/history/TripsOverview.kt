@@ -36,6 +36,22 @@ data class RecentTripItem(
 data class DaySection(val dayEpoch: Long, val items: List<RecentTripItem>)
 
 /**
+ * A distinct origin→destination pairing, used by the Route filter. A null place id means the trip had
+ * no linked place on that end ("Unknown"). [key] is a stable string id for selection/equality.
+ */
+data class RoutePair(val originPlaceId: String?, val destPlaceId: String?) {
+    val key: String get() = "${originPlaceId ?: ""}|${destPlaceId ?: ""}"
+}
+
+/** One selectable Route-filter option: the pair, its resolved names, and how many drives it covers. */
+data class RoutePairOption(
+    val pair: RoutePair,
+    val originName: String?,
+    val destName: String?,
+    val count: Int,
+)
+
+/**
  * One route (a distinct origin→destination) as the By-route tab renders it: best time across all its
  * drives, a [series] of recent durations for the sparkline, and the overall [trend].
  */
@@ -56,13 +72,16 @@ data class TripsOverview(
     val stats: TripsStats,
     val sections: List<DaySection>,
     val routes: List<RouteItem>,
+    /** Origin→destination pairs available to the Route filter, over the vehicle-filtered set. */
+    val pairOptions: List<RoutePairOption> = emptyList(),
 )
 
 /**
  * Pure builder for the Trips screen. Kept free of Android/formatting concerns so it can be unit
  * tested: day grouping is delegated to [epochDayOf] (a local-timezone epoch-day mapper) and time
  * strings are formatted by the UI. Per-route deltas and PB events are computed over the
- * vehicle-filtered set (so a route's history is intact) before the text search narrows the display.
+ * vehicle-filtered set (so a route's history is intact) before the display filters (route
+ * [selectedPair], [dateRange] and text [query]) narrow what's shown.
  */
 object TripsOverviewBuilder {
 
@@ -75,6 +94,8 @@ object TripsOverviewBuilder {
         selectedCarId: String?,
         query: String,
         epochDayOf: (Long) -> Long,
+        selectedPair: RoutePair? = null,
+        dateRange: LongRange? = null,
         maxSeries: Int = MAX_SERIES,
     ): TripsOverview {
         val carsById = cars.associateBy { it.id }
@@ -84,6 +105,13 @@ object TripsOverviewBuilder {
         val completed = allTrips.filter { it.endTime != null }
         val vehicleFiltered =
             if (selectedCarId != null) completed.filter { it.carId == selectedCarId } else completed
+
+        // Route-filter options: distinct origin→destination pairs over the vehicle-filtered set.
+        val pairOptions = vehicleFiltered
+            .filter { it.startPlaceId != null || it.endPlaceId != null }
+            .groupBy { RoutePair(it.startPlaceId, it.endPlaceId) }
+            .map { (pair, group) -> RoutePairOption(pair, placeName(pair.originPlaceId), placeName(pair.destPlaceId), group.size) }
+            .sortedWith(compareByDescending<RoutePairOption> { it.count }.thenBy { it.originName ?: "" })
 
         // Per-route history → delta vs previous drive, and PB-event flags.
         val byRoute = vehicleFiltered.filter { it.routeHash.isNotBlank() }.groupBy { it.routeHash }
@@ -112,14 +140,19 @@ object TripsOverviewBuilder {
             isNewPb = pbEvent[t.id] == true,
         )
 
-        val enriched = vehicleFiltered.map(::enrich)
         val q = query.trim()
-        val displayed =
-            if (q.isEmpty()) enriched
-            else enriched.filter { item ->
-                listOfNotNull(item.originName, item.destName, item.carName)
-                    .any { it.contains(q, ignoreCase = true) }
-            }
+        fun matchesPair(t: Trip) =
+            selectedPair == null || (t.startPlaceId == selectedPair.originPlaceId && t.endPlaceId == selectedPair.destPlaceId)
+        fun matchesDate(t: Trip) = dateRange == null || t.startTime in dateRange
+        fun matchesQuery(t: Trip): Boolean {
+            if (q.isEmpty()) return true
+            return listOfNotNull(placeName(t.startPlaceId), placeName(t.endPlaceId), t.carId?.let { carsById[it]?.name })
+                .any { it.contains(q, ignoreCase = true) }
+        }
+
+        val displayed = vehicleFiltered
+            .filter { matchesPair(it) && matchesDate(it) && matchesQuery(it) }
+            .map(::enrich)
 
         val sections = displayed
             .sortedByDescending { it.startTime }
@@ -133,7 +166,9 @@ object TripsOverviewBuilder {
             newPbs = displayed.count { it.isNewPb },
         )
 
-        val routes = byRoute.map { (hash, group) ->
+        val routes = byRoute
+            .filter { (_, group) -> selectedPair == null || matchesPair(group.maxByOrNull { it.startTime }!!) }
+            .map { (hash, group) ->
             val asc = group.sortedBy { it.startTime }
             val durations = asc.map { it.durationMs }
             val newest = asc.last()
@@ -157,6 +192,6 @@ object TripsOverviewBuilder {
             )
         }.sortedWith(compareByDescending<RouteItem> { it.driveCount }.thenBy { it.bestMs })
 
-        return TripsOverview(stats = stats, sections = sections, routes = routes)
+        return TripsOverview(stats = stats, sections = sections, routes = routes, pairOptions = pairOptions)
     }
 }

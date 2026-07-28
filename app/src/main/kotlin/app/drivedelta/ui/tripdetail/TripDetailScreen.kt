@@ -24,7 +24,9 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CompareArrows
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -113,6 +115,7 @@ fun TripDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Splits is the designed default tab (design/tokens.md §7).
     var selectedTab by rememberSaveable { mutableIntStateOf(1) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     androidx.compose.material3.Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -139,7 +142,11 @@ fun TripDetailScreen(
                 } },
                 actions = {
                     val trip = state.detail?.trip
-                    if (trip != null) OverflowMenu(onInsights = { onRouteSummary(trip.id) }, onCompare = { onCompare(trip.id) })
+                    if (trip != null) OverflowMenu(
+                        onInsights = { onRouteSummary(trip.id) },
+                        onCompare = { onCompare(trip.id) },
+                        onDelete = { showDeleteConfirm = true },
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -207,6 +214,23 @@ fun TripDetailScreen(
             onDismiss = viewModel::dismissEnergyLog,
             onSaved = viewModel::onEnergyLogged,
             onOpenPrices = onOpenEnergyPrices,
+        )
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.history_delete_title)) },
+            text = { Text(stringResource(R.string.history_delete_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    viewModel.deleteTrip(onDeleted = onBack)
+                }) { Text(stringResource(R.string.action_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
         )
     }
 }
@@ -487,7 +511,7 @@ private fun CircleIconButton(onClick: () -> Unit, content: @Composable () -> Uni
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit) {
+private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit, onDelete: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     CircleIconButton(onClick = { expanded = true }) {
         Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.trip_more))
@@ -502,6 +526,11 @@ private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit) {
             text = { Text(stringResource(R.string.trip_compare)) },
             leadingIcon = { Icon(Icons.Outlined.CompareArrows, contentDescription = null) },
             onClick = { expanded = false; onCompare() },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.trip_menu_delete), color = DdError) },
+            leadingIcon = { Icon(Icons.Outlined.DeleteOutline, contentDescription = null, tint = DdError) },
+            onClick = { expanded = false; onDelete() },
         )
     }
 }

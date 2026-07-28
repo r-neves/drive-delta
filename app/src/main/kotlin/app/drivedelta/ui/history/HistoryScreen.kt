@@ -8,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,14 +23,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
+import app.drivedelta.domain.model.Car
 import app.drivedelta.ui.components.RecentTripCard
 import app.drivedelta.ui.components.formatClock
 import app.drivedelta.ui.components.routeTitle
@@ -53,12 +62,14 @@ import app.drivedelta.ui.theme.DdError
 import app.drivedelta.ui.theme.DdOutline
 import app.drivedelta.ui.theme.DdPurpleSector
 import app.drivedelta.ui.theme.DdSegmentActive
-import app.drivedelta.ui.theme.DdSuccess
 import app.drivedelta.ui.theme.DdSurface
 import app.drivedelta.ui.theme.DdTextTertiary
 import app.drivedelta.ui.theme.LocalDdTokens
 import app.drivedelta.ui.theme.LocalDdType
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -74,7 +85,7 @@ fun HistoryScreen(
     val tokens = LocalDdTokens.current
     var tab by remember { mutableStateOf(TripTab.RECENT) }
     var searchActive by remember { mutableStateOf(false) }
-    var filterOpen by remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<String?>(null) }
 
     Box(Modifier.fillMaxSize().padding(horizontal = tokens.screenPadding)) {
@@ -87,12 +98,8 @@ fun HistoryScreen(
                 TripsHeader(
                     searchActive = searchActive,
                     onToggleSearch = { searchActive = !searchActive; if (!searchActive) viewModel.setQuery("") },
-                    filterOpen = filterOpen,
-                    onOpenFilter = { filterOpen = true },
-                    onCloseFilter = { filterOpen = false },
-                    cars = state.cars,
-                    selectedCarId = state.selectedCarId,
-                    onSelectCar = { viewModel.selectCar(it); filterOpen = false },
+                    activeFilterCount = state.activeFilterCount,
+                    onOpenFilter = { showFilters = true },
                 )
             }
             item { TripTabs(tab, onSelect = { tab = it }) }
@@ -153,6 +160,21 @@ fun HistoryScreen(
         }
     }
 
+    if (showFilters) {
+        FiltersSheet(
+            cars = state.cars,
+            pairOptions = state.pairOptions,
+            selectedCarId = state.selectedCarId,
+            selectedPair = state.selectedPair,
+            dateRange = state.dateRange,
+            onSelectCar = viewModel::selectCar,
+            onSelectPair = viewModel::selectPair,
+            onSelectDateRange = viewModel::setDateRange,
+            onClearAll = viewModel::clearFilters,
+            onDismiss = { showFilters = false },
+        )
+    }
+
     pendingDelete?.let { tripId ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
@@ -176,12 +198,8 @@ fun HistoryScreen(
 private fun TripsHeader(
     searchActive: Boolean,
     onToggleSearch: () -> Unit,
-    filterOpen: Boolean,
+    activeFilterCount: Int,
     onOpenFilter: () -> Unit,
-    onCloseFilter: () -> Unit,
-    cars: List<app.drivedelta.domain.model.Car>,
-    selectedCarId: String?,
-    onSelectCar: (String?) -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -197,26 +215,16 @@ private fun TripsHeader(
                 tint = if (searchActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             )
         }
-        Box {
-            IconButton(onClick = onOpenFilter) {
-                Icon(
-                    Icons.Outlined.FilterList,
-                    contentDescription = stringResource(R.string.trips_filter),
-                    tint = if (selectedCarId != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            DropdownMenu(expanded = filterOpen, onDismissRequest = onCloseFilter) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.history_filter_all)) },
-                    onClick = { onSelectCar(null) },
-                )
-                cars.forEach { car ->
-                    DropdownMenuItem(
-                        text = { Text(car.name) },
-                        onClick = { onSelectCar(car.id) },
-                    )
-                }
-            }
+        IconButton(onClick = onOpenFilter) {
+            Icon(
+                Icons.Outlined.FilterList,
+                contentDescription = if (activeFilterCount > 0) {
+                    stringResource(R.string.trips_filter_active, activeFilterCount)
+                } else {
+                    stringResource(R.string.trips_filter)
+                },
+                tint = if (activeFilterCount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }
@@ -400,6 +408,190 @@ private fun Sparkline(series: List<Long>, color: Color, modifier: Modifier) {
         // End dot on the newest drive.
         drawCircle(color, radius = 6f, center = androidx.compose.ui.geometry.Offset(px(n - 1), py(series.last())))
     }
+}
+
+// --- Filters sheet (vehicle / route / date) -----------------------------------------------------
+
+private enum class DatePreset { ANY, D7, D30, MONTH, CUSTOM }
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun FiltersSheet(
+    cars: List<Car>,
+    pairOptions: List<RoutePairOption>,
+    selectedCarId: String?,
+    selectedPair: RoutePair?,
+    dateRange: LongRange?,
+    onSelectCar: (String?) -> Unit,
+    onSelectPair: (RoutePair?) -> Unit,
+    onSelectDateRange: (LongRange?) -> Unit,
+    onClearAll: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val tokens = LocalDdTokens.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showDatePicker by remember { mutableStateOf(false) }
+    // Which preset produced the active range, for chip highlighting. A range set via the picker or
+    // restored on reopen shows as CUSTOM (with the formatted range on its chip).
+    var datePreset by remember { mutableStateOf(if (dateRange == null) DatePreset.ANY else DatePreset.CUSTOM) }
+    val anyActive = selectedCarId != null || selectedPair != null || dateRange != null
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = DdSurface,
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = tokens.screenPadding)
+                .padding(bottom = tokens.spaceXl),
+            verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),
+        ) {
+            Text(
+                stringResource(R.string.trips_filter_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            // Vehicle
+            FilterSectionLabel(stringResource(R.string.trips_filter_section_vehicle))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+                FilterPill(stringResource(R.string.history_filter_all), selectedCarId == null) { onSelectCar(null) }
+                cars.forEach { car ->
+                    FilterPill(car.name, selectedCarId == car.id) {
+                        onSelectCar(if (selectedCarId == car.id) null else car.id)
+                    }
+                }
+            }
+
+            // Route (origin → destination)
+            if (pairOptions.isNotEmpty()) {
+                FilterSectionLabel(stringResource(R.string.trips_filter_section_route))
+                val unknown = stringResource(R.string.trips_filter_route_unknown)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+                    FilterPill(stringResource(R.string.history_filter_all), selectedPair == null) { onSelectPair(null) }
+                    pairOptions.forEach { opt ->
+                        val chosen = selectedPair == opt.pair
+                        FilterPill(routeTitle(opt.originName, opt.destName, unknown), chosen) {
+                            onSelectPair(if (chosen) null else opt.pair)
+                        }
+                    }
+                }
+            }
+
+            // Date
+            FilterSectionLabel(stringResource(R.string.trips_filter_section_date))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+                FilterPill(stringResource(R.string.trips_filter_date_any), datePreset == DatePreset.ANY && dateRange == null) {
+                    datePreset = DatePreset.ANY; onSelectDateRange(null)
+                }
+                FilterPill(stringResource(R.string.trips_filter_date_7d), datePreset == DatePreset.D7) {
+                    datePreset = DatePreset.D7; onSelectDateRange(presetRange(6))
+                }
+                FilterPill(stringResource(R.string.trips_filter_date_30d), datePreset == DatePreset.D30) {
+                    datePreset = DatePreset.D30; onSelectDateRange(presetRange(29))
+                }
+                FilterPill(stringResource(R.string.trips_filter_date_month), datePreset == DatePreset.MONTH) {
+                    datePreset = DatePreset.MONTH; onSelectDateRange(monthToDateRange())
+                }
+                val customLabel = if (datePreset == DatePreset.CUSTOM && dateRange != null) {
+                    formatRange(dateRange)
+                } else {
+                    stringResource(R.string.trips_filter_date_custom)
+                }
+                FilterPill(customLabel, datePreset == DatePreset.CUSTOM) { showDatePicker = true }
+            }
+
+            Spacer(Modifier.height(tokens.spaceXs))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(
+                    onClick = { onClearAll(); datePreset = DatePreset.ANY },
+                    enabled = anyActive,
+                    modifier = Modifier.weight(1f),
+                ) { Text(stringResource(R.string.trips_filter_clear)) }
+                Button(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.trips_filter_done))
+                }
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        val pickerState = rememberDateRangePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    enabled = pickerState.selectedStartDateMillis != null && pickerState.selectedEndDateMillis != null,
+                    onClick = {
+                        val start = pickerState.selectedStartDateMillis
+                        val end = pickerState.selectedEndDateMillis
+                        if (start != null && end != null) {
+                            datePreset = DatePreset.CUSTOM
+                            onSelectDateRange(customRange(start, end))
+                        }
+                        showDatePicker = false
+                    },
+                ) { Text(stringResource(R.string.trips_filter_done)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
+        ) {
+            DateRangePicker(state = pickerState, showModeToggle = false)
+        }
+    }
+}
+
+@Composable
+private fun FilterSectionLabel(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = LocalDdTokens.current.spaceXs),
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterPill(label: String, selected: Boolean, onClick: () -> Unit) {
+    FilterChip(selected = selected, onClick = onClick, label = { Text(label) })
+}
+
+// Local-timezone date-range builders for the presets and the custom picker.
+
+private val filterZone: ZoneId get() = ZoneId.systemDefault()
+
+/** A range covering the last [daysBack]+1 whole days up to the end of today, in local time. */
+private fun presetRange(daysBack: Long): LongRange {
+    val today = LocalDate.now()
+    return dayStart(today.minusDays(daysBack))..dayEnd(today)
+}
+
+/** From the first of the current month through the end of today, in local time. */
+private fun monthToDateRange(): LongRange {
+    val today = LocalDate.now()
+    return dayStart(today.withDayOfMonth(1))..dayEnd(today)
+}
+
+/** The DateRangePicker reports UTC start-of-day millis; map both ends onto whole local days. */
+private fun customRange(startUtcMillis: Long, endUtcMillis: Long): LongRange {
+    val start = Instant.ofEpochMilli(startUtcMillis).atZone(ZoneOffset.UTC).toLocalDate()
+    val end = Instant.ofEpochMilli(endUtcMillis).atZone(ZoneOffset.UTC).toLocalDate()
+    return dayStart(start)..dayEnd(end)
+}
+
+private fun dayStart(d: LocalDate): Long = d.atStartOfDay(filterZone).toInstant().toEpochMilli()
+private fun dayEnd(d: LocalDate): Long = d.plusDays(1).atStartOfDay(filterZone).toInstant().toEpochMilli() - 1
+
+private val RANGE_FORMAT = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
+
+private fun formatRange(range: LongRange): String {
+    val start = Instant.ofEpochMilli(range.first).atZone(filterZone).toLocalDate()
+    val end = Instant.ofEpochMilli(range.last).atZone(filterZone).toLocalDate()
+    return "${RANGE_FORMAT.format(start)} – ${RANGE_FORMAT.format(end)}"
 }
 
 // --- Helpers ------------------------------------------------------------------------------------

@@ -35,6 +35,17 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = secret("MAPS_API_KEY")
         buildConfigField("String", "ROADS_API_KEY", "\"${secret("ROADS_API_KEY")}\"")
         buildConfigField("String", "PLACES_API_KEY", "\"${secret("PLACES_API_KEY")}\"")
+
+        // The languages we ship translations for. Limits packaged resources to these and feeds the
+        // generated locale config below.
+        resourceConfigurations += listOf("en", "pt")
+    }
+
+    androidResources {
+        // Generates res/xml/_generated_res_locale_config.xml and wires android:localeConfig, so the
+        // OS shows a per-app Language picker (Settings → Apps → DriveDelta → Language) on Android 13+.
+        // Without this, switching DriveDelta to Portuguese needs a device-wide system language change.
+        generateLocaleConfig = true
     }
 
     buildTypes {
