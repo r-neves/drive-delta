@@ -82,6 +82,41 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done (committed + push
 Record anything that differs from the plan, or decisions made mid-build that a future session
 (or a different laptop) needs to know. Newest at top.
 
+- `2026-07-27` — **NEW FEATURE: Energy Logging (per-drive fuel/energy cost) + Energy Prices settings.**
+  Built the "record energy used per drive" flow from 4 new mockups (`design/mockups/Energy Logging-*.png`,
+  `settings-energy-prices.png`). **Data:** new `EnergyPricesEntity`/`EnergyPricesDao` (one row per user)
+  + **Room v1→v2 migration** (`AppDatabase.MIGRATION_1_2`, wired in `DatabaseModule`; schema `2.json`
+  exported; migration verified on the emulator's existing v1 DB — no crash). Synced like other entities:
+  `EnergyPricesDto`, `FirestoreDataSource.pushEnergyPrices`/pull under `/users/{uid}/settings/energy_prices`,
+  `RemoteSnapshot.energyPrices`, `SyncManager` push/pull (`SyncManagerTest` updated for the new DAO).
+  Domain `EnergyPrices` (+ `ElectricTariff`) with the **user-specified defaults: petrol €2.00/L, diesel
+  €1.96/L, LPG €0.96/L, electricity home €0.155781/kWh + public €0.79/kWh, currency EUR** (default tariff for
+  new drives = Public); `EnergyPricesRepository` emits `default(userId)` until the user saves.
+  **UI:** (1) **`ui/settings/EnergyPricesScreen`** (+VM) — currency dropdown, Home/Public electric tariffs
+  (radio picks default-for-new-drives), Petrol/Diesel/LPG rows (tap → price dialog), Estimate/Ask toggles;
+  auto-saves each edit. Reached via a **new gear icon on the Dashboard header** (`ENERGY_PRICES` outer-nav
+  route; `onOpenSettings` threaded MainScreen→Dashboard). (2) **`ui/fuel/EnergyLogSheet`** (+`EnergyLogViewModel`,
+  a `ModalBottomSheet`) **replaced the old full-screen `FuelLogScreen`/`FuelLogViewModel`** (deleted, along
+  with the `FUEL_LOG_ROUTE` nav): kWh/litres adapt to the car, unit price from settings (electric tariff
+  switchable per drive by tapping the rate row; liquid rate row opens Energy Prices), **live cost = amount ×
+  price**, "Use estimate" from the car's avg consumption. Content is `verticalScroll` so Save is reachable.
+  (3) **Trip Detail** gained a **Fuel cost header stat** (logged cost or "—"), a dashed **"Fuel not logged →
+  Add"** banner, and a **4th "Cost" tab** with the speed-vs-cost scatter (incl. a "NO COST YET" pending
+  marker for the focused unlogged drive). The sheet **auto-opens once per unlogged drive** when `askAfterEveryDrive`
+  is on (gated by the existing `fuelPromptDismissed` trip flag); the "Add" banner opens it manually.
+  New use case `GetTripCostChartUseCase` (this drive's cost + scatter, gap-filling other unlogged drives
+  with estimates when `estimateWhenNotLogged` is on). (4) **Extracted a shared `ui/components/SpeedCostScatter`**
+  (+`ScatterPoint`/`ScatterKind`) used by BOTH Trip Detail and Route Summary (RouteSummary refactored off its
+  private chart — one implementation). (5) **Currency now follows the setting** on the Dashboard weekly card
+  and Route Summary (both VMs read `EnergyPricesRepository`), not just the locale — fixes the "$72.00 vs €"
+  mismatch. en+pt strings added. **Verified on emulator** (installed debug, migrated existing DB): Energy
+  Prices screen matches the mockup with the exact default prices; opening an **unlogged** trip auto-opens the
+  "Fuel used" sheet (VW Golf/Petrol, €2.00/L from settings, 5.2 L → **€10.40** live), shows the not-logged
+  banner + "—" stat; a **logged** trip (linked €72 log) shows "Fuel cost €72.00", no banner, and a Cost-tab
+  scatter with a green **THIS DRIVE** marker at (5 km/h, €72). Not visually captured: the literal Save-tap→
+  banner-clears transition (blind adb tapping got flaky) — but the logged-trip state proves a saved log renders,
+  and the save path reuses the verified `LogFuelUseCase`. **NOT committed/pushed** (awaiting user go-ahead).
+
 - `2026-07-27` — **Design sweep FINAL: Fuel Log aligned to the Car-edit form language + Cars-screen
   title fixed.** The **Fuel Log** (F12) has no dedicated mockup, so it was rebuilt to match the form
   language established in `car-edit.png`: **uppercase field labels** (`LabeledField`) over **filled

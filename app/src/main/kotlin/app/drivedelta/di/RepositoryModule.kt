@@ -2,10 +2,12 @@ package app.drivedelta.di
 
 import app.drivedelta.data.remote.GeocoderRoadNameResolver
 import app.drivedelta.data.repository.CarRepositoryImpl
+import app.drivedelta.data.repository.EnergyPricesRepositoryImpl
 import app.drivedelta.data.repository.FuelLogRepositoryImpl
 import app.drivedelta.data.repository.PlaceRepositoryImpl
 import app.drivedelta.data.repository.TripRepositoryImpl
 import app.drivedelta.domain.repository.CarRepository
+import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.repository.FuelLogRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
@@ -40,4 +42,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindFuelLogRepository(impl: FuelLogRepositoryImpl): FuelLogRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEnergyPricesRepository(impl: EnergyPricesRepositoryImpl): EnergyPricesRepository
 }

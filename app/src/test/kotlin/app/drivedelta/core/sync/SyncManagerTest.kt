@@ -2,6 +2,7 @@ package app.drivedelta.core.sync
 
 import app.drivedelta.core.auth.AuthRepository
 import app.drivedelta.data.local.dao.CarDao
+import app.drivedelta.data.local.dao.EnergyPricesDao
 import app.drivedelta.data.local.dao.FuelLogDao
 import app.drivedelta.data.local.dao.PlaceDao
 import app.drivedelta.data.local.dao.SegmentDao
@@ -23,8 +24,9 @@ class SyncManagerTest {
     private val carDao = mockk<CarDao>(relaxed = true)
     private val fuelLogDao = mockk<FuelLogDao>(relaxed = true)
     private val segmentDao = mockk<SegmentDao>(relaxed = true)
+    private val energyPricesDao = mockk<EnergyPricesDao>(relaxed = true)
 
-    private fun manager() = SyncManager(auth, remote, tripDao, placeDao, carDao, fuelLogDao, segmentDao)
+    private fun manager() = SyncManager(auth, remote, tripDao, placeDao, carDao, fuelLogDao, segmentDao, energyPricesDao)
 
     private fun car(id: String, deleted: Boolean) = CarEntity(
         id = id, userId = "u", name = "Car", licensePlate = "", fuelType = "PETROL",

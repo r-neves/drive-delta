@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -29,7 +34,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -48,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -59,9 +64,16 @@ import app.drivedelta.R
 import app.drivedelta.domain.model.Segment
 import app.drivedelta.domain.model.Trip
 import app.drivedelta.domain.model.TripDetail
+import app.drivedelta.domain.usecase.fuel.TripCostChart
+import app.drivedelta.domain.usecase.fuel.TripCostPoint
+import app.drivedelta.ui.components.ScatterKind
+import app.drivedelta.ui.components.ScatterPoint
+import app.drivedelta.ui.components.SpeedCostScatter
 import app.drivedelta.ui.components.routeTitle
+import app.drivedelta.ui.fuel.EnergyLogSheet
 import app.drivedelta.ui.theme.DdDeltaFaster
 import app.drivedelta.ui.theme.DdError
+import app.drivedelta.ui.theme.DdPrimary
 import app.drivedelta.ui.theme.DdPurpleRowBg
 import app.drivedelta.ui.theme.DdPurpleRowBorder
 import app.drivedelta.ui.theme.DdPurpleRowMuted
@@ -87,7 +99,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_replay)
+private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_replay, R.string.trip_tab_cost)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +107,7 @@ fun TripDetailScreen(
     onBack: () -> Unit,
     onCompare: (String) -> Unit,
     onRouteSummary: (String) -> Unit,
-    onAddFuel: (String) -> Unit,
+    onOpenEnergyPrices: () -> Unit,
     viewModel: TripDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -148,7 +160,10 @@ fun TripDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 else -> Column(Modifier.fillMaxSize()) {
-                    SummaryHeader(detail)
+                    SummaryHeader(detail, state.costChart)
+                    if (state.costChart?.loggedCost == null && detail.trip.carId != null) {
+                        FuelNotLoggedBanner(onAdd = viewModel::openEnergyLog)
+                    }
                     TabRow(
                         selectedTabIndex = selectedTab,
                         containerColor = MaterialTheme.colorScheme.background,
@@ -177,18 +192,21 @@ fun TripDetailScreen(
                     when (selectedTab) {
                         0 -> MapTab(detail)
                         1 -> SplitsTab(detail, state, viewModel::setBaseline)
-                        else -> ReplayTab(detail, state, viewModel)
+                        2 -> ReplayTab(detail, state, viewModel)
+                        else -> CostTab(state.costChart)
                     }
                 }
             }
         }
     }
 
-    if (state.showFuelPrompt) {
-        val tripId = state.detail?.trip?.id
-        FuelPromptSheet(
-            onAddFuel = { if (tripId != null) { viewModel.dismissFuelPrompt(); onAddFuel(tripId) } },
-            onDismiss = viewModel::dismissFuelPrompt,
+    val tripId = state.detail?.trip?.id
+    if (state.showEnergyLog && tripId != null) {
+        EnergyLogSheet(
+            tripId = tripId,
+            onDismiss = viewModel::dismissEnergyLog,
+            onSaved = viewModel::onEnergyLogged,
+            onOpenPrices = onOpenEnergyPrices,
         )
     }
 }
@@ -342,21 +360,26 @@ private fun SegmentSplitRow(segment: Segment, baselineMs: Long?, bestMs: Long?) 
 // --- Summary header + app-bar helpers -----------------------------------------------------------
 
 @Composable
-private fun SummaryHeader(detail: TripDetail) {
+private fun SummaryHeader(detail: TripDetail, costChart: TripCostChart?) {
     val tokens = LocalDdTokens.current
     val trip = detail.trip
     val avgKph = if (trip.durationMs > 0) (trip.distanceMeters / (trip.durationMs / 1000f) * 3.6f).roundToInt() else 0
     val total = detail.segments.sumOf { it.durationMs }
     val bestTotal = detail.bestPerRoadKey.values.sum()
     val deltaVsBest = if (bestTotal > 0) total - bestTotal else null
+    val loggedCost = costChart?.loggedCost
 
     Row(
         Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceMd),
-        horizontalArrangement = Arrangement.spacedBy(tokens.spaceLg),
+        horizontalArrangement = Arrangement.spacedBy(tokens.spaceMd),
     ) {
         HeaderStat(formatClockShort(trip.durationMs), stringResource(R.string.trip_hdr_duration))
         HeaderStat(String.format(Locale.US, "%.1f", trip.distanceMeters / 1000f), stringResource(R.string.trip_hdr_km))
         HeaderStat(avgKph.toString(), stringResource(R.string.trip_hdr_avg))
+        HeaderStat(
+            loggedCost?.let { formatMoney(it, costChart.currencyCode) } ?: "—",
+            stringResource(R.string.dashboard_week_fuel),
+        )
         if (deltaVsBest != null) {
             val faster = deltaVsBest <= 0
             HeaderStat(
@@ -367,6 +390,84 @@ private fun SummaryHeader(detail: TripDetail) {
         }
     }
 }
+
+/** Dashed "Fuel not logged → Add" banner (design/mockups/Energy Logging-saved-drive-not-logged.png). */
+@Composable
+private fun FuelNotLoggedBanner(onAdd: () -> Unit) {
+    val tokens = LocalDdTokens.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = tokens.screenPadding)
+            .dashedRoundedBorder(DdPrimary.copy(alpha = 0.6f), tokens.radiusCard)
+            .padding(tokens.spaceLg),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(tokens.spaceMd),
+    ) {
+        Box(
+            Modifier.size(44.dp).clip(RoundedCornerShape(tokens.radiusSm)).background(DdPrimary.copy(alpha = 0.16f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Filled.LocalGasStation, contentDescription = null, tint = DdPrimary)
+        }
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.trip_fuel_not_logged), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.trip_fuel_not_logged_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        androidx.compose.material3.Button(onClick = onAdd, shape = RoundedCornerShape(tokens.radiusMd)) {
+            Text(stringResource(R.string.trip_fuel_add_short))
+        }
+    }
+}
+
+// --- Tab 4: Cost (speed vs. cost scatter) -------------------------------------------------------
+
+@Composable
+private fun CostTab(costChart: TripCostChart?) {
+    val tokens = LocalDdTokens.current
+    if (costChart == null || costChart.points.isEmpty()) {
+        CenteredHint(stringResource(R.string.trip_cost_empty))
+        return
+    }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(tokens.screenPadding),
+        verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+            Text(stringResource(R.string.trip_cost_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.route_summary_drive_count, costChart.driveCount), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        val symbol = currencySymbol(costChart.currencyCode)
+        SpeedCostScatter(
+            points = costChart.points.map { it.toScatterPoint() },
+            currencySymbol = symbol,
+            pendingLabel = stringResource(R.string.trip_cost_no_cost_yet),
+        )
+        Text(
+            stringResource(
+                if (costChart.loggedCost == null) R.string.trip_cost_caption_pending else R.string.trip_cost_caption_logged,
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun TripCostPoint.toScatterPoint(): ScatterPoint = ScatterPoint(
+    speedKph = speedKph,
+    cost = cost,
+    kind = when {
+        isThisDrive && cost == null -> ScatterKind.THIS_PENDING
+        isThisDrive -> ScatterKind.THIS_DRIVE
+        isFastest -> ScatterKind.FASTEST
+        isCheapest -> ScatterKind.CHEAPEST
+        isEstimated -> ScatterKind.ESTIMATED
+        else -> ScatterKind.NORMAL
+    },
+)
 
 @Composable
 private fun HeaderStat(value: String, label: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
@@ -459,28 +560,30 @@ private fun ReplayTab(detail: TripDetail, state: TripDetailUiState, viewModel: T
     }
 }
 
-// --- Fuel prompt --------------------------------------------------------------------------------
+// --- Shared helpers -----------------------------------------------------------------------------
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FuelPromptSheet(onAddFuel: () -> Unit, onDismiss: () -> Unit) {
-    val tokens = LocalDdTokens.current
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surface) {
-        Column(
-            Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding).padding(bottom = tokens.spaceXl),
-            verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),
-        ) {
-            Text(stringResource(R.string.trip_fuel_prompt_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
-            Text(stringResource(R.string.trip_fuel_prompt_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.trip_fuel_skip)) }
-                TextButton(onClick = onAddFuel) { Text(stringResource(R.string.trip_fuel_add)) }
-            }
-        }
+/** A dashed rounded-rectangle border, drawn behind content (the "Fuel not logged" banner). */
+private fun Modifier.dashedRoundedBorder(color: Color, radiusDp: androidx.compose.ui.unit.Dp): Modifier =
+    this.drawBehind {
+        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(
+            width = 1.dp.toPx(),
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(12f, 8f)),
+        )
+        drawRoundRect(
+            color = color,
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radiusDp.toPx()),
+            style = stroke,
+        )
     }
+
+private fun currencySymbol(code: String): String = try {
+    java.util.Currency.getInstance(code).symbol
+} catch (e: Exception) {
+    "€"
 }
 
-// --- Shared helpers -----------------------------------------------------------------------------
+private fun formatMoney(v: Float, code: String): String =
+    currencySymbol(code) + String.format(Locale.US, "%.2f", v)
 
 @Composable
 private fun CenteredHint(text: String) {

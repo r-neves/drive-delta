@@ -1,11 +1,13 @@
 package app.drivedelta.data.remote.firestore
 
 import app.drivedelta.data.local.entity.CarEntity
+import app.drivedelta.data.local.entity.EnergyPricesEntity
 import app.drivedelta.data.local.entity.FuelLogEntity
 import app.drivedelta.data.local.entity.PlaceEntity
 import app.drivedelta.data.local.entity.SegmentEntity
 import app.drivedelta.data.local.entity.TripEntity
 import app.drivedelta.data.remote.firestore.dto.CarDto
+import app.drivedelta.data.remote.firestore.dto.EnergyPricesDto
 import app.drivedelta.data.remote.firestore.dto.FuelLogDto
 import app.drivedelta.data.remote.firestore.dto.PlaceDto
 import app.drivedelta.data.remote.firestore.dto.SegmentDto
@@ -79,6 +81,13 @@ class FirestoreDataSource @Inject constructor(
             .await()
     }
 
+    /** Upserts the user's energy-pricing settings as the single `settings/energy_prices` document. */
+    suspend fun pushEnergyPrices(prices: EnergyPricesEntity) {
+        userDoc(prices.userId).collection(SETTINGS).document(EnergyPricesDto.DOC_ID)
+            .set(EnergyPricesDto.fromEntity(prices).toMap())
+            .await()
+    }
+
     /**
      * Fetches every collection for [userId] and maps each document back to its entity. Pulled rows
      * are marked synced by stamping [syncedAt] (defaults to now) — Firestore is treated as the mirror
@@ -103,12 +112,17 @@ class FirestoreDataSource @Inject constructor(
         val fuelLogs = userDoc(userId).collection(FUEL_LOGS).get(Source.SERVER).await().documents.map { doc ->
             FuelLogDto.fromMap(doc.id, doc.data ?: emptyMap()).toEntity(syncedAt)
         }
+        val energyPrices = userDoc(userId).collection(SETTINGS).document(EnergyPricesDto.DOC_ID)
+            .get(Source.SERVER).await()
+            .takeIf { it.exists() }
+            ?.let { EnergyPricesDto.fromMap(userId, it.data ?: emptyMap()).toEntity(syncedAt) }
         return RemoteSnapshot(
             trips = trips,
             segments = segments,
             places = places,
             cars = cars,
             fuelLogs = fuelLogs,
+            energyPrices = energyPrices,
         )
     }
 
@@ -119,6 +133,7 @@ class FirestoreDataSource @Inject constructor(
         const val PLACES = "places"
         const val CARS = "cars"
         const val FUEL_LOGS = "fuel_logs"
+        const val SETTINGS = "settings"
     }
 }
 
@@ -132,4 +147,5 @@ data class RemoteSnapshot(
     val places: List<PlaceEntity>,
     val cars: List<CarEntity>,
     val fuelLogs: List<FuelLogEntity>,
+    val energyPrices: EnergyPricesEntity?,
 )
