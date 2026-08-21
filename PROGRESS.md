@@ -89,9 +89,20 @@
     now shrinks to fit its column (down to a 15sp floor) instead of overflowing into its neighbour.
     Verified: all six drives recalculated, then **two cold starts** — counts held at 80/45/44/22/4/3
     both times, **232 segment rows in total**, no duplicates, nothing over 170 km/h.
-  - **⚠️ Two throwaway test trips** from the CP21 session are still on the phone: `f78e1941…`
-    (1.1 km, 21 Aug 20:48) and `c2d13c59…` (0.0 km). Delete from Trips → long-press → Delete if you
-    don't want them in your stats.
+    (3) **Deleting a ride left it on the server** — same defect, one collection over.
+    `deleteTrip` was Room-only (remote tombstoning was noted as deferred), so a deleted ride came
+    back on the next pull. It now deletes the trip document and its segments too.
+  - **✅ The two throwaway test trips are gone** — `f78e1941…` and `c2d13c59…`, deleted through
+    Trip Detail → ⋮ → Delete ride, then **two cold starts** to prove they stay gone (19 → 17 trips,
+    232 → 210 segments, the six real drives untouched).
+  - **⚠️ Gap found doing that, NOT fixed:** a ride started and never finished has no `endTime`, and
+    the Trips list shows only completed rides — so an abandoned trip is **invisible and undeletable**
+    from inside the app. `c2d13c59…` was in exactly that state; reaching it needed an end time
+    stamped into Room by hand. Worth either finalising such a trip from its route points on the next
+    cold start, or surfacing it so it can be deleted.
+  - **⚠️ Also:** 9 orphan segment rows survive from trip `29675daa…` (deleted in the CP15 session,
+    before trip deletion reached Firestore). Inert — `getBestDurationForRoadKey` INNER JOINs `trips`
+    so they can't affect a personal best — but they're re-pulled on every sync.
   - **Installed on the Galaxy S25 (RFCY50XWGFY)** and the v2→v3 migration ran on real data:
     14,638 → 2,035 segment rows, zero duplicates, all 9,791 route points intact. A pre-update DB
     backup was pulled first.

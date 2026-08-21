@@ -8,6 +8,7 @@ import app.drivedelta.data.local.dao.TripDao
 import app.drivedelta.data.local.entity.RoutePointEntity
 import app.drivedelta.data.local.entity.SegmentEntity
 import app.drivedelta.data.local.entity.TripEntity
+import app.drivedelta.data.remote.firestore.FirestoreDataSource
 import app.drivedelta.domain.model.RoutePoint
 import app.drivedelta.domain.model.Segment
 import app.drivedelta.domain.model.Trip
@@ -28,6 +29,7 @@ class TripRepositoryImpl @Inject constructor(
     private val segmentDao: SegmentDao,
     private val authRepository: AuthRepository,
     private val syncTrigger: SyncTrigger,
+    private val firestore: FirestoreDataSource,
 ) : TripRepository {
 
     override fun observeTrips(): Flow<List<Trip>> {
@@ -110,11 +112,17 @@ class TripRepositoryImpl @Inject constructor(
         segmentDao.getByTrip(tripId).map { rows -> rows.map(SegmentEntity::toDomain) }
 
     override suspend fun deleteTrip(tripId: String) {
-        // Hard delete from Room (source of truth). Remote tombstoning is deferred (single-user POC);
-        // route points are local-only so there's nothing remote to clean for them.
+        // Hard delete from Room (source of truth), then from Firestore. The remote half is not
+        // optional: a pull replaces the local set with the remote one, so a trip whose documents
+        // survive comes straight back on the next cold start and the delete looks like it never
+        // happened. Best effort and non-fatal, as with places — offline the local delete has already
+        // stuck, and the trip is pushed nowhere while it no longer exists locally. Route points are
+        // local-only, so there is nothing remote to clean for them.
         segmentDao.deleteByTrip(tripId)
         routePointDao.deleteByTrip(tripId)
         tripDao.deleteById(tripId)
+        val userId = authRepository.currentUserId ?: return
+        runCatching { firestore.deleteTrip(userId, tripId) }
     }
 
     override suspend fun restoreTrip(trip: Trip, segments: List<Segment>, routePoints: List<RoutePoint>) {
