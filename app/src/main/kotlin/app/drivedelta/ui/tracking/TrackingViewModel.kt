@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.drivedelta.core.util.GeoUtils
 import app.drivedelta.domain.model.TrackingState
 import app.drivedelta.domain.usecase.trip.StopTripUseCase
 import app.drivedelta.service.TrackingForegroundService
@@ -42,6 +43,20 @@ class TrackingViewModel @Inject constructor(
     private val _cameraTarget = MutableStateFlow<LatLng?>(null)
     val cameraTarget: StateFlow<LatLng?> = _cameraTarget.asStateFlow()
 
+    /**
+     * Heading to point the map at, in degrees clockwise from north.
+     *
+     * Derived from the movement between consecutive fixes rather than read off `Location.bearing`:
+     * plenty of providers never populate it (the Android emulator reports `bear=0.0 vel=0.0` for
+     * every injected fix, so a bearing-based map would simply never rotate), and computing it from
+     * positions we already trust works the same everywhere.
+     *
+     * Only recomputed once the driver has actually moved [MIN_BEARING_DISTANCE_M]; below that the
+     * heading between two fixes is GPS noise and the map would pirouette at traffic lights.
+     */
+    private val _cameraBearing = MutableStateFlow(0f)
+    val cameraBearing: StateFlow<Float> = _cameraBearing.asStateFlow()
+
     /** Non-null once the ride has finished: the id of the drive that just ended. */
     private val _finishedTripId = MutableStateFlow<String?>(null)
     val finishedTripId: StateFlow<String?> = _finishedTripId.asStateFlow()
@@ -49,6 +64,9 @@ class TrackingViewModel @Inject constructor(
     /** True from the moment STOP is requested, so the UI can acknowledge the tap immediately. */
     private val _finishing = MutableStateFlow(false)
     val finishing: StateFlow<Boolean> = _finishing.asStateFlow()
+
+    /** Last fix the heading was measured from; only advances once the driver has really moved. */
+    private var bearingAnchor: LatLng? = null
 
     private var collectJob: Job? = null
     private var wasTracking = false
@@ -82,6 +100,17 @@ class TrackingViewModel @Inject constructor(
 
         newState.currentLocation?.let { location ->
             val point = LatLng(location.latitude, location.longitude)
+            bearingAnchor?.let { previous ->
+                val moved = GeoUtils.haversineMeters(
+                    previous.latitude, previous.longitude, point.latitude, point.longitude,
+                )
+                if (moved >= MIN_BEARING_DISTANCE_M) {
+                    _cameraBearing.value = GeoUtils.bearingDegrees(
+                        previous.latitude, previous.longitude, point.latitude, point.longitude,
+                    ).toFloat()
+                    bearingAnchor = point
+                }
+            } ?: run { bearingAnchor = point }
             val current = _routePoints.value
             if (current.isEmpty() || current.last() != point) {
                 _routePoints.value = current + point
@@ -138,5 +167,8 @@ class TrackingViewModel @Inject constructor(
 
         /** How long to wait for the service to confirm a stop before navigating away regardless. */
         const val STOP_CONFIRM_TIMEOUT_MS = 8_000L
+
+        /** Below this the heading between two fixes is noise, so the map holds its last heading. */
+        const val MIN_BEARING_DISTANCE_M = 15.0
     }
 }
