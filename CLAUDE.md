@@ -1433,6 +1433,30 @@ carrying no `weight`, `maxLines` or overflow handling. `design/mockups/trip-deta
 
 ---
 
+### ✅ CHECKPOINT 13 — App launcher icon
+
+**Goal:** The launcher icon is the DriveDelta apex mark, not the placeholder triangle.
+
+`ic_launcher_foreground.xml` was a solid blue triangle (`M54,34 L74,74 L34,74 Z`) with a comment
+calling itself the "DriveDelta motif". The real brand mark is `ic_apex_logo.xml` — two overlapping
+stroked triangles in `#5B8DEF` + `#37D67A` — which is what the auth screen shows.
+
+- [x] Re-authored `ic_launcher_foreground.xml` from the apex geometry. The source art is a 100×100
+      viewport; an adaptive icon is 108×108 with only the central 66×66 guaranteed visible, so every
+      point maps `54 + (p − 50) × 0.62` and the stroke scales with it (`7 × 0.62 = 4.34`).
+- [x] Added `ic_launcher_monochrome.xml` and pointed `<monochrome>` at it in **both**
+      `ic_launcher.xml` and `ic_launcher_round.xml`. They previously reused the two-tone foreground,
+      which collapses the blue and green strokes into one flat colour under themed icons.
+- [x] Bonus: `windowSplashScreenAnimatedIcon` already points at `ic_launcher_foreground`, so the
+      splash screen picks up the brand mark too.
+- [x] **Acceptance test:** ✅ Verified three ways. (1) Rendered the vector to PNG against a 66dp
+      safe-zone guide — the mark matches the auth-screen logo and sits comfortably inside the guide.
+      (2) `aapt2 dump resources` confirms both `drawable/ic_launcher_foreground` and
+      `drawable/ic_launcher_monochrome` ship in the APK and are wired. (3) The recents task header on
+      the emulator renders the green+blue apex mark instead of the old flat blue triangle.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
