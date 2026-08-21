@@ -69,6 +69,7 @@
     <string name="trip_pb">PB</string>
     <string name="trip_new_best">new best</string>
     <string name="trip_menu_insights">Route insights</string>
+    <string name="trip_menu_recalculate">Recalculate segments</string>
     <string name="trip_menu_delete">Delete ride</string>
     <string name="trip_more">More</string>
     <string name="trip_replay_speed">%1$d km/h</string>

@@ -255,6 +255,7 @@
     <string name="trip_pb">RP</string>
     <string name="trip_new_best">novo recorde</string>
     <string name="trip_menu_insights">Estatísticas da rota</string>
+    <string name="trip_menu_recalculate">Recalcular troços</string>
     <string name="trip_menu_delete">Eliminar viagem</string>
     <string name="trip_more">Mais</string>
     <string name="trip_fuel_prompt_title">Adicionar abastecimento?</string>

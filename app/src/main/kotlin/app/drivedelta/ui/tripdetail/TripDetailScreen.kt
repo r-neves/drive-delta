@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CompareArrows
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -146,6 +147,7 @@ fun TripDetailScreen(
                     if (trip != null) OverflowMenu(
                         onInsights = { onRouteSummary(trip.id) },
                         onCompare = { onCompare(trip.id) },
+                        onRecalculate = viewModel::recalculateSegments,
                         onDelete = { showDeleteConfirm = true },
                     )
                 },
@@ -568,7 +570,12 @@ private fun CircleIconButton(onClick: () -> Unit, content: @Composable () -> Uni
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit, onDelete: () -> Unit) {
+private fun OverflowMenu(
+    onInsights: () -> Unit,
+    onCompare: () -> Unit,
+    onRecalculate: () -> Unit,
+    onDelete: () -> Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
     CircleIconButton(onClick = { expanded = true }) {
         Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.trip_more))
@@ -583,6 +590,11 @@ private fun OverflowMenu(onInsights: () -> Unit, onCompare: () -> Unit, onDelete
             text = { Text(stringResource(R.string.trip_compare)) },
             leadingIcon = { Icon(Icons.Outlined.CompareArrows, contentDescription = null) },
             onClick = { expanded = false; onCompare() },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.trip_menu_recalculate)) },
+            leadingIcon = { Icon(Icons.Outlined.Refresh, contentDescription = null) },
+            onClick = { expanded = false; onRecalculate() },
         )
         DropdownMenuItem(
             text = { Text(stringResource(R.string.trip_menu_delete), color = DdError) },
