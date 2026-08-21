@@ -85,9 +85,14 @@ fun AppNavGraph(
         }
         composable(NavDestinations.TRACKING) {
             TrackingScreen(
-                onFinished = {
-                    navController.navigate(NavDestinations.MAIN) {
-                        popUpTo(NavDestinations.MAIN) { inclusive = true }
+                onFinished = { tripId ->
+                    // Land on the drive that just finished rather than the dashboard: that's where
+                    // the post-ride energy-log prompt lives, so previously it could never fire.
+                    // popUpTo(MAIN) keeps MAIN beneath, so Back goes to the dashboard, not tracking.
+                    val destination = tripId?.let { NavDestinations.tripDetail(it) }
+                        ?: NavDestinations.MAIN
+                    navController.navigate(destination) {
+                        popUpTo(NavDestinations.MAIN) { inclusive = tripId == null }
                         launchSingleTop = true
                     }
                 },

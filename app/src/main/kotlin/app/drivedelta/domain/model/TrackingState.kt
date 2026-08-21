@@ -20,6 +20,9 @@ data class TrackingState(
     val arrivalStatus: ArrivalStatus = ArrivalStatus.EN_ROUTE,
     val destinationName: String? = null,          // null when no destination set
     val distanceToDestinationMeters: Float? = null,
+    // Set once the trip has been finalised in Room, alongside isTracking = false. Lets the tracking
+    // screen open the drive that just finished instead of dropping the user on the dashboard.
+    val finishedTripId: String? = null,
 )
 
 /** Where the driver is relative to the trip's destination geofence. */

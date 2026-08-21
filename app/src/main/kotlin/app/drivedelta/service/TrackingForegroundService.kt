@@ -18,6 +18,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import app.drivedelta.MainActivity
 import app.drivedelta.core.location.LocationProvider
+import app.drivedelta.core.postride.PostRideTrigger
 import app.drivedelta.core.util.GeoUtils
 import app.drivedelta.domain.model.ArrivalStatus
 import app.drivedelta.domain.model.Place
@@ -26,9 +27,9 @@ import app.drivedelta.domain.model.TrackingState
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.domain.usecase.arrival.DetectArrivalUseCase
-import app.drivedelta.domain.usecase.segment.BuildSegmentsUseCase
-import app.drivedelta.domain.usecase.segment.SnapRouteToRoadsUseCase
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,8 +44,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import javax.inject.Inject
-import kotlin.math.roundToInt
 
 /**
  * Foreground service that records a trip's GPS trace (F4). It owns all live recording state — the
@@ -64,8 +63,7 @@ class TrackingForegroundService : Service() {
     @Inject lateinit var tripRepository: TripRepository
     @Inject lateinit var placeRepository: PlaceRepository
     @Inject lateinit var detectArrival: DetectArrivalUseCase
-    @Inject lateinit var snapRouteToRoads: SnapRouteToRoadsUseCase
-    @Inject lateinit var buildSegments: BuildSegmentsUseCase
+    @Inject lateinit var postRideTrigger: PostRideTrigger
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -313,15 +311,17 @@ class TrackingForegroundService : Service() {
                     durationMs = endEpoch - recordingStartEpoch,
                     stopTrigger = trigger,
                 )
-                // Post-ride (F7): snap to roads, then build named segments. On Roads API failure the
-                // snap returns null and segment building falls back to raw 500 m chunks. Best-effort:
-                // a failure here must not block the service from stopping.
-                runCatching {
-                    val snapped = snapRouteToRoads(id)
-                    buildSegments(id, snapped)
-                }
             }
-            _trackingState.update { it.copy(isTracking = false) }
+            // Publish the finish as soon as the trip is durable in Room, *before* any post-ride
+            // work. This is the only state change the tracking screen observes, and post-ride
+            // snapping is network-bound (one sequential request per 100-point chunk, each retried
+            // with backoff) — running it first left the UI frozen for tens of seconds after the tap,
+            // with the arrival countdown still ticking, which read as "the button does nothing".
+            // finishedTripId lets the screen open the finished drive instead of the dashboard.
+            _trackingState.update { it.copy(isTracking = false, finishedTripId = id) }
+            // Post-ride (F7) now runs in WorkManager, so it survives this service being torn down
+            // and gets retry/backoff for free when the Roads API is rate-limited.
+            if (id != null) postRideTrigger.requestProcessing(id)
             stopSelfCleanly()
         }
     }

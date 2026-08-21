@@ -61,6 +61,13 @@ interface TripRepository {
     /** The ordered segments of a trip (empty until Roads processing has run). */
     suspend fun getSegments(tripId: String): List<Segment>
 
+    /**
+     * A trip's segments as they land. Post-ride snapping runs asynchronously in a WorkManager job,
+     * so a screen opened straight after a ride finishes has none yet and must be told when they
+     * arrive rather than showing a permanently empty Splits tab.
+     */
+    fun observeSegments(tripId: String): Flow<List<Segment>>
+
     /** Records that the post-ride fuel prompt was dismissed for [tripId] (stored in the trip notes). */
     suspend fun markFuelPromptDismissed(tripId: String)
 

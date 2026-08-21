@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +53,7 @@ import java.util.Locale
 @Composable
 fun StopConfirmSheet(
     state: TrackingState,
+    finishing: Boolean,
     onFinish: () -> Unit,
     onKeepGoing: () -> Unit,
     onDismiss: () -> Unit,
@@ -117,6 +120,7 @@ fun StopConfirmSheet(
 
             Button(
                 onClick = onFinish,
+                enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
                 colors = ButtonDefaults.buttonColors(
@@ -124,10 +128,23 @@ fun StopConfirmSheet(
                     contentColor = MaterialTheme.colorScheme.onError,
                 ),
             ) {
-                Text(stringResource(R.string.tracking_finish), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                if (finishing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onError,
+                    )
+                    Spacer(Modifier.size(tokens.spaceMd))
+                }
+                Text(
+                    stringResource(if (finishing) R.string.tracking_finishing else R.string.tracking_finish),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                )
             }
             OutlinedButton(
                 onClick = onKeepGoing,
+                enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
             ) {

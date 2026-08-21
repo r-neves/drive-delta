@@ -47,6 +47,8 @@
     <string name="trip_compare">Compare</string>
     <string name="trip_not_found">Ride not found.</string>
     <string name="trip_no_route">No route recorded.</string>
+    <string name="trip_no_segments">No segments for this drive.</string>
+    <string name="trip_splits_processing">Processing ride…</string>
     <string name="trip_start">Start</string>
     <string name="trip_end">End</string>
     <string name="trip_total_time">Total</string>
@@ -137,6 +139,7 @@
     <string name="tracking_stat_distance">Distance</string>
     <string name="tracking_stat_avg_speed">Avg speed</string>
     <string name="tracking_finish">Finish Ride</string>
+    <string name="tracking_finishing">Finishing…</string>
     <string name="tracking_keep_going">Keep Going</string>
     <string name="tracking_arrived_title">You\'ve arrived at %1$s 🎉</string>
     <string name="tracking_arrived_countdown">Auto-finishing in %1$ds…</string>

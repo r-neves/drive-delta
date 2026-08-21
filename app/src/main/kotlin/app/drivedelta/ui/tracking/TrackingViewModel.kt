@@ -13,18 +13,19 @@ import app.drivedelta.service.TrackingForegroundService
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Backs the Live Tracking screen (F9). Binds to the already-running [TrackingForegroundService] and
  * mirrors its [TrackingState], accumulating a live polyline from each distinct fix and a camera
- * target throttled to ~3 s so the map doesn't jitter. Emits [tripEnded] once the service reports the
- * trip finished (manual STOP or geofence auto-finish) so the screen can navigate away.
+ * target throttled to ~3 s so the map doesn't jitter. Emits [finishedTripId] once the service reports
+ * the trip finished (manual STOP or geofence auto-finish) so the screen can open that drive.
  */
 @HiltViewModel
 class TrackingViewModel @Inject constructor(
@@ -41,8 +42,13 @@ class TrackingViewModel @Inject constructor(
     private val _cameraTarget = MutableStateFlow<LatLng?>(null)
     val cameraTarget: StateFlow<LatLng?> = _cameraTarget.asStateFlow()
 
-    private val _tripEnded = MutableStateFlow(false)
-    val tripEnded: StateFlow<Boolean> = _tripEnded.asStateFlow()
+    /** Non-null once the ride has finished: the id of the drive that just ended. */
+    private val _finishedTripId = MutableStateFlow<String?>(null)
+    val finishedTripId: StateFlow<String?> = _finishedTripId.asStateFlow()
+
+    /** True from the moment STOP is requested, so the UI can acknowledge the tap immediately. */
+    private val _finishing = MutableStateFlow(false)
+    val finishing: StateFlow<Boolean> = _finishing.asStateFlow()
 
     private var collectJob: Job? = null
     private var wasTracking = false
@@ -88,14 +94,34 @@ class TrackingViewModel @Inject constructor(
         }
 
         if (wasTracking && !newState.isTracking) {
-            _tripEnded.value = true
+            _finishedTripId.value = newState.finishedTripId ?: ""
         }
         wasTracking = wasTracking || newState.isTracking
     }
 
-    /** Finish the trip. [trigger] is [TrackingForegroundService.TRIGGER_MANUAL] or `TRIGGER_GEOFENCE`. */
+    /**
+     * Finish the trip. [trigger] is [TrackingForegroundService.TRIGGER_MANUAL] or `TRIGGER_GEOFENCE`.
+     *
+     * Flips [finishing] straight away: the underlying call only fires an intent at the service and
+     * writes no state, so without this the composition after the tap was byte-for-byte identical and
+     * the UI looked dead. Guarded so a second tap (or the arrival countdown expiring on a sheet the
+     * user already confirmed) can't deliver a duplicate STOP.
+     */
     fun stop(trigger: String) {
+        if (_finishing.value) return
+        _finishing.value = true
         stopTripUseCase(trigger)
+        // Safety net. The service confirms by flipping isTracking true → false, but that transition
+        // never arrives if it wasn't tracking in the first place — binding with BIND_AUTO_CREATE
+        // instantiates the service without ever delivering ACTION_START, so its first emission is a
+        // default TrackingState(isTracking = false), `wasTracking` stays false, and no later `false`
+        // counts as a finish. Observed on the emulator: the sheet sat on "Finishing…" indefinitely.
+        // Leaving the driver stranded on a dead tracking screen is the worst outcome here, so give
+        // the service a moment and then leave anyway.
+        viewModelScope.launch {
+            delay(STOP_CONFIRM_TIMEOUT_MS)
+            if (_finishedTripId.value == null) _finishedTripId.value = ""
+        }
     }
 
     override fun onCleared() {
@@ -109,5 +135,8 @@ class TrackingViewModel @Inject constructor(
 
     private companion object {
         const val CAMERA_THROTTLE_MS = 3_000L
+
+        /** How long to wait for the service to confirm a stop before navigating away regardless. */
+        const val STOP_CONFIRM_TIMEOUT_MS = 8_000L
     }
 }

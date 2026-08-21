@@ -41,6 +41,8 @@ data class TripDetailUiState(
     val originName: String? = null,
     val destName: String? = null,
     val carName: String? = null,
+    /** Post-ride snapping still running: the drive is open but its segments don't exist yet. */
+    val processing: Boolean = false,
 )
 
 /**
@@ -67,6 +69,18 @@ class TripDetailViewModel @Inject constructor(
     private var replayJob: Job? = null
 
     init {
+        load()
+        // Post-ride snapping runs asynchronously in PostRideWorker, so a drive opened straight after
+        // it finishes has no segments yet. Reload when they land instead of showing an empty Splits
+        // tab forever. Guarded on the count so the reload's own write can't re-trigger this.
+        viewModelScope.launch {
+            tripRepository.observeSegments(tripId).collect { segments ->
+                if (segments.size != _uiState.value.detail?.segments?.size) load()
+            }
+        }
+    }
+
+    private fun load() {
         viewModelScope.launch {
             val detail = getTripDetail(tripId)
             // The most recent other trip on this route → the "vs previous" baseline.
@@ -91,10 +105,11 @@ class TripDetailViewModel @Inject constructor(
                 it.copy(
                     detail = detail,
                     loading = false,
+                    processing = detail != null && detail.segments.isEmpty() && !detail.trip.roadsProcessed,
                     previousPerRoadKey = previous,
                     hasPreviousRun = previous.isNotEmpty(),
                     costChart = costChart,
-                    showEnergyLog = autoAsk,
+                    showEnergyLog = it.showEnergyLog || autoAsk,
                     originName = originName,
                     destName = destName,
                     carName = carName,

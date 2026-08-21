@@ -1499,6 +1499,47 @@ That is what made the Splits tab repeat identical rows and the header read `▴1
 
 ---
 
+### ✅ CHECKPOINT 15 — Ride-finish flow
+
+**Goal:** The finish button reacts instantly, and finishing a ride asks about fuel.
+
+Three compounding defects behind "the green finish ride button does nothing" and "the app does not
+ask directly if the user wants to fill the fuel consumption".
+
+- [x] **No UI acknowledgement.** `ArrivalSheet`'s `onFinish` mutated no state — unlike the manual
+      path, which at least dismissed its sheet — and `stop()` only fires an intent. The composition
+      after the tap was byte-for-byte identical. Worse, the countdown was keyed on `Unit`, so it kept
+      ticking on a sheet the user had already confirmed and fired a **second** `onFinish()` at zero.
+      Now: a `finishing` state disables both buttons, swaps the label to "Finishing…" with a spinner,
+      and cancels the countdown; `stop()` is guarded against a duplicate STOP.
+- [x] **`isTracking = false` published far too late.** The service ran the whole post-ride pipeline —
+      `snapRouteToRoads` issues one sequential HTTP request per 100-point chunk, each retried up to
+      3× with backoff — *before* the only state change the UI observes. Now the service publishes the
+      finish as soon as the trip is durable in Room, and post-ride work moved to a new
+      **`PostRideWorker`** (+ `PostRideTrigger`), which also survives service teardown and gets
+      WorkManager retry/backoff for free. Deliberately *not* network-constrained: offline, the raw
+      500 m fallback segmentation is a useful result the user should get immediately.
+- [x] **Post-ride never asked about fuel.** `onFinished` navigated to `MAIN`, but the energy-log
+      prompt lives inside `TripDetailViewModel`, so it could only ever fire if the user manually
+      tapped into the drive. The service now carries `finishedTripId` on `TrackingState`; the screen
+      navigates to `trip_detail/{id}` with `popUpTo(MAIN)` so Back still lands on the dashboard.
+- [x] **Trip Detail is now reactive.** Its load was one-shot, so a drive opened straight after
+      finishing would have shown a permanently empty Splits tab now that segments arrive
+      asynchronously. Added `TripRepository.observeSegments(tripId)`; the VM reloads when segments
+      land and shows "Processing ride…" until then (en + pt).
+- [x] **Safety net.** If the service was never actually tracking (binding with `BIND_AUTO_CREATE`
+      instantiates it without delivering `ACTION_START`, so its first emission is a default
+      `TrackingState`), the true→false transition never arrives and the UI sat on "Finishing…"
+      forever — reproduced on the emulator. `stop()` now navigates away regardless after 8 s.
+- [x] **Acceptance test:** ✅ Both paths verified on the emulator with scripted `adb emu geo fix`.
+      **Geofence:** drove into Test Place's 100 m radius → ArrivalSheet → auto-finish → landed on the
+      finished drive's Trip Detail with the energy sheet already open. Room: `stopTrigger=GEOFENCE`,
+      `roadsProcessed=1`, 1647 m / 118 s, **9 segments** built by `PostRideWorker` against the live
+      Roads API. **Manual:** STOP → Finish Ride → navigated in about a second (Room write only, no
+      network on the path) → energy sheet open. Room: `stopTrigger=MANUAL`, `roadsProcessed=1`.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

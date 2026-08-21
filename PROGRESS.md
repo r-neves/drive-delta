@@ -28,8 +28,15 @@
     duplicate documents under their former numeric ids — harmless now (pulls collapse them) but they
     make every pull heavier. Worth clearing that collection once from the Firebase console; the next
     push rewrites a clean set under the derived ids.
-  - **Next:** CP15 ride-finish flow → CP16 map puck + heading-up camera → CP17 place editor →
-    CP18 design canvas → then the `DISCUSSION.md` write-up.
+  - **✅ CP15 — Ride-finish flow. Done, verified, committed.** Finish now acknowledges instantly,
+    post-ride snapping moved to `PostRideWorker`, and finishing a ride opens that drive's detail so
+    the energy prompt actually fires. Both geofence and manual paths verified on the emulator.
+    **⚠️ ACTION FOR YOU — two test trips** were recorded on your real account while verifying:
+    `29675daa…` (GEOFENCE, 1.6 km) and `d673f6fe…` (MANUAL, 0.4 km), both 21 Aug near Lisbon. Delete
+    them from Trips → long-press → Delete. Note their Firestore documents may survive that (remote
+    tombstoning for trips is a deferred gap), so also check `/users/{uid}/trips/` in the console.
+  - **Next:** CP16 map puck + heading-up camera → CP17 place editor → CP18 design canvas → then the
+    `DISCUSSION.md` write-up.
   - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root
