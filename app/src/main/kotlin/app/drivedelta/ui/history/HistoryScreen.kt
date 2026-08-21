@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -107,7 +109,9 @@ fun HistoryScreen(
         }
     }
 
-    Box(Modifier.fillMaxSize().padding(horizontal = tokens.screenPadding)) {
+    // This tab has no Scaffold/TopAppBar of its own, and MainScreen's shell zeroes its content
+    // insets, so the status-bar inset has to be claimed here or the title sits under the clock.
+    Box(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = tokens.screenPadding)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(top = tokens.spaceLg, bottom = tokens.spaceXl),
@@ -467,6 +471,7 @@ private fun FiltersSheet(
         Column(
             Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(horizontal = tokens.screenPadding)
                 .padding(bottom = tokens.spaceXl),
             verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),

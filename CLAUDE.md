@@ -1376,6 +1376,41 @@ user is routed to an empty Dashboard.
 
 ---
 
+## Post-first-drive fix batch (CP11–CP18)
+
+After the first real on-road drive. Same rules as the MVP checkpoints: strict order, each must compile,
+be verified on the emulator, then be ticked here + in `PROGRESS.md` and committed + pushed.
+
+---
+
+### ✅ CHECKPOINT 11 — System-bar insets
+
+**Goal:** No screen collides with the status bar or the navigation bar, on gesture *or* 3-button nav.
+
+`MainActivity` is edge-to-edge and `MainScreen` zeroes its own content insets, passing down only the
+bottom-nav height — so **each tab owns its top inset**. None of them did.
+
+- [x] `MainScreen.kt` — documented the insets contract in the KDoc (shell owns bottom, tab owns top).
+- [x] `HistoryScreen.kt` — has no Scaffold/TopAppBar; added `statusBarsPadding()`. This was the worst
+      offender: the "Trips" title rendered level with the status-bar clock.
+- [x] `DashboardScreen.kt` — `contentWindowInsets = WindowInsets.statusBars` (was defaulting to
+      `systemBars`, which double-applied the bottom inset on top of the shell's bottom-nav padding).
+- [x] `CarsScreen.kt` / `PlacesScreen.kt` — `contentWindowInsets = WindowInsets(0,0,0,0)`; their
+      `TopAppBar` already claims the status bar, so the default only double-padded the bottom.
+- [x] **All five `ModalBottomSheet`s** (PreRide, StopConfirm, Arrival, EnergyLog, Trips-filter) —
+      `navigationBarsPadding()` on the content, `skipPartiallyExpanded = true`, and `verticalScroll`
+      where missing. At the half-expanded height the primary CTA fell *below the screen edge*: the
+      pre-ride **Start Ride** button measured `[53,2339][1027,2400]` with the nav bar occupying
+      `2274..2400` — entirely unreachable. This is the "app conflicts with the android nav bar" report.
+- [x] **Acceptance test:** ✅ Verified on the `Medium_Phone` emulator under the harshest config —
+      **tall display cutout** (`cutout.emulation.tall`, 126px top inset) **+ 3-button nav**
+      (`systemui.navbar.threebutton`, nav bar `[0,2274][1080,2400]`). Measured with
+      `uiautomator dump` rather than eyeballing: Start Ride button moved to `[53,2064][1027,2211]`
+      and the sheet's scroll container now ends exactly at `2274`. Trips title cleared the status
+      bar; Dashboard's double bottom gap is gone. 18 unit tests still green.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
