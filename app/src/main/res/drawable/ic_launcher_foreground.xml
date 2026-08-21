@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  DriveDelta launcher foreground — the "apex" mark from res/drawable/ic_apex_logo.xml (the same
+  mark the auth screen shows), not a placeholder triangle.
+
+  The source art is authored in a 100x100 viewport. An adaptive icon is 108x108 with only the
+  central 66x66 guaranteed visible, so the art is scaled by 0.62 and centred: a source point p maps
+  to 54 + (p - 50) * 0.62. Stroke width scales with it (7 * 0.62 = 4.34).
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- DriveDelta motif: bold upward delta (Δ) glyph, brand blue, centered in safe zone -->
+    <!-- Blue triangle: source M46,24 L22,76 L70,76 Z -->
     <path
-        android:fillColor="#5B8DEF"
-        android:pathData="M54,34 L74,74 L34,74 Z" />
+        android:strokeColor="#5B8DEF"
+        android:strokeWidth="4.34"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M51.52,37.88 L36.64,70.12 L66.4,70.12 Z" />
+    <!-- Green triangle: source M56,24 L34,76 L82,76 Z -->
+    <path
+        android:strokeColor="#37D67A"
+        android:strokeWidth="4.34"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M57.72,37.88 L44.08,70.12 L73.84,70.12 Z" />
 </vector>

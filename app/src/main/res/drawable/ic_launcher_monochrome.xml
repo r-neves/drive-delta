@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Themed-icon (monochrome) layer. Android re-tints this from the user's wallpaper palette, so it
+  must be a single-colour silhouette — pointing <monochrome> at the two-tone brand foreground makes
+  the blue and green strokes collapse into one flat colour with no way to tell them apart.
+
+  Same geometry and safe-zone scaling as ic_launcher_foreground.xml, drawn in one colour, with a
+  slightly heavier stroke so the mark stays legible once tinted.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M51.52,37.88 L36.64,70.12 L66.4,70.12 Z" />
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="5"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="M57.72,37.88 L44.08,70.12 L73.84,70.12 Z" />
+</vector>
