@@ -11,6 +11,10 @@ import app.drivedelta.domain.usecase.place.SavePlaceUseCase
 import app.drivedelta.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Locale
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -21,9 +25,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
-import java.util.UUID
-import javax.inject.Inject
 
 /** Default map centre (Lisbon) for a brand-new place until the user positions the marker. */
 private const val DEFAULT_LAT = 38.7223
@@ -112,8 +113,18 @@ class PlaceEditViewModel @Inject constructor(
         scheduleReverseGeocode(lat, lng)
     }
 
-    /** Marker dragged on the map: update position + reverse-geocode. No recenter (marker is there). */
+    /**
+     * Marker dragged on the map: update position + reverse-geocode. No recenter (marker is there).
+     *
+     * Ignores a move that lands where we already are. The map reports the marker's position whenever
+     * it is programmatically repositioned too — loading a saved place, or picking an autocomplete
+     * result — and treating that echo as a user drag kicked off a reverse geocode that overwrote the
+     * address the user had just chosen, about a second later. The screen used to hold this guard,
+     * but its copy of lat/lng was captured once and went stale immediately, so it never fired.
+     */
     fun onMarkerMoved(lat: Double, lng: Double) {
+        val current = _uiState.value
+        if (abs(current.lat - lat) < COORD_EPS && abs(current.lng - lng) < COORD_EPS) return
         _uiState.update { it.copy(lat = lat, lng = lng, hasMarker = true) }
         scheduleReverseGeocode(lat, lng)
     }
@@ -161,5 +172,10 @@ class PlaceEditViewModel @Inject constructor(
             savePlaceUseCase(place)
             _uiState.update { it.copy(saved = true) }
         }
+    }
+
+    private companion object {
+        /** ~0.1 mm. Anything smaller is the map echoing back a position we just set. */
+        const val COORD_EPS = 1e-6
     }
 }
