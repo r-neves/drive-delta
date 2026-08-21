@@ -20,8 +20,16 @@
   - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
     bottom insets, and all five bottom sheets (their primary CTA was rendering *below the screen
     edge*, inside the nav-bar strip — the "conflicts with the android nav bar" report).
-  - **Next:** CP12 Trip Detail header overflow → CP13 launcher icon → CP14 segment duplication →
-    CP15 ride-finish flow → CP16 map puck + heading-up camera → CP17 place editor → CP18 design canvas.
+  - **✅ CP12 — Trip Detail header overflow. Done, verified, committed.**
+  - **✅ CP13 — Launcher icon is now the apex mark (splash too). Done, verified, committed.**
+  - **✅ CP14 — Segment duplication. Done, verified, committed.** 14,644 → 2,010 rows; the 173 km
+    drive 10,236 → 853; "vs best" went from `▴16:18:02` to `▴4:04`. Stable over three cold starts.
+    **⚠️ ACTION FOR YOU:** the remote `/users/{uid}/segments/` collection still holds the old
+    duplicate documents under their former numeric ids — harmless now (pulls collapse them) but they
+    make every pull heavier. Worth clearing that collection once from the Firebase console; the next
+    push rewrites a clean set under the derived ids.
+  - **Next:** CP15 ride-finish flow → CP16 map puck + heading-up camera → CP17 place editor →
+    CP18 design canvas → then the `DISCUSSION.md` write-up.
   - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root

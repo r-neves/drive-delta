@@ -89,6 +89,9 @@ class TripRepositoryImpl @Inject constructor(
         routeHash: String,
         roadsProcessed: Boolean,
     ) {
+        // Clear first: re-processing a trip can yield fewer segments than last time, and a plain
+        // upsert would leave the surplus rows from the previous run behind.
+        segmentDao.deleteByTrip(tripId)
         segmentDao.insertAll(segments.map { it.toEntity() })
         val current = tripDao.getById(tripId) ?: return
         tripDao.update(current.copy(routeHash = routeHash, roadsProcessed = roadsProcessed, syncedAt = null))
@@ -148,6 +151,7 @@ private fun SegmentEntity.toDomain(): Segment = Segment(
 )
 
 private fun Segment.toEntity(): SegmentEntity = SegmentEntity(
+    id = SegmentEntity.idFor(tripId, segmentIndex),
     tripId = tripId,
     segmentIndex = segmentIndex,
     roadKey = roadKey,
