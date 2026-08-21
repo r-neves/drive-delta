@@ -3,17 +3,19 @@ package app.drivedelta.ui.tripdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.drivedelta.core.postride.PostRideTrigger
 import app.drivedelta.domain.model.TripDetail
-import app.drivedelta.domain.usecase.fuel.GetTripCostChartUseCase
-import app.drivedelta.domain.usecase.fuel.TripCostChart
-import app.drivedelta.domain.usecase.segment.GetTripDetailUseCase
-import app.drivedelta.domain.usecase.segment.MatchSegmentsUseCase
 import app.drivedelta.domain.repository.CarRepository
 import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.repository.PlaceRepository
 import app.drivedelta.domain.repository.TripRepository
+import app.drivedelta.domain.usecase.fuel.GetTripCostChartUseCase
+import app.drivedelta.domain.usecase.fuel.TripCostChart
+import app.drivedelta.domain.usecase.segment.GetTripDetailUseCase
+import app.drivedelta.domain.usecase.segment.MatchSegmentsUseCase
 import app.drivedelta.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 enum class CompareBaseline { BEST, PREVIOUS }
 
@@ -59,6 +60,7 @@ class TripDetailViewModel @Inject constructor(
     private val placeRepository: PlaceRepository,
     private val carRepository: CarRepository,
     private val energyPricesRepository: EnergyPricesRepository,
+    private val postRideTrigger: PostRideTrigger,
 ) : ViewModel() {
 
     private val tripId: String = checkNotNull(savedStateHandle[NavArgs.TRIP_ID])
@@ -116,6 +118,17 @@ class TripDetailViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    /**
+     * Re-runs snapping and segment building for this drive. Segments are derived data, so a drive
+     * recorded under an older segmentation algorithm keeps its old splits forever otherwise — this
+     * is how an existing drive picks up improvements to how segments are cut, named and timed.
+     * The screen already reloads when segments change, so there is nothing to await here.
+     */
+    fun recalculateSegments() {
+        _uiState.update { it.copy(processing = true) }
+        postRideTrigger.requestProcessing(tripId, replaceExisting = true)
     }
 
     fun setBaseline(baseline: CompareBaseline) = _uiState.update { it.copy(baseline = baseline) }

@@ -24,13 +24,15 @@ import javax.inject.Singleton
 class PostRideTrigger @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
-    fun requestProcessing(tripId: String) {
+    fun requestProcessing(tripId: String, replaceExisting: Boolean = false) {
         val request = OneTimeWorkRequestBuilder<PostRideWorker>()
             .setInputData(workDataOf(PostRideWorker.KEY_TRIP_ID to tripId))
             .build()
         WorkManager.getInstance(context).enqueueUniqueWork(
             PostRideWorker.uniqueName(tripId),
-            ExistingWorkPolicy.KEEP,
+            // KEEP for the automatic post-ride run so a duplicate STOP can't queue twice; REPLACE
+            // when the user explicitly asks to recalculate, which must always actually re-run.
+            if (replaceExisting) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP,
             request,
         )
     }
