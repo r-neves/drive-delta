@@ -1610,6 +1610,36 @@ Two independent defects.
 
 ---
 
+### ✅ CHECKPOINT 18 — Design canvas: Segments tab (design only, no Compose)
+
+**Goal:** Design the Replay rework so it can be built later. Design deliverable only, by request.
+
+The Replay tab (scrubber + a marker sliding along the whole trace) is "cool but kind of useless".
+It's replaced by **segment-by-segment navigation**: the whole drive stays on the map, the selected
+segment is lit, and prev/next steps through them.
+
+- [x] Two artboards in `design/segments-tab/`, published as a Claude Design canvas:
+      **`Main.dc.html`** — the Segments tab, with a *working* stepper (prev/next and the rail
+      actually change the selection, so the interaction can be felt rather than imagined), and
+      **`Processing.dc.html`** — the state right after a drive, before `PostRideWorker` has built
+      segments.
+- [x] Built against `design/tokens.md`, not invented: split-row type ramp, purple-sector treatment
+      (`#C8B3FF` / `#8F83B0` / `rgba(179,136,255,0.25)` / `★ PB #B388FF`), Map-tab speed bands
+      (Fast `#37D67A` / Steady `#F0B24E` / Slow `#FF556A`), tab bar (active `#F2F4F7` + 2dp
+      `#5B8DEF` underline), Geist + Geist Mono with `tnum`.
+- [x] Design decisions worth noting: the segment **rail** under the panel sizes each bar in
+      proportion to segment distance, so it doubles as a shape-of-the-drive overview and a jump
+      target; at the first/last segment the matching arrow dims and the hint reads
+      START/END OF DRIVE rather than showing a dead control; the map keeps the *whole* route
+      visible so the selected segment reads in context.
+- [x] Two open questions left as tweak chips rather than decided unilaterally: whether the unlit
+      route is colour-coded by speed band or recedes to flat grey, and whether the rail earns its
+      place at all.
+- [ ] **Implementation is a future checkpoint** — no Compose written. When it happens it replaces
+      `ReplayTab` in `TripDetailScreen.kt` and the `trip_tab_replay` string.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
