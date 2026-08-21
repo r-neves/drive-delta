@@ -62,10 +62,13 @@
     delete that document from the Firebase console, under `/users/{uid}/fuel_logs/`.
   - **Product gap found as a result:** you cannot edit or delete a fill-up once saved, so a mistyped
     amount is permanent. Worth a checkpoint of its own — see `DISCUSSION.md`.
-  - **Emulator note:** `Medium_Phone` is currently running the *stress* config — tall display cutout
-    + 3-button nav, enabled via `adb shell cmd overlay enable`. Restore with
-    `cmd overlay enable-exclusive com.android.internal.systemui.navbar.gestural` and
-    `cmd overlay disable com.android.internal.display.cutout.emulation.tall`.
+  - **Emulator note:** `Medium_Phone` has been restored to its default display config (gesture nav,
+    no cutout). To re-run the insets stress test:
+    `adb shell cmd overlay enable com.android.internal.display.cutout.emulation.tall` +
+    `adb shell cmd overlay enable-exclusive com.android.internal.systemui.navbar.threebutton`.
+    Measure with `adb shell uiautomator dump` and compare element bounds against the nav-bar frame
+    from `adb shell dumpsys window displays | grep navigationBars` — far more reliable than
+    eyeballing screenshots.
   - **Build note:** `java` is not on `PATH`; use
     `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`. Likewise
     `adb`/`emulator` need `export ANDROID_HOME=$HOME/Library/Android/sdk`.
