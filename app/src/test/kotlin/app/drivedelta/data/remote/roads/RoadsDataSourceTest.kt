@@ -49,6 +49,49 @@ class RoadsDataSourceTest {
         assertEquals((0L until 205L).toList(), timestamps)
     }
 
+    /**
+     * As above, but with a point interpolated between each pair — which is what `interpolate=true`
+     * actually returns, and what the echo stub above never produced. Interpolated points carry no
+     * originalIndex, so they cannot be recognised as duplicates one at a time.
+     */
+    private fun stubEchoInterpolating() {
+        coEvery { service.snapToRoads(any(), any(), any()) } answers {
+            val coords = firstArg<String>().split("|").map { c ->
+                val (lat, lng) = c.split(",").map { it.toDouble() }
+                lat to lng
+            }
+            val snapped = mutableListOf<SnappedPointDto>()
+            coords.forEachIndexed { i, (lat, lng) ->
+                if (i > 0) {
+                    val (previousLat, previousLng) = coords[i - 1]
+                    snapped += SnappedPointDto(
+                        RoadsLocationDto((lat + previousLat) / 2, (lng + previousLng) / 2),
+                        originalIndex = null,
+                        placeId = "road$i",
+                    )
+                }
+                snapped += SnappedPointDto(RoadsLocationDto(lat, lng), originalIndex = i, placeId = "road$i")
+            }
+            RoadsSnapResponse(snapped)
+        }
+    }
+
+    @Test
+    fun `the overlap's interpolated points are dropped so the route never doubles back`() = runTest {
+        // Each chunk re-snaps the ten points the previous one ended on. Dropping only the real
+        // duplicates left their interpolated neighbours in, so the route jumped back ten points and
+        // re-drove them — five backward jumps of up to 4.6 km on a 173 km drive, and 33 km of
+        // geometry the car never covered, which segment building then reported as impossible speeds.
+        stubEchoInterpolating()
+
+        val result = dataSource.snapToRoads(points(205))
+
+        // Latitude only ever increases along this route, so any step backwards is re-driven ground.
+        val backwards = (1 until result.size).filter { result[it].lat < result[it - 1].lat }
+        assertTrue("route doubles back at $backwards", backwards.isEmpty())
+        assertEquals((0L until 205L).toList(), result.mapNotNull { it.timestamp })
+    }
+
     @Test
     fun `fewer than two points snaps to nothing`() = runTest {
         stubEcho()

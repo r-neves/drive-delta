@@ -12,6 +12,15 @@ after CP14 removed the 12× segment duplication. The reference drive throughout 
 
 ## 1. Segment granularity
 
+> **Resolved in CP20 + CP22.** Option **A + B**, as suggested below: merge consecutive runs of the
+> same road name, then enforce a **250 m floor**, folding anything shorter into its longer neighbour.
+> The reference drive went **853 → 80 segments** averaging **2.2 km**, and the distance under-count
+> is gone — segments now sum to the trip exactly, because they tile the drive and take their distance
+> from the raw trace rather than from the snapped path. Both related defects below are fixed too:
+> `roadKey` is now road name + start/end Google feature ids, and durations are measured. See
+> CHECKPOINT 20/22 in `CLAUDE.md`. **C (cut on junctions) remains the eventual target** if splits
+> become the centrepiece feature.
+
 ### The problem, measured
 
 | | value |

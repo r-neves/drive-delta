@@ -1,5 +1,6 @@
 package app.drivedelta.domain.usecase.segment
 
+import app.drivedelta.core.util.GeoUtils
 import app.drivedelta.data.remote.roads.SnappedTimedPoint
 import app.drivedelta.domain.model.RoutePoint
 import app.drivedelta.domain.model.Segment
@@ -38,8 +39,8 @@ import org.junit.Test
  * lookups per attempt. Here it is milliseconds and identical every time.
  *
  * [reports the shape of a real drive] is the working tool: it prints the distribution so a change to
- * the grouping can be judged against a real journey. The assertions around it are deliberately loose
- * invariants — things that must hold for *any* sane segmentation — rather than golden numbers that
+ * the grouping can be judged against a real journey. The assertions around it are invariants —
+ * things that must hold for *any* sane segmentation of *any* drive — rather than golden numbers that
  * would have to be rewritten on every tuning change.
  */
 class SegmentationHarnessTest {
@@ -152,13 +153,34 @@ class SegmentationHarnessTest {
                 " ${"%5.1f".format(it.durationMs / 60000.0)} min  ${(it.avgSpeedMps * 3.6f).roundToInt()} km/h")
         }
 
-        // Loose invariants only: golden numbers here would need rewriting on every tuning change,
-        // and the print-out above is what a change is actually judged against.
+        // Invariants, not golden numbers: the exact count moves with any tuning change and the
+        // print-out above is what such a change is judged against. These are the properties that
+        // have to hold for *any* segmentation of *any* drive to be worth showing a driver.
         assertTrue("segments should be produced", segments.isNotEmpty())
         assertTrue("indices are contiguous", segments.mapIndexed { i, s -> s.segmentIndex == i }.all { it })
         assertTrue("no negative durations", segments.all { it.durationMs >= 0 })
         assertTrue("no segment outlasts the drive", segments.all { it.durationMs <= tripMinutes * 60000 })
+
+        // The segments tile the drive, so they account for all of it and no more.
+        val traceMeters = fixture.raw.zipWithNext()
+            .sumOf { (a, b) -> GeoUtils.haversineMeters(a.lat, a.lng, b.lat, b.lng) }
+        val tripMs = fixture.raw.last().timestamp - fixture.raw.first().timestamp
+        assertEquals(tripMs, segments.sumOf { it.durationMs })
+        assertEquals(traceMeters, distances.sum().toDouble(), traceMeters * 0.01)
+
+        // Every split is a stretch of road long enough to be driven as one, at a speed a car reaches.
+        assertTrue(
+            "segments under the 250 m floor: " +
+                segments.filter { it.distanceMeters < 250f }.map { "${it.roadName} ${it.distanceMeters}m" },
+            segments.none { it.distanceMeters < 250f },
+        )
+        assertTrue(
+            "impossible average speeds: " +
+                segments.filter { it.avgSpeedMps * 3.6f > 200f }.map { "${it.roadName} ${it.avgSpeedMps * 3.6f}" },
+            segments.none { it.avgSpeedMps * 3.6f > 200f },
+        )
     }
+
 
     @Test
     fun `roadKey is stable across two runs over the same drive`() = runTest {

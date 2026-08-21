@@ -1665,6 +1665,89 @@ There was **no `imePadding()` anywhere in the app**.
 
 ---
 
+### ✅ CHECKPOINT 20 — Segment times became measurements; roads stopped fragmenting
+
+**Goal:** Make a split time mean something. (Documented after the fact — commit `c10c8d6`.)
+
+- [x] Durations were being *distributed* by distance, so a fast and a slow stretch of equal length
+      reported identical times. They now come from the raw trace.
+- [x] `GeocoderRoadNameResolver` fell back to the locality, so a motorway midpoint came back named
+      "Amadora" and shattered continuous roads. It now returns a thoroughfare or a road designation
+      (A1/IC3/N236-1), else null, and the caller carries the surrounding name across the gap.
+- [x] `roadKey` embedded coordinates at ~11 m precision, so GPS noise gave the same stretch a
+      different key on every drive and nothing ever compared against itself — which is why almost
+      every split showed as a personal best. It is now the road name plus the Google feature ids it
+      starts and ends on.
+- [x] Added **Recalculate segments** to the Trip Detail ⋮ menu: segments are derived data, so drives
+      recorded under an older algorithm would otherwise keep their old splits forever.
+- [x] **Acceptance:** the 173 km drive recalculated 853 → 175 segments, 124.1 → 169.9 km.
+
+---
+
+### ✅ CHECKPOINT 21 — Offline segmentation harness
+
+**Goal:** Stop iterating the algorithm against a live geocoder. (Commit `209d62e`.)
+
+- [x] `SegmentationRecorder` (debug-only) captures a drive's raw trace, snapped points, **and the
+      road name the geocoder returned for each placeId**, to `files/segmentation/<tripId>.json`.
+- [x] `SegmentationHarnessTest` replays `fixtures/gestosa-home-173km.json` — the real 173 km drive —
+      through the real use case in milliseconds, and prints the distribution.
+- [x] **Why it exists:** the reverse geocoder is not deterministic. The same drive resolved to 116
+      distinct road names one run and 138 another, and that alone moved the result from 175 segments
+      to 853. Iterating against a live geocoder measures the geocoder, at two minutes and ~800
+      lookups per attempt.
+
+---
+
+### ✅ CHECKPOINT 22 — Segment durations aligned to the trace; a floor under segment length
+
+**Goal:** Per-segment times and speeds that are real measurements, over stretches worth showing.
+
+The harness reported 154 segments where **25 had an impossible average speed**, one at 1,427 km/h,
+and 76 were under 250 m. Three defects, found in that order:
+
+- [x] **The chunk overlap was only half de-duplicated** (`RoadsDataSource`). Each chunk re-snaps the
+      ten input points the previous one ended on; the *real* duplicates were dropped by
+      `originalIndex`, but the points the API **interpolated** between them carry no index and were
+      kept. So after every chunk boundary the route jumped backwards and re-drove ten points: five
+      backward jumps of up to **4.6 km**, and **33 km of geometry the car never covered** (a snapped
+      path of 206.4 km against a 173.1 km drive). Now a chunk is skipped until its first genuinely
+      new input point.
+- [x] **Boundaries were matched to their nearest raw fix.** A nearest-fix search over a trace that
+      passes near itself picks a fix from the wrong part of the drive, so boundaries jumped ahead and
+      swallowed their neighbours. Replaced by a **timeline**: a snapped point that came from a real
+      fix keeps that fix's timestamp and is exact; the points between two of them are placed by
+      distance along the road, which is monotone and pinned at both ends. Only **509 of 4,864**
+      points carry a timestamp (RDP thinning before the snap, `interpolate=true` after it), but an
+      estimate is never more than one anchor interval — about 260 m — from an exact time.
+- [x] **Distance and speed now come from the raw trace** between those two times, not from the
+      snapped path. The snapped path is the road's shape, not the car's: locally it doubles back
+      between parallel carriageways, which reported stretches genuinely driven at 130 km/h as
+      250 km/h. Taking distance from the same trace the trip's own `distanceMeters` uses also makes
+      the segments **sum to the drive** instead of disagreeing with it.
+- [x] **Defensive:** interpolated geometry between two real fixes is discarded when it is both far
+      longer than a straight line and longer than any car could cover in the time between them
+      (`MAX_PLAUSIBLE_MPS`). This is what removes the artefact from drives already recorded.
+- [x] **A 250 m floor** (`MIN_SEGMENT_METERS`), agreed beforehand: anything shorter is folded into
+      its longer neighbour, then neighbours that now name the same road are re-merged. A 60 m split
+      is a slip road or a geocoder slip, and a four-second time is decided by where a GPS fix landed
+      rather than by how it was driven. Absorbing rather than dropping keeps every metre and second.
+- [x] **Harness result:** 154 → **72 segments**, mean **2.40 km**, distance sum **173.1 km** and
+      duration sum **88.5 min** (both equal to the drive), **0** implausible speeds, max average
+      **168 km/h** — and the GPS's own speed readings show the driver really did reach ~170.
+      The harness now asserts these as invariants rather than only printing them.
+- [x] **43 unit tests green** (4 new: the overlap double-back, boundary timing between anchors,
+      absorption, and discarding impossible interpolation).
+- [x] **Acceptance test:** ✅ All six drives with route points recalculated on the Galaxy S25 against
+      the live Roads API and geocoder, then verified in Room. Segments per drive **853 → 80**,
+      **384 → 45**, **418 → 44**, **191 → 22**, **80 → 4**, **75 → 3**; every drive's segment
+      distances now sum to its trip distance exactly (173.1, 43.3, 41.5, 22.5, 2.5, 2.4 km), the
+      shortest segment anywhere is **257 m**, and **no segment exceeds 170 km/h**. Speeds are finally
+      differentiated within a drive: on the 173 km drive, IC8 at **73 km/h** beside Autoestrada do
+      Norte at **149 km/h** — where every segment used to report the trip average.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
