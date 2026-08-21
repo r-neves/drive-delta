@@ -1411,6 +1411,28 @@ bottom-nav height — so **each tab owns its top inset**. None of them did.
 
 ---
 
+### ✅ CHECKPOINT 12 — Trip Detail summary-header overflow
+
+**Goal:** The "vs best" stat stops wrapping and wrecking the Trip Detail header.
+
+`SummaryHeader` laid 4–5 `HeaderStat` columns in a plain `Row`, with `HeaderStat` a bare `Column`
+carrying no `weight`, `maxLines` or overflow handling. `design/mockups/trip-detail.png` specifies
+**four** stats (Duration · km · avg km/h · vs best); the later Fuel-cost stat made five, and on a
+360dp screen the fifth wrapped onto two lines and dragged its own label out of the baseline.
+
+- [x] Show the Fuel-cost stat **only when a cost is actually logged** — until then the dashed
+      `FuelNotLoggedBanner` already covers that state, so the common case is the designed four.
+- [x] Stats now build into a list so the row can size itself; each gets `Modifier.weight(1f)`.
+- [x] `HeaderStat` gained `maxLines = 1` + `softWrap = false` on the value (a wrapped value is what
+      broke the row) and an ellipsised single-line label, plus a `compact` flag that steps the value
+      from `headlineMedium` to `titleLarge` when a fifth stat is present.
+- [x] **Acceptance test:** ✅ Verified on the emulator via `uiautomator` bounds. **Four stats:** all
+      values on one line (y 263–349), all labels on one line below, right edge at the 1027 padding
+      boundary. **Five stats** (logged a fill-up to force it): values y 263–327, labels y 327–375,
+      still one row, compact style engaged. Nothing wraps in either case.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
