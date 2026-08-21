@@ -6,22 +6,22 @@
   "annotations": [
     {
       "id": "how-it-works",
-      "x": 0,
-      "y": -172,
+      "x": -450,
+      "y": 0,
       "w": 390,
       "text": "Replaces the Replay tab.\n\nThe whole drive stays on the map; the selected segment is lit and capped, everything else recedes. Prev/next and the rail below step through segments — try them, this artboard is live.\n\nThe rail's bar widths are proportional to segment distance, so it doubles as a shape-of-the-drive overview."
     },
     {
       "id": "purple-sector",
       "x": 0,
-      "y": 892,
+      "y": 964,
       "w": 390,
       "text": "Step to segment 6 (Calçada do Sacramento) for the purple-sector state: a stretch you have never driven faster. Panel border, road name, band label and the ★ PB delta all shift to the purple ramp from tokens.md."
     },
     {
       "id": "bounds",
-      "x": 510,
-      "y": 892,
+      "x": 0,
+      "y": 1180,
       "w": 390,
       "text": "At the first and last segment the matching arrow dims to #3A4048 and the hint below reads START OF DRIVE / END OF DRIVE, so the bounds are legible without a disabled-looking control."
     },
