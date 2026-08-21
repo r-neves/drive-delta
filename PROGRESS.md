@@ -14,7 +14,7 @@
 
 ## Current status
 
-- **Active checkpoint:** **CP11–CP18 — post-first-drive fix batch** (2026-08-21). The app was driven
+- **Active checkpoint:** **CP11–CP22 — post-first-drive fix batch** (2026-08-21/22). The app was driven
   for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
   the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.
   - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
@@ -54,6 +54,36 @@
     at all. Added to the five screens with real text fields, *before* `verticalScroll` so the IME
     shrinks the viewport rather than padding inside it.
   - **All nine checkpoints of this batch are done.**
+  - **✅ CP20 — Segment times became measurements; roads stopped fragmenting. Committed** (`c10c8d6`).
+    Durations were distributed by distance rather than measured; the geocoder fell back to the
+    locality and shattered continuous roads; `roadKey` embedded coordinates so nothing ever compared
+    against itself. Added **Recalculate segments** to the Trip Detail ⋮ menu. 853 → 175 segments.
+  - **✅ CP21 — Offline segmentation harness. Committed** (`209d62e`). `SegmentationRecorder` pins
+    the geocoder's answers into a fixture; `SegmentationHarnessTest` replays the real 173 km drive in
+    milliseconds. **Iterate segmentation with the harness, never against the device** — the geocoder
+    is non-deterministic (116 distinct names one run, 138 another → 175 segments vs 853), so a device
+    run measures the geocoder, at two minutes and ~800 lookups a time.
+  - **✅ CP22 — Segment↔trace alignment + a 250 m floor. Done, verified on the phone.**
+    Three defects: (1) `RoadsDataSource` de-duplicated only the *real* overlap points, so the
+    interpolated ones stayed and the route doubled back after every chunk boundary — five backward
+    jumps of up to 4.6 km and **33 km of phantom geometry** (206.4 km snapped for a 173.1 km drive);
+    (2) boundaries were matched to their nearest raw fix, which on a trace that passes near itself
+    picks a fix from the wrong part of the drive — replaced by anchoring on the snapped points that
+    carry a real timestamp (509 of 4,864) and interpolating by distance between them; (3) distance
+    and speed now come from the raw trace between those times, since the snapped path doubles back
+    between parallel carriageways. Then the agreed **250 m floor**, absorbing into the longer
+    neighbour. Harness: **154 → 72 segments**, mean 2.40 km, sums equal to the drive, **0** impossible
+    speeds (was 25, max 1,427 km/h). **43 unit tests green.**
+    **On the phone:** all six drives with route points recalculated — segments **853→80, 384→45,
+    418→44, 191→22, 80→4, 75→3**, every drive's segment distances summing to its trip distance, the
+    shortest segment anywhere 257 m, nothing above 170 km/h, and speeds differentiated *within* a
+    drive at last (IC8 73 km/h beside Autoestrada do Norte 149 km/h).
+  - **⚠️ Noticed while verifying, NOT fixed (your call):** on Trip Detail the header stats collide
+    for a long drive — `1:29:50` and `173.1` render with no gap ("1:29:50173.1"). CP12 stopped the
+    values wrapping but they now touch at 1:29:50's width. One-line spacing fix.
+  - **⚠️ Two throwaway test trips** from the CP21 session are still on the phone: `f78e1941…`
+    (1.1 km, 21 Aug 20:48) and `c2d13c59…` (0.0 km). Delete from Trips → long-press → Delete if you
+    don't want them in your stats.
   - **Installed on the Galaxy S25 (RFCY50XWGFY)** and the v2→v3 migration ran on real data:
     14,638 → 2,035 segment rows, zero duplicates, all 9,791 route points intact. A pre-update DB
     backup was pulled first.

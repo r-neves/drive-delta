@@ -28,10 +28,20 @@ class RoadsDataSource @Inject constructor(
             val path = chunk.joinToString("|") { "${it.lat},${it.lng}" }
             val response = snapChunkWithRetry(path)
 
+            // Everything a chunk returns for ground already covered by the previous chunk is a
+            // duplicate — including the points the API interpolated between them, which carry no
+            // originalIndex to recognise them by. Skipping until the first genuinely new input point
+            // discards the whole overlap in one go. Dropping only the *real* duplicates (which is
+            // what this did) left the interpolated ones in, so after every chunk boundary the route
+            // jumped back ten input points and re-drove them: on a 173 km drive that was five
+            // backward jumps of up to 4.6 km and 33 km of geometry the car never covered.
+            var covered = start > 0
             for (sp in response.snappedPoints) {
                 val globalIndex = sp.originalIndex?.let { start + it }
-                // Drop overlap duplicates: a real point already emitted from the previous chunk.
-                if (globalIndex != null && globalIndex <= lastOriginalIndexAdded) continue
+                if (covered) {
+                    if (globalIndex == null || globalIndex <= lastOriginalIndexAdded) continue
+                    covered = false
+                }
                 val source = globalIndex?.let { points.getOrNull(it) }
                 snapped += SnappedTimedPoint(
                     lat = sp.location.latitude,
