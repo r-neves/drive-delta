@@ -1,5 +1,6 @@
 package app.drivedelta.domain.usecase.segment
 
+import app.drivedelta.core.debug.SegmentationRecorder
 import app.drivedelta.core.util.GeoUtils
 import app.drivedelta.data.remote.roads.SnappedTimedPoint
 import app.drivedelta.domain.model.RoutePoint
@@ -26,6 +27,10 @@ import kotlin.math.max
 class BuildSegmentsUseCase @Inject constructor(
     private val tripRepository: TripRepository,
     private val roadNameResolver: RoadNameResolver,
+    // Debug-only; a no-op in release. Captures the geocoder's answers so the grouping algorithm can
+    // be iterated offline against a real drive instead of against a service that answers differently
+    // each time. Nullable so unit tests can construct the use case without it.
+    private val recorder: SegmentationRecorder? = null,
 ) {
     suspend operator fun invoke(tripId: String, snapped: List<SnappedTimedPoint>?) {
         val raw = tripRepository.getRoutePoints(tripId).filter { !it.isInterpolated }
@@ -70,6 +75,8 @@ class BuildSegmentsUseCase @Inject constructor(
                 roadNameResolver.roadNameAt(midLat, midLng)
             }
         }
+
+        recorder?.record(tripId, raw, points, nameCache)
 
         // 3. Carry a known name across runs the geocoder couldn't name, rather than letting them
         //    become "Unknown road" and cut a continuous road in two.
