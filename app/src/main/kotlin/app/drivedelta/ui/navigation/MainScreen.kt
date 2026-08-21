@@ -52,7 +52,13 @@ private val tabs = listOf(
 /**
  * The signed-in shell: a bottom navigation bar over its own inner NavHost of tab destinations.
  * Full-screen editors (e.g. car edit) live in the outer graph and are reached via the callbacks so
- * they cover the bar. The inner NavHost is padded by the bar height; each tab owns its top inset.
+ * they cover the bar.
+ *
+ * Insets contract: this shell zeroes its own content insets and pads the inner NavHost by the
+ * bottom-nav height only, so **each tab owns its top (status bar) inset** — via its own TopAppBar
+ * (Cars, Places), a `statusBars` contentWindowInsets (Dashboard) or `statusBarsPadding()` (Trips).
+ * A tab with its own Scaffold must therefore not use the default systemBars insets, or the bottom
+ * padding is applied twice.
  */
 @Composable
 fun MainScreen(

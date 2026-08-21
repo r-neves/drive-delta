@@ -14,7 +14,27 @@
 
 ## Current status
 
-- **Active checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
+- **Active checkpoint:** **CP11–CP18 — post-first-drive fix batch** (2026-08-21). The app was driven
+  for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
+  the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.
+  - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
+    bottom insets, and all five bottom sheets (their primary CTA was rendering *below the screen
+    edge*, inside the nav-bar strip — the "conflicts with the android nav bar" report).
+  - **Next:** CP12 Trip Detail header overflow → CP13 launcher icon → CP14 segment duplication →
+    CP15 ride-finish flow → CP16 map puck + heading-up camera → CP17 place editor → CP18 design canvas.
+  - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
+    10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
+    auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root
+    cause of both the repeated Splits rows and the nonsense `▲16:18:02` "vs best" header. Fixed in CP14.
+  - **Emulator note:** `Medium_Phone` is currently running the *stress* config — tall display cutout
+    + 3-button nav, enabled via `adb shell cmd overlay enable`. Restore with
+    `cmd overlay enable-exclusive com.android.internal.systemui.navbar.gestural` and
+    `cmd overlay disable com.android.internal.display.cutout.emulation.tall`.
+  - **Build note:** `java` is not on `PATH`; use
+    `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`. Likewise
+    `adb`/`emulator` need `export ANDROID_HOME=$HOME/Library/Android/sdk`.
+
+- **Previous checkpoint:** MVP build complete (CP0–CP10 code done) + hardening + a **design-drift sweep**
   bringing each screen to its high-fi mockup. Swept + verified so far: Dashboard, Trips (Recent +
   By-route), Car-edit, Place-edit, Route Summary, the **Tracking HUD**, **Auth**, **Trip Detail**, the
   **ride-moments sheets** (StopConfirm/Arrival/PreRide), and **Fuel Log** — plus the Cars-screen title
