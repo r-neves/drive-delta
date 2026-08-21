@@ -14,6 +14,7 @@
     .mono { font-family: "Geist Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
     @keyframes dd-sweep { 0% { stroke-dashoffset: 620; } 100% { stroke-dashoffset: 0; } }
     @keyframes dd-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    @keyframes dd-indeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(360%); } }
   </style>
 </helmet>
 
@@ -36,24 +37,24 @@
        rather than shown as a zero. -->
   <div style="display: flex; gap: 8px; padding: 4px 20px 14px 20px">
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">24:18</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">24:18</div>
       <div style="font-size: 14px; color: #8A9099">Duration</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">31.2</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">31.2</div>
       <div style="font-size: 14px; color: #8A9099">km</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">58</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">58</div>
       <div style="font-size: 14px; color: #8A9099">avg km/h</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #3A4048">—</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #3A4048">—</div>
       <div style="font-size: 14px; color: #8A9099">vs best</div>
     </div>
   </div>
 
-  <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.08)">
+  <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.07)">
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 12px 0; font-size: 15px; font-weight: 500; color: #7E858F">Map</div>
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 12px 0; font-size: 15px; font-weight: 500; color: #7E858F">Splits</div>
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 10px 0; font-size: 15px; font-weight: 600; color: #F2F4F7; border-bottom: 2px solid #5B8DEF; margin-bottom: -1px">Segments</div>
@@ -74,7 +75,7 @@
         <rect x="200" y="190" width="82" height="58" rx="3"></rect>
       </g>
       <polyline points="28,300 52,286 66,262 62,240 82,214 122,206 158,214 196,222 232,206 252,178 268,146 258,110 226,88 188,74 148,80 118,66 96,50 100,30 134,20 176,26 214,34 238,52"
-                fill="none" stroke="#2B3038" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                fill="none" stroke="#23262C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></polyline>
       <!-- a light sweeps the trace while the split is computed -->
       <polyline points="28,300 52,286 66,262 62,240 82,214 122,206 158,214 196,222 232,206 252,178 268,146 258,110 226,88 188,74 148,80 118,66 96,50 100,30 134,20 176,26 214,34 238,52"
                 fill="none" stroke="#5B8DEF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"
@@ -94,8 +95,8 @@
     </div>
 
     <!-- Indeterminate track: no percentage, because there isn't an honest one to show. -->
-    <div style="margin-top: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden">
-      <div style="width: 38%; height: 100%; border-radius: 3px; background: #5B8DEF; animation: dd-pulse 1.6s ease-in-out infinite"></div>
+    <div style="margin-top: 18px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden">
+      <div style="width: 28%; height: 100%; border-radius: 3px; background: #5B8DEF; animation: dd-indeterminate 1.5s ease-in-out infinite"></div>
     </div>
 
     <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px">

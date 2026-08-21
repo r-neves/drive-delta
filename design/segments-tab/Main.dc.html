@@ -34,25 +34,25 @@
   <!-- Summary header: four stats, as design/mockups/trip-detail.png -->
   <div style="display: flex; gap: 8px; padding: 4px 20px 14px 20px">
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">1:29:50</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">1:29:50</div>
       <div style="font-size: 14px; color: #8A9099">Duration</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">173.1</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">173.1</div>
       <div style="font-size: 14px; color: #8A9099">km</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #F2F4F7">116</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #F2F4F7">116</div>
       <div style="font-size: 14px; color: #8A9099">avg km/h</div>
     </div>
     <div style="flex-grow: 1">
-      <div class="mono" style="font-size: 24px; font-weight: 600; letter-spacing: -0.4px; color: #37D67A">▾1:12</div>
+      <div class="mono" style="font-size: 24px; font-weight: 500; color: #37D67A">▾1:12</div>
       <div style="font-size: 14px; color: #8A9099">vs best</div>
     </div>
   </div>
 
   <!-- Tabs: Replay is gone, Segments takes its place -->
-  <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.08)">
+  <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.07)">
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 12px 0; font-size: 15px; font-weight: 500; color: #7E858F">Map</div>
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 12px 0; font-size: 15px; font-weight: 500; color: #7E858F">Splits</div>
     <div style="flex-grow: 1; text-align: center; padding: 14px 0 10px 0; font-size: 15px; font-weight: 600; color: #F2F4F7; border-bottom: 2px solid #5B8DEF; margin-bottom: -1px">Segments</div>
@@ -90,7 +90,7 @@
 
     <!-- speed-band legend, only while the whole route is colour-coded -->
     <sc-if value="{{speedBands}}" hint-placeholder-val="{{ true }}">
-      <div style="position: absolute; left: 16px; bottom: 14px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 10px; background: rgba(20,22,26,0.82); border: 1px solid rgba(255,255,255,0.08)">
+      <div style="position: absolute; left: 16px; bottom: 14px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 14px; background: rgba(15,17,21,0.78); border: 1px solid rgba(255,255,255,0.08)">
         <div style="display: flex; align-items: center; gap: 6px"><span style="width: 9px; height: 9px; border-radius: 50%; background: #37D67A"></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #8A9099">FAST</span></div>
         <div style="display: flex; align-items: center; gap: 6px"><span style="width: 9px; height: 9px; border-radius: 50%; background: #F0B24E"></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #8A9099">STEADY</span></div>
         <div style="display: flex; align-items: center; gap: 6px"><span style="width: 9px; height: 9px; border-radius: 50%; background: #FF556A"></span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #8A9099">SLOW</span></div>
@@ -98,9 +98,9 @@
     </sc-if>
 
     <!-- position of this segment within the drive -->
-    <div style="position: absolute; right: 16px; top: 14px; padding: 7px 12px; border-radius: 10px; background: rgba(20,22,26,0.82); border: 1px solid rgba(255,255,255,0.08)">
-      <span class="mono" style="font-size: 13px; font-weight: 600; color: #E8EAED">{{current.ordinal}}</span>
-      <span class="mono" style="font-size: 13px; color: #6B7178"> / {{total}}</span>
+    <div style="position: absolute; right: 16px; top: 14px; padding: 7px 12px; border-radius: 14px; background: rgba(15,17,21,0.78); border: 1px solid rgba(255,255,255,0.08)">
+      <span class="mono" style="font-size: 16px; font-weight: 500; color: #E8EAED">{{current.ordinal}}</span>
+      <span class="mono" style="font-size: 16px; font-weight: 500; color: #7E858F"> / {{total}}</span>
     </div>
   </div>
 
@@ -113,8 +113,8 @@
           <span style="width: 8px; height: 8px; border-radius: 50%; background: {{current.bandColor}}; flex-shrink: 0"></span>
           <span style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #8A9099">{{current.bandLabel}}</span>
         </div>
-        <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.3px; color: {{current.nameColor}}; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{current.name}}</div>
-        <div class="mono" style="font-size: 11px; color: {{current.subColor}}; margin-top: 3px">{{current.distance}} · avg {{current.avg}} · max {{current.max}}</div>
+        <div style="font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: {{current.nameColor}}; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{current.name}}</div>
+        <div class="mono" style="font-size: 11px; color: {{current.subColor}}; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{current.distance}} · avg {{current.avg}} · max {{current.max}}</div>
       </div>
       <div style="text-align: right; flex-shrink: 0">
         <div class="mono" style="font-size: 34px; font-weight: 600; letter-spacing: -1px; line-height: 1; color: {{current.nameColor}}">{{current.time}}</div>
@@ -127,7 +127,7 @@
     <sc-if value="{{showTicks}}" hint-placeholder-val="{{ true }}">
       <div style="display: flex; gap: 3px; margin-top: 18px; height: 26px; align-items: stretch">
         <sc-for list="{{segments}}" as="seg" hint-placeholder-count="8">
-          <div onClick="{{seg.pick}}" style="flex-grow: {{seg.flex}}; border-radius: 3px; background: {{seg.tickColor}}; cursor: pointer; align-self: {{seg.tickAlign}}; height: {{seg.tickHeight}}"></div>
+          <div onClick="{{seg.pick}}" style="flex-grow: {{seg.flex}}; flex-basis: 0; min-width: 12px; border-radius: 3px; background: {{seg.tickColor}}; cursor: pointer; align-self: {{seg.tickAlign}}; height: {{seg.tickHeight}}"></div>
         </sc-for>
       </div>
     </sc-if>
@@ -137,7 +137,7 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{prevInk}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
       </div>
       <div style="flex-grow: 1; text-align: center">
-        <div style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #6B7178">{{stepHint}}</div>
+        <div style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: #7E858F">{{stepHint}}</div>
       </div>
       <div onClick="{{next}}" style="width: 56px; height: 56px; border-radius: 16px; background: {{nextBg}}; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{nextInk}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
@@ -165,7 +165,7 @@ class Component extends DCLogic {
       { name: 'Rua da Gestosa',            dist: '0.9 km', time: '1:24.6', best: 'best 1:22.0', delta: '▴2.6',  band: 'slow',   avg: '38 km/h',  max: '52 km/h',  points: '28,300 52,286 66,262 62,240' },
       { name: 'N236-1',                    dist: '6.4 km', time: '5:58.2', best: 'best 6:10.4', delta: '▾12.2', band: 'steady', avg: '64 km/h',  max: '81 km/h',  points: '62,240 82,214 122,206 158,214' },
       { name: 'IC8',                       dist: '18.2 km', time: '11:04.9', best: 'best 11:20.1', delta: '▾15.2', band: 'fast', avg: '99 km/h',  max: '118 km/h', points: '158,214 196,222 232,206 252,178' },
-      { name: 'Autoestrada do Norte',      dist: '54.7 km', time: '28:12.4', best: 'best 29:24.6', delta: '▾72.2', band: 'fast', avg: '116 km/h', max: '131 km/h', points: '252,178 268,146 258,110 226,88' },
+      { name: 'Autoestrada do Norte',      dist: '54.7 km', time: '28:12.4', best: 'best 29:24.6', delta: '▾1:12.2', band: 'fast', avg: '116 km/h', max: '131 km/h', points: '252,178 268,146 258,110 226,88' },
       { name: 'IC3',                       dist: '31.5 km', time: '18:46.0', best: 'best 18:39.5', delta: '▴6.5',  band: 'fast', avg: '101 km/h', max: '124 km/h', points: '226,88 188,74 148,80 118,66' },
       { name: 'Calçada do Sacramento',     dist: '0.6 km', time: '1:58.3', best: '',              delta: 'PB',    band: 'slow',   avg: '18 km/h',  max: '31 km/h',  points: '118,66 96,50 100,30' },
       { name: 'Avenida da Liberdade',      dist: '2.1 km', time: '4:41.7', best: 'best 4:28.9', delta: '▴12.8', band: 'steady', avg: '27 km/h',  max: '46 km/h',  points: '100,30 134,20 176,26' },
@@ -196,8 +196,8 @@ class Component extends DCLogic {
         points: r.points,
         isOther: !selected,
         // Unselected trace: colour-coded by speed band, or a uniform dim grey.
-        restStroke: speedBands ? colour + '4D' : '#2B3038',
-        tickColor: selected ? (isPb(r) ? '#B388FF' : colour) : (speedBands ? colour + '59' : '#23262C'),
+        restStroke: speedBands ? colour + '4D' : '#23262C',
+        tickColor: selected ? (isPb(r) ? '#B388FF' : colour) : (speedBands ? colour + '59' : '#1B1E24'),
         tickHeight: selected ? '26px' : '14px',
         tickAlign: selected ? 'stretch' : 'center',
         flex: String(distanceOf(r)),
@@ -218,6 +218,7 @@ class Component extends DCLogic {
       showTicks,
       segments,
       current: {
+        points: r.points,
         ordinal: String(i + 1),
         name: r.name,
         distance: r.dist,
