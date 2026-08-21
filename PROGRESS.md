@@ -44,7 +44,12 @@
     vertical scroller (the gesture contention that broke pan + marker drag), and fixed a stale
     capture that made every programmatic marker move look like a drag and clobber the chosen address.
     ⚠️ **Confirm the marker long-press-drag on your device** — it isn't reliably scriptable via adb.
-  - **Next:** CP18 design canvas → then the `DISCUSSION.md` write-up.
+  - **✅ CP18 — Segments-tab design canvas. Done, published.** Working files in
+    `design/segments-tab/` (`Main.dc.html`, `Processing.dc.html`, `canvas.json`); the canvas is a
+    published Artifact. Design only — no Compose written; implementation is a future checkpoint.
+  - **✅ `DISCUSSION.md` written** — segment granularity and the global driven-roads map, each with
+    the measurements behind it, plus four smaller gaps found along the way.
+  - **All eight checkpoints of this batch are done.**
   - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root
