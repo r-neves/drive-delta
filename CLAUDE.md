@@ -1748,6 +1748,35 @@ and 76 were under 250 m. Three defects, found in that order:
 
 ---
 
+### ✅ CHECKPOINT 23 — Recalculated segments now survive; header stats stop colliding
+
+**Goal:** Two defects found while verifying CP22 on the phone.
+
+- [x] **A recalculation was undone by the next cold start.** `SyncManager` pushed a trip's segments
+      one document at a time, which upserts but never *deletes*. Re-deriving the 173 km drive took it
+      from 853 segments to 80, so the remote kept 773 stale documents — and since a pull replaces the
+      local set with the remote one, the next cold start handed all 853 back. Measured: every drive
+      reverted (853/384/418/191/80/75) within seconds of relaunching the app. Segments are now pushed
+      **as a set** — `FirestoreDataSource.pushSegmentsForTrip` writes the current ones and deletes
+      whatever else the collection holds for that trip, batched (Firestore caps a batch at 500 ops).
+      Stale documents are found by querying `tripId`, not by assuming an id scheme, because
+      pre-CP14 documents are keyed on a device-local number that cannot be reconstructed.
+- [x] **Trip Detail header stats collided.** A 1 h 30 drive rendered `1:29:50173.1`: every stat column
+      gets the same weight, `1:29:50` at 24sp is wider than a quarter of the row, and
+      `TextOverflow.Visible` let it paint over its neighbour. CP12 stopped values *wrapping* but a
+      value this wide had never been measured. The value now **shrinks to fit its column**, one step
+      at a time down to a 15sp floor, driven by `onTextLayout`'s `hasVisualOverflow` — so only the
+      value that needs it shrinks and a short drive keeps the designed 24sp headline. The `compact`
+      flag CP12 added for the five-stat case is gone: one mechanism covers both. Gutter widened from
+      `spaceSm` to `spaceMd`, since 8dp between two bold numbers still reads as one number.
+- [x] **Acceptance test:** ✅ On the Galaxy S25. **Sync:** all six drives recalculated, then **two
+      cold starts** (each runs push-then-pull) — counts held at 80/45/44/22/4/3 both times, 232
+      segment rows in total, no duplicates, nothing over 170 km/h. **Header:** four stats measured at
+      `1:29:50` `[60..271]` · `173.1` `[309..462]` · `116` `[558..659]` · `▴11:30` `[807..1004]` —
+      a 38 px gutter where they used to touch; five stats (with a logged fuel cost) also clear.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

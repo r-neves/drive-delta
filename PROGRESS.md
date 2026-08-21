@@ -14,7 +14,7 @@
 
 ## Current status
 
-- **Active checkpoint:** **CP11–CP22 — post-first-drive fix batch** (2026-08-21/22). The app was driven
+- **Active checkpoint:** **CP11–CP23 — post-first-drive fix batch** (2026-08-21/22). The app was driven
   for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
   the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.
   - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
@@ -78,9 +78,17 @@
     418→44, 191→22, 80→4, 75→3**, every drive's segment distances summing to its trip distance, the
     shortest segment anywhere 257 m, nothing above 170 km/h, and speeds differentiated *within* a
     drive at last (IC8 73 km/h beside Autoestrada do Norte 149 km/h).
-  - **⚠️ Noticed while verifying, NOT fixed (your call):** on Trip Detail the header stats collide
-    for a long drive — `1:29:50` and `173.1` render with no gap ("1:29:50173.1"). CP12 stopped the
-    values wrapping but they now touch at 1:29:50's width. One-line spacing fix.
+  - **✅ CP23 — Two defects found while verifying CP22. Done, verified on the phone.**
+    (1) **A recalculation was undone by the next cold start.** Segments were pushed one document at a
+    time, which upserts but never deletes, so after 853 → 80 the remote kept 773 stale documents —
+    and a pull replaces the local set with the remote one. Every drive silently reverted within
+    seconds of relaunching the app. Segments are now pushed **as a set**
+    (`FirestoreDataSource.pushSegmentsForTrip`), deleting whatever else the collection holds for that
+    trip, in batches. **This also clears the leftover flagged under CP14** — the remote `segments`
+    collection no longer holds the old documents. (2) **Trip Detail header collision** — the value
+    now shrinks to fit its column (down to a 15sp floor) instead of overflowing into its neighbour.
+    Verified: all six drives recalculated, then **two cold starts** — counts held at 80/45/44/22/4/3
+    both times, **232 segment rows in total**, no duplicates, nothing over 170 km/h.
   - **⚠️ Two throwaway test trips** from the CP21 session are still on the phone: `f78e1941…`
     (1.1 km, 21 Aug 20:48) and `c2d13c59…` (0.0 km). Delete from Trips → long-press → Delete if you
     don't want them in your stats.

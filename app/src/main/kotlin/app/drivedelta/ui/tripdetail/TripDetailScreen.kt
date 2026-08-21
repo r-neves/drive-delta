@@ -105,6 +105,10 @@ import kotlin.math.roundToInt
 
 private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_replay, R.string.trip_tab_cost)
 
+/** How far a summary stat's value may shrink to fit its column, and in what steps. */
+private const val MIN_STAT_VALUE_SP = 15
+private const val STAT_SHRINK_STEP = 0.92f
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripDetailScreen(
@@ -432,14 +436,15 @@ private fun SummaryHeader(detail: TripDetail, costChart: TripCostChart?) {
 
     Row(
         Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceMd),
-        horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm),
+        // A gutter wide enough that two numbers still read as two numbers when both fill their
+        // column — 8dp between a bold 24sp "1:29:50" and a "173.1" reads as one long number.
+        horizontalArrangement = Arrangement.spacedBy(tokens.spaceMd),
     ) {
         stats.forEach { stat ->
             HeaderStat(
                 value = stat.value,
                 label = stat.label,
                 valueColor = stat.valueColor ?: MaterialTheme.colorScheme.onSurface,
-                compact = stats.size > 4,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -536,19 +541,29 @@ private fun HeaderStat(
     value: String,
     label: String,
     valueColor: Color = MaterialTheme.colorScheme.onSurface,
-    compact: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
+        // Never wrap: a wrapped value pushes its own label down and breaks the row's baseline. But a
+        // value can be wider than its share of the row — a 1:29:50 duration is three times the width
+        // of a "116" average, and every column gets the same weight — and left to overflow it paints
+        // over its neighbour: a 1 h 30 drive rendered "1:29:50173.1". Shrink to fit instead, one
+        // step at a time, down to a floor past which clipping beats unreadable. Only the value that
+        // needs it shrinks, so a short drive keeps the designed 24sp headline.
+        val base = MaterialTheme.typography.headlineMedium
+        var style by remember(value, base) { mutableStateOf(base) }
         Text(
             value,
-            // Never wrap: a wrapped value pushes its own label down and breaks the row's baseline.
-            // With five stats the row is tight, so step the value down a notch instead.
-            style = if (compact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+            style = style,
             color = valueColor,
             maxLines = 1,
             softWrap = false,
-            overflow = TextOverflow.Visible,
+            overflow = TextOverflow.Clip,
+            onTextLayout = { layout ->
+                if (layout.hasVisualOverflow && style.fontSize > MIN_STAT_VALUE_SP.sp) {
+                    style = style.copy(fontSize = style.fontSize * STAT_SHRINK_STEP)
+                }
+            },
         )
         Text(
             label,
