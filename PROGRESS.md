@@ -26,6 +26,14 @@
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root
     cause of both the repeated Splits rows and the nonsense `▲16:18:02` "vs best" header. Fixed in CP14.
+  - **⚠️ ACTION FOR YOU — stray test row:** while verifying the CP12 five-stat header I had to log a
+    real fill-up, which wrote **fuel log `e718a829-a77a-4241-a697-1c65a632543b` (45 L, €90.00) against
+    trip `d8a0f4ce-…` (Gestosa → Home, 9 Aug)**. It has already synced to Firestore. **The app has no
+    delete path for fuel logs at all** (`FuelLogDao` has only `insertOrReplace`; `FirestoreDataSource`
+    has `deletePlace` but no `deleteFuelLog`), so it can't be removed from inside the app — please
+    delete that document from the Firebase console, under `/users/{uid}/fuel_logs/`.
+  - **Product gap found as a result:** you cannot edit or delete a fill-up once saved, so a mistyped
+    amount is permanent. Worth a checkpoint of its own — see `DISCUSSION.md`.
   - **Emulator note:** `Medium_Phone` is currently running the *stress* config — tall display cutout
     + 3-button nav, enabled via `adb shell cmd overlay enable`. Restore with
     `cmd overlay enable-exclusive com.android.internal.systemui.navbar.gestural` and

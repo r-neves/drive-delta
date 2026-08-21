@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -393,27 +394,51 @@ private fun SummaryHeader(detail: TripDetail, costChart: TripCostChart?) {
     val deltaVsBest = if (bestTotal > 0) total - bestTotal else null
     val loggedCost = costChart?.loggedCost
 
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceMd),
-        horizontalArrangement = Arrangement.spacedBy(tokens.spaceMd),
-    ) {
-        HeaderStat(formatClockShort(trip.durationMs), stringResource(R.string.trip_hdr_duration))
-        HeaderStat(String.format(Locale.US, "%.1f", trip.distanceMeters / 1000f), stringResource(R.string.trip_hdr_km))
-        HeaderStat(avgKph.toString(), stringResource(R.string.trip_hdr_avg))
-        HeaderStat(
-            loggedCost?.let { formatMoney(it, costChart.currencyCode) } ?: "—",
-            stringResource(R.string.dashboard_week_fuel),
-        )
+    // design/mockups/trip-detail.png shows four stats: Duration · km · avg km/h · vs best. Fuel cost
+    // was added later, and a fifth unweighted column overflowed the row — "vs best" wrapped onto two
+    // lines and dragged its label out of alignment. Only show cost once it's actually logged; until
+    // then FuelNotLoggedBanner already covers that state, so the common case is the designed four.
+    val stats = buildList {
+        add(HeaderStatData(formatClockShort(trip.durationMs), stringResource(R.string.trip_hdr_duration)))
+        add(HeaderStatData(String.format(Locale.US, "%.1f", trip.distanceMeters / 1000f), stringResource(R.string.trip_hdr_km)))
+        add(HeaderStatData(avgKph.toString(), stringResource(R.string.trip_hdr_avg)))
+        if (loggedCost != null && costChart != null) {
+            add(HeaderStatData(formatMoney(loggedCost, costChart.currencyCode), stringResource(R.string.dashboard_week_fuel)))
+        }
         if (deltaVsBest != null) {
             val faster = deltaVsBest <= 0
+            add(
+                HeaderStatData(
+                    value = (if (faster) "▾" else "▴") + formatClockShort(abs(deltaVsBest)),
+                    label = stringResource(R.string.trip_hdr_vs_best),
+                    valueColor = if (faster) DdDeltaFaster else DdError,
+                ),
+            )
+        }
+    }
+
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = tokens.screenPadding, vertical = tokens.spaceMd),
+        horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm),
+    ) {
+        stats.forEach { stat ->
             HeaderStat(
-                (if (faster) "▾" else "▴") + formatClockShort(abs(deltaVsBest)),
-                stringResource(R.string.trip_hdr_vs_best),
-                valueColor = if (faster) DdDeltaFaster else DdError,
+                value = stat.value,
+                label = stat.label,
+                valueColor = stat.valueColor ?: MaterialTheme.colorScheme.onSurface,
+                compact = stats.size > 4,
+                modifier = Modifier.weight(1f),
             )
         }
     }
 }
+
+/** One Trip Detail summary stat. Held in a list so the row can size itself to the stat count. */
+private data class HeaderStatData(
+    val value: String,
+    val label: String,
+    val valueColor: Color? = null,
+)
 
 /** Dashed "Fuel not logged → Add" banner (design/mockups/Energy Logging-saved-drive-not-logged.png). */
 @Composable
@@ -494,10 +519,31 @@ private fun TripCostPoint.toScatterPoint(): ScatterPoint = ScatterPoint(
 )
 
 @Composable
-private fun HeaderStat(value: String, label: String, valueColor: Color = MaterialTheme.colorScheme.onSurface) {
-    Column {
-        Text(value, style = MaterialTheme.typography.headlineMedium, color = valueColor)
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun HeaderStat(
+    value: String,
+    label: String,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
+    compact: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        Text(
+            value,
+            // Never wrap: a wrapped value pushes its own label down and breaks the row's baseline.
+            // With five stats the row is tight, so step the value down a notch instead.
+            style = if (compact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+            color = valueColor,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Visible,
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
