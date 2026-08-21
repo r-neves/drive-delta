@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -185,7 +186,9 @@ fun PlaceEditScreen(
                 )
             }
 
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            // imePadding before verticalScroll so the keyboard shrinks the form's viewport and
+            // the focused field can be scrolled into it (the map hero above is unaffected).
+            Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
                 // Bottom panel.
                 Column(
                     Modifier

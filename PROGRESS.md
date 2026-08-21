@@ -49,7 +49,14 @@
     published Artifact. Design only — no Compose written; implementation is a future checkpoint.
   - **✅ `DISCUSSION.md` written** — segment granularity and the global driven-roads map, each with
     the measurements behind it, plus four smaller gaps found along the way.
-  - **All eight checkpoints of this batch are done.**
+  - **✅ CP19 — Keyboard covering the focused field. Done, verified on the phone, committed.**
+    `enableEdgeToEdge()` makes the manifest's `adjustResize` inert, and the app had no `imePadding()`
+    at all. Added to the five screens with real text fields, *before* `verticalScroll` so the IME
+    shrinks the viewport rather than padding inside it.
+  - **All nine checkpoints of this batch are done.**
+  - **Installed on the Galaxy S25 (RFCY50XWGFY)** and the v2→v3 migration ran on real data:
+    14,638 → 2,035 segment rows, zero duplicates, all 9,791 route points intact. A pre-update DB
+    backup was pulled first.
   - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root

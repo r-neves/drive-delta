@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -111,7 +112,14 @@ fun HistoryScreen(
 
     // This tab has no Scaffold/TopAppBar of its own, and MainScreen's shell zeroes its content
     // insets, so the status-bar inset has to be claimed here or the title sits under the clock.
-    Box(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = tokens.screenPadding)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            // The search field sits in the list, so the keyboard must shrink it.
+            .imePadding()
+            .padding(horizontal = tokens.screenPadding),
+    ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(top = tokens.spaceLg, bottom = tokens.spaceXl),
