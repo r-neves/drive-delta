@@ -35,8 +35,12 @@
     `29675daa…` (GEOFENCE, 1.6 km) and `d673f6fe…` (MANUAL, 0.4 km), both 21 Aug near Lisbon. Delete
     them from Trips → long-press → Delete. Note their Firestore documents may survive that (remote
     tombstoning for trips is a deferred gap), so also check `/users/{uid}/trips/` in the console.
-  - **Next:** CP16 map puck + heading-up camera → CP17 place editor → CP18 design canvas → then the
-    `DISCUSSION.md` write-up.
+  - **✅ CP16 — Live map puck + heading-up camera. Done, verified, committed.** Bearing is derived
+    from movement, not `Location.bearing`, because the emulator (and many providers) report
+    `bear=0.0 vel=0.0`. **Noticed but deliberately not changed:** the map still uses Google's default
+    **light** style everywhere, while `design/tokens.md` §2.1 specifies a dark map — your call,
+    since a light map is arguably more legible in daylight.
+  - **Next:** CP17 place editor → CP18 design canvas → then the `DISCUSSION.md` write-up.
   - **⚠️ Found while investigating (not previously reported):** segments are persisted **12× over** —
     10,236 rows for ~853 real segments on the 173 km drive, because `SegmentEntity` uses an
     auto-generated `Long` primary key so every Firestore `pullAll` re-inserts them. This is the root

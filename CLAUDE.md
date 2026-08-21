@@ -1540,6 +1540,45 @@ ask directly if the user wants to fill the fuel consumption".
 
 ---
 
+### ✅ CHECKPOINT 16 — Live map: location puck + heading-up camera
+
+**Goal:** Show where the driver is, and turn the map to face the direction of travel.
+
+The live map drew only a `Polyline` — nothing marked the driver's position, and the camera was a
+plain `newLatLng` move, so the map never rotated.
+
+- [x] **Location puck** — the blue dot with a dark ring and soft glow from
+      `design/mockups/tracking-hud-ahead.png`, rasterised once into a `BitmapDescriptor` and cached
+      (rebuilding it per fix would allocate several times a second). Drawn `flat = true` so it holds
+      still while the map rotates. Deliberately **not** `MapProperties.isMyLocationEnabled`: that
+      starts a second, independent location request on a screen that already has a high-accuracy
+      stream, and can't be styled to the brand.
+- [x] **Accuracy halo** — a translucent `Circle` at the fix's real accuracy radius, so a poor fix
+      looks poor instead of being hidden behind a dot that always looks equally confident.
+- [x] **Two-layer route** — dark casing under the blue stroke, as the mockup draws it.
+- [x] **Heading-up camera** — animates target *and* bearing together over 2.5 s (matched to the ~3 s
+      camera throttle) so the turn reads as a sweep, not a snap; Maps takes the shortest way round so
+      350° → 10° doesn't spin backwards. The recenter button restores heading-up follow, not just
+      position, so panning away is undoable.
+- [x] **Bearing is derived from movement**, not `Location.bearing`. Plenty of providers never
+      populate it — `dumpsys location` on the emulator shows every injected fix as
+      `vel=0.0 bear=0.0`, so a bearing-based map would simply never rotate — and deriving it from
+      positions we already trust (`GeoUtils.bearingDegrees`) behaves the same everywhere. Only
+      recomputed once the driver has moved ≥ 15 m, so the map doesn't pirouette at traffic lights.
+- [x] **Acceptance test:** ✅ Verified on the emulator with a two-leg scripted drive. **North leg:**
+      puck renders as a blue dot with a dark ring at the head of the trace, route running up the
+      screen. **East turn:** the map rotated ~90° — street labels turned with it and the eastbound
+      trace still runs *up* the screen, which is the whole point of heading-up.
+
+> **Design gap noticed, not changed:** the map still renders in Google's default **light** style on
+> every screen, while `design/tokens.md` §2.1 specifies a dark map (`mapBase #0A0B0D`,
+> `mapRoads #15171B`) and the HUD's glass panel is designed to sit over it. Fixing it means adding a
+> map-style JSON and wiring it into the three `GoogleMap` call sites. Left alone deliberately —
+> it's outside the reported list, and a standard light map is arguably more legible in daylight, so
+> it's the user's call.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

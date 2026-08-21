@@ -33,6 +33,12 @@ val DdSegmentActive = Color(0xFF23262C)
 val DdMapRoads = Color(0xFF15171B)
 val DdMapBlocks = Color(0xFF0E1014)
 
+/** design/tokens.md §2.1 `mapBase` — also the live-tracking puck's ring against its blue fill. */
+val DdMapBase = Color(0xFF0A0B0D)
+
+/** Dark casing drawn under the live route stroke (design/mockups/tracking-hud-ahead.png). */
+val DdRouteCasing = Color(0xFF1B2233)
+
 // --- Text ramp (brightest → dimmest) ---
 val DdTextBright = Color(0xFFE8EAED)
 val DdTextSecondary = Color(0xFF8A9099)
