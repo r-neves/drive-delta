@@ -1579,6 +1579,37 @@ plain `newLatLng` move, so the map never rotated.
 
 ---
 
+### ✅ CHECKPOINT 17 — Place editor: real map interaction
+
+**Goal:** Pick a spot by hand, not just by address search.
+
+Two independent defects.
+
+- [x] **Gesture contention.** The 300dp `GoogleMap` was the first child of a
+      `Column(Modifier.verticalScroll(...))`. `GoogleMap` is an `AndroidView` over `MapView`, so every
+      vertical gesture over it was contended between the scroll container and the map — which is why
+      panning and long-press-dragging the marker didn't work. The map now sits **outside** the
+      scroller as a fixed hero, with only the form below scrolling, so it owns its gestures outright.
+      Pan/zoom gestures and the zoom controls are also enabled explicitly.
+- [x] **A stale capture had killed the echo guard.** `LaunchedEffect(markerState)` is keyed on
+      something that never changes, so it ran **once** and its lambda compared incoming positions
+      against the `lat`/`lng` captured at *first composition* — the Lisbon defaults — forever. Every
+      programmatic marker move (loading a saved place, picking an autocomplete result) therefore
+      looked like a user drag and kicked off a reverse geocode that **overwrote the address the user
+      had just chosen**, about a second later. The guard moved into
+      `PlaceEditViewModel.onMarkerMoved`, which compares against live state.
+- [x] **Acceptance test:** ✅ Verified on the emulator with API keys. A **purely vertical** swipe
+      over the map — precisely the gesture the scroller used to steal — now pans the map while the
+      form below stays put. A diagonal pan moves the camera with the marker staying anchored to its
+      geo position, and the zoom controls render. Opening a saved place keeps its stored address
+      (4 s later it was still intact; the old bug clobbered it at ~1 s).
+      ⚠️ **Manual check:** an actual long-press-and-drag of the marker isn't reliably scriptable
+      through `adb input` (Maps needs a precise long-press on the pin, then a slow move —
+      `input swipe` never holds, and `draganddrop` panned instead). The structural cause is removed
+      and pan is proven, but confirm the drag itself on a real device.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

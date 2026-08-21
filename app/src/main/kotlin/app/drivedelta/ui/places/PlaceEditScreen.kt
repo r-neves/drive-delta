@@ -81,15 +81,12 @@ import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlin.math.abs
 
 /** Emoji options for the picker (design/F3). */
 private val EMOJI_OPTIONS = listOf(
     "🏠", "🏢", "🏋️", "⛽", "🛒", "🏖️", "🏫", "🏥", "⚽", "🎯",
     "🍕", "🏨", "🚉", "✈️", "🏕️", "🏪", "🎭", "🎮", "🌳", "🏟️",
 )
-
-private const val COORD_EPS = 1e-6
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,22 +166,26 @@ fun PlaceEditScreen(
                 )
             }
 
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                // Map hero + "Use my location" overlay.
-                Box(Modifier.fillMaxWidth().height(300.dp)) {
-                    PlaceMap(
-                        lat = state.lat,
-                        lng = state.lng,
-                        radiusMeters = state.radiusMeters,
-                        recenterSignal = state.recenterSignal,
-                        onMarkerMoved = viewModel::onMarkerMoved,
-                    )
-                    UseMyLocationButton(
-                        onLocation = viewModel::onUseMyLocation,
-                        modifier = Modifier.align(Alignment.BottomStart).padding(tokens.spaceLg),
-                    )
-                }
+            // The map sits OUTSIDE the scroller. It used to be the first child of a
+            // verticalScroll Column, and since GoogleMap is an AndroidView over MapView, every
+            // vertical gesture over it was contended between the scroll container and the map —
+            // which is why panning the map and long-press-dragging the marker didn't work. Only the
+            // form below scrolls now, so the map owns its gestures outright.
+            Box(Modifier.fillMaxWidth().height(300.dp)) {
+                PlaceMap(
+                    lat = state.lat,
+                    lng = state.lng,
+                    radiusMeters = state.radiusMeters,
+                    recenterSignal = state.recenterSignal,
+                    onMarkerMoved = viewModel::onMarkerMoved,
+                )
+                UseMyLocationButton(
+                    onLocation = viewModel::onUseMyLocation,
+                    modifier = Modifier.align(Alignment.BottomStart).padding(tokens.spaceLg),
+                )
+            }
 
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 // Bottom panel.
                 Column(
                     Modifier
@@ -281,11 +282,15 @@ private fun PlaceMap(
         cameraPositionState.animate(CameraUpdateFactory.newLatLng(target))
     }
 
+    // Report every marker position; PlaceEditViewModel.onMarkerMoved drops the echo when the marker
+    // was moved programmatically. The guard used to live here, comparing against the lat/lng this
+    // lambda captured — but the effect is keyed on markerState, which never changes, so it ran once
+    // and compared against the *initial* coordinates forever. The result was a spurious "drag" every
+    // time a place was loaded or an address picked, whose reverse geocode then overwrote the address
+    // the user had just chosen. The ViewModel compares against live state, so it actually works.
     LaunchedEffect(markerState) {
         snapshotFlow { markerState.position }.collect { pos ->
-            if (abs(pos.latitude - lat) > COORD_EPS || abs(pos.longitude - lng) > COORD_EPS) {
-                onMarkerMoved(pos.latitude, pos.longitude)
-            }
+            onMarkerMoved(pos.latitude, pos.longitude)
         }
     }
 
@@ -293,7 +298,13 @@ private fun PlaceMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         properties = MapProperties(isMyLocationEnabled = false),
-        uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false),
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = true,
+            myLocationButtonEnabled = false,
+            // Explicit: this is the one screen whose whole job is positioning a point by hand.
+            scrollGesturesEnabled = true,
+            zoomGesturesEnabled = true,
+        ),
     ) {
         Marker(state = markerState, draggable = true)
         Circle(
