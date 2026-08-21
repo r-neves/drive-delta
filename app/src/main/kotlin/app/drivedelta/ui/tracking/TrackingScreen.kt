@@ -65,17 +65,20 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun TrackingScreen(
-    onFinished: () -> Unit,
+    onFinished: (tripId: String?) -> Unit,
     viewModel: TrackingViewModel = hiltViewModel(),
 ) {
     val tokens = LocalDdTokens.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val routePoints by viewModel.routePoints.collectAsStateWithLifecycle()
     val cameraTarget by viewModel.cameraTarget.collectAsStateWithLifecycle()
-    val tripEnded by viewModel.tripEnded.collectAsStateWithLifecycle()
+    val finishedTripId by viewModel.finishedTripId.collectAsStateWithLifecycle()
+    val finishing by viewModel.finishing.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(tripEnded) { if (tripEnded) onFinished() }
+    LaunchedEffect(finishedTripId) {
+        finishedTripId?.let { onFinished(it.ifEmpty { null }) }
+    }
 
     var showStopConfirm by remember { mutableStateOf(false) }
     // Local "I'm just passing" dismissal; reset once the driver leaves the geofence (EN_ROUTE).
@@ -143,18 +146,19 @@ fun TrackingScreen(
     if (showStopConfirm) {
         StopConfirmSheet(
             state = state,
-            onFinish = {
-                showStopConfirm = false
-                viewModel.stop(TrackingForegroundService.TRIGGER_MANUAL)
-            },
+            finishing = finishing,
+            onFinish = { viewModel.stop(TrackingForegroundService.TRIGGER_MANUAL) },
             onKeepGoing = { showStopConfirm = false },
-            onDismiss = { showStopConfirm = false },
+            onDismiss = { if (!finishing) showStopConfirm = false },
         )
     }
 
+    // Stays up while `finishing` so the sheet can show progress instead of vanishing into a frozen
+    // map; the LaunchedEffect above navigates away once the service confirms the trip is finalised.
     if (state.arrivalStatus == ArrivalStatus.ARRIVED && !passingDismissed && !showStopConfirm) {
         ArrivalSheet(
             destinationName = state.destinationName ?: "",
+            finishing = finishing,
             onFinish = { viewModel.stop(TrackingForegroundService.TRIGGER_GEOFENCE) },
             onKeepGoing = { passingDismissed = true },
         )

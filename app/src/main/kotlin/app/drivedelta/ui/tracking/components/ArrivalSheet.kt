@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +57,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun ArrivalSheet(
     destinationName: String,
+    finishing: Boolean,
     onFinish: () -> Unit,
     onKeepGoing: () -> Unit,
 ) {
@@ -67,7 +70,11 @@ fun ArrivalSheet(
         label = "countdown",
     )
 
-    LaunchedEffect(Unit) {
+    // Keyed on `finishing` so confirming cancels the countdown. Previously it was keyed on Unit and
+    // the sheet stayed up after a confirm (nothing dismissed it), so the timer kept ticking in the
+    // user's face and fired a second onFinish() at zero — a duplicate STOP intent.
+    LaunchedEffect(finishing) {
+        if (finishing) return@LaunchedEffect
         while (secondsLeft > 0) {
             delay(1_000)
             secondsLeft -= 1
@@ -153,6 +160,7 @@ fun ArrivalSheet(
 
             Button(
                 onClick = onFinish,
+                enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
                 colors = ButtonDefaults.buttonColors(
@@ -160,10 +168,23 @@ fun ArrivalSheet(
                     contentColor = MaterialTheme.colorScheme.background,
                 ),
             ) {
-                Text(stringResource(R.string.tracking_finish), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                if (finishing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.background,
+                    )
+                    Spacer(Modifier.size(tokens.spaceMd))
+                }
+                Text(
+                    stringResource(if (finishing) R.string.tracking_finishing else R.string.tracking_finish),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                )
             }
             OutlinedButton(
                 onClick = onKeepGoing,
+                enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
             ) {

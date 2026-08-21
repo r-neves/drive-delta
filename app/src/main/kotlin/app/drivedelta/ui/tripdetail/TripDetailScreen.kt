@@ -278,6 +278,17 @@ private fun SplitsTab(
     val tokens = LocalDdTokens.current
     val baselineMap = if (state.baseline == CompareBaseline.PREVIOUS) state.previousPerRoadKey else detail.bestPerRoadKey
 
+    // Opening a drive straight after it finishes beats PostRideWorker to the segments, so say so
+    // rather than showing a bare empty table.
+    if (detail.segments.isEmpty()) {
+        CenteredHint(
+            stringResource(
+                if (state.processing) R.string.trip_splits_processing else R.string.trip_no_segments,
+            ),
+        )
+        return
+    }
+
     Column(Modifier.fillMaxSize()) {
         // vs-best / vs-previous baseline toggle (functional; not in the mockup, kept compact).
         Row(

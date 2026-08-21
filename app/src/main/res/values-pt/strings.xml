@@ -185,6 +185,7 @@
     <string name="tracking_stat_elapsed">Decorrido</string>
     <string name="tracking_stat_avg">Média</string>
     <string name="tracking_finish">Terminar viagem</string>
+    <string name="tracking_finishing">A terminar…</string>
     <string name="tracking_keep_going">Continuar</string>
     <string name="tracking_just_passing">Estou só de passagem</string>
     <string name="tracking_arrived_title">Chegaste a %1$s 🎉</string>
@@ -229,6 +230,8 @@
     <string name="trip_compare">Comparar</string>
     <string name="trip_not_found">Viagem não encontrada.</string>
     <string name="trip_no_route">Sem percurso gravado.</string>
+    <string name="trip_no_segments">Sem troços para esta viagem.</string>
+    <string name="trip_splits_processing">A processar viagem…</string>
     <string name="trip_start">Início</string>
     <string name="trip_end">Fim</string>
     <string name="trip_total_time">Total</string>

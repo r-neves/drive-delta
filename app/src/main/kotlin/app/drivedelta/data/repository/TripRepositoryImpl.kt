@@ -106,6 +106,9 @@ class TripRepositoryImpl @Inject constructor(
     override suspend fun getSegments(tripId: String): List<Segment> =
         segmentDao.getByTripOnce(tripId).map(SegmentEntity::toDomain)
 
+    override fun observeSegments(tripId: String): Flow<List<Segment>> =
+        segmentDao.getByTrip(tripId).map { rows -> rows.map(SegmentEntity::toDomain) }
+
     override suspend fun deleteTrip(tripId: String) {
         // Hard delete from Room (source of truth). Remote tombstoning is deferred (single-user POC);
         // route points are local-only so there's nothing remote to clean for them.
