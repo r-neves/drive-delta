@@ -40,8 +40,10 @@ class SyncManager @Inject constructor(
 
             tripDao.getPendingSync(userId).forEach { trip ->
                 remote.pushTrip(trip)
-                // Segments have no syncedAt of their own; push them with their (pending) trip.
-                segmentDao.getByTripOnce(trip.id).forEach { remote.pushSegment(userId, it) }
+                // Segments have no syncedAt of their own; push them with their (pending) trip, and
+                // as a set — re-processing a drive can leave the remote holding segments the trip no
+                // longer has, and the next pull would hand them straight back.
+                remote.pushSegmentsForTrip(userId, trip.id, segmentDao.getByTripOnce(trip.id))
                 tripDao.update(trip.copy(syncedAt = now))
             }
             placeDao.getPendingSync(userId).forEach { place ->

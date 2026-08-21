@@ -10,7 +10,7 @@ import app.drivedelta.data.remote.firestore.string
 /**
  * Firestore representation of a [SegmentEntity]. Segments carry no `userId` of their own — they are
  * always nested under the owning user's document, so the owner is supplied out of band by
- * `FirestoreDataSource.pushSegment`. The id is not part of the wire format because it is derived:
+ * `FirestoreDataSource.pushSegmentsForTrip`. The id is not part of the wire format because it is derived:
  * both sides compute it as `SegmentEntity.idFor(tripId, segmentIndex)`, which is also the Firestore
  * document id, so pushing the same segment twice overwrites rather than duplicates.
  */
