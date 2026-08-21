@@ -1769,11 +1769,29 @@ and 76 were under 250 m. Three defects, found in that order:
       value that needs it shrinks and a short drive keeps the designed 24sp headline. The `compact`
       flag CP12 added for the five-stat case is gone: one mechanism covers both. Gutter widened from
       `spaceSm` to `spaceMd`, since 8dp between two bold numbers still reads as one number.
+- [x] **Deleting a ride left it on the server**, so the next pull handed it back — the same defect,
+      one collection over. `TripRepositoryImpl.deleteTrip` was Room-only, with remote tombstoning
+      noted as deferred. It now also calls `FirestoreDataSource.deleteTrip`, which removes the trip
+      document and every segment belonging to it, best-effort and non-fatal (the pattern places
+      already use). Route points stay local-only, so there is nothing remote to clean for them.
 - [x] **Acceptance test:** ✅ On the Galaxy S25. **Sync:** all six drives recalculated, then **two
       cold starts** (each runs push-then-pull) — counts held at 80/45/44/22/4/3 both times, 232
       segment rows in total, no duplicates, nothing over 170 km/h. **Header:** four stats measured at
       `1:29:50` `[60..271]` · `173.1` `[309..462]` · `116` `[558..659]` · `▴11:30` `[807..1004]` —
       a 38 px gutter where they used to touch; five stats (with a logged fuel cost) also clear.
+      **Delete:** both leftover test trips removed through Trip Detail → ⋮ → Delete ride, then **two
+      more cold starts** — neither came back, 19 → 17 trips and 232 → 210 segments, and the six real
+      drives untouched.
+
+> **Gap found, not fixed:** a ride that is started and never finished has no `endTime`, and
+> `TripsOverview` lists only completed rides — so an abandoned trip is invisible **and undeletable**
+> from inside the app. One of the two test trips was in exactly that state; reaching it needed an
+> end time stamped into Room by hand. Worth either finalising such a trip from its route points on
+> the next cold start, or surfacing it so it can be deleted.
+>
+> **Also noticed:** 9 orphan segment rows survive from trip `29675daa…`, deleted in the CP15 session
+> before trip deletion reached Firestore. They are inert — `getBestDurationForRoadKey` INNER JOINs
+> `trips`, so they cannot affect a personal best — but they are re-pulled on every sync.
 
 ---
 

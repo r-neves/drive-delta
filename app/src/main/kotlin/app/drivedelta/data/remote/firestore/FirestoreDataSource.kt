@@ -84,6 +84,26 @@ class FirestoreDataSource @Inject constructor(
         }
     }
 
+    /**
+     * Removes a trip and every segment belonging to it.
+     *
+     * Deleting a trip locally is not enough. A pull replaces the local set with the remote one, so a
+     * trip whose documents survive is handed straight back on the next cold start — the same way a
+     * recalculation used to be undone, and for the same reason.
+     */
+    suspend fun deleteTrip(userId: String, tripId: String) {
+        val segments = userDoc(userId).collection(SEGMENTS)
+            .whereEqualTo(FIELD_TRIP_ID, tripId).get().await()
+            .documents.map { it.reference }
+
+        (segments + userDoc(userId).collection(TRIPS).document(tripId))
+            .chunked(BATCH_LIMIT).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { reference -> batch.delete(reference) }
+                batch.commit().await()
+            }
+    }
+
     /** Upserts a place under its owner's `places` collection, keyed by [PlaceEntity.id]. */
     suspend fun pushPlace(place: PlaceEntity) {
         userDoc(place.userId).collection(PLACES).document(place.id)
