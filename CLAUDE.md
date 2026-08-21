@@ -1640,6 +1640,31 @@ segment is lit, and prev/next steps through them.
 
 ---
 
+### ✅ CHECKPOINT 19 — Keyboard covers the field being typed into
+
+**Goal:** A text field low on the screen stays visible while you type into it.
+
+`AndroidManifest.xml:33` sets `android:windowSoftInputMode="adjustResize"` — but `MainActivity`
+calls `enableEdgeToEdge()`, which sets `decorFitsSystemWindows = false` and makes `adjustResize`
+**inert**: the window no longer shrinks for the IME, so Compose has to apply the inset itself.
+There was **no `imePadding()` anywhere in the app**.
+
+- [x] `imePadding()` added to the five screens with real (non-readOnly) text fields: `CarEditScreen`,
+      `EnergyPricesScreen`, `PlaceEditScreen`, `HistoryScreen` (its search field is in the list) and
+      `EnergyLogSheet`. `PreRideSheet` is untouched — its fields are `readOnly` dropdown anchors that
+      never raise a keyboard.
+- [x] **Ordering matters and is the whole fix:** `imePadding()` goes *before* `verticalScroll`, so the
+      IME shrinks the scroll **viewport** and Compose can scroll the focused field into it. After
+      `verticalScroll` it would merely pad the content inside a full-height viewport and the field
+      would stay hidden.
+- [x] **Acceptance test:** ✅ Verified on the user's Galaxy S25 (1080×2340), keyboard occupying
+      **y 1314–2340**. **Car edit:** the Consumption field sat at y 1653–1719 — behind the keyboard —
+      and moved to **1053–1119** once focused. **Energy log sheet** (the harder case, a field inside a
+      `ModalBottomSheet`): the litres field moved 1039 → **743**, and typing `42` rendered it at
+      **694–850**, plainly visible. Backed out of both without saving. 33 unit tests green.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

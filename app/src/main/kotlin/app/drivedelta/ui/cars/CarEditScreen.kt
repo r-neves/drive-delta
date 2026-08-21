@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -99,6 +100,11 @@ fun CarEditScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                // Before verticalScroll, so the IME shrinks the scroll *viewport* rather than
+                // padding the content inside it — that is what lets Compose scroll the focused
+                // field into view. enableEdgeToEdge() makes the manifest's adjustResize inert, so
+                // without this the keyboard simply covers whatever you are typing into.
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = tokens.screenPadding, vertical = tokens.spaceLg),
             verticalArrangement = Arrangement.spacedBy(tokens.spaceLg),
