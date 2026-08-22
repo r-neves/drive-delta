@@ -226,7 +226,6 @@
     <string name="trip_detail_title">Viagem</string>
     <string name="trip_tab_map">Mapa</string>
     <string name="trip_tab_splits">Tempos</string>
-    <string name="trip_tab_replay">Repetição</string>
     <string name="trip_compare">Comparar</string>
     <string name="trip_not_found">Viagem não encontrada.</string>
     <string name="trip_no_route">Sem percurso gravado.</string>
@@ -239,9 +238,6 @@
     <string name="trip_delta">Delta</string>
     <string name="trip_vs_best">vs melhor de sempre</string>
     <string name="trip_segment_dist">%1$d m</string>
-    <string name="trip_replay_speed">%1$d km/h</string>
-    <string name="trip_replay_multiplier">%1$d×</string>
-    <string name="trip_play_pause">Reproduzir ou pausar</string>
     <string name="trip_vs_previous">vs viagem anterior</string>
     <string name="trip_hdr_duration">Duração</string>
     <string name="trip_hdr_km">km</string>
@@ -338,4 +334,15 @@
     <string name="energy_estimate_body">Usar a média de consumo do carro para preencher lacunas.</string>
     <string name="energy_ask_title">Perguntar após cada viagem</string>
     <string name="energy_ask_body">Mostrar a folha de registo quando uma viagem termina.</string>
+    <string name="trip_tab_segments">Troços</string>
+    <string name="trip_band_fast">RÁPIDO</string>
+    <string name="trip_band_steady">CONSTANTE</string>
+    <string name="trip_band_slow">LENTO</string>
+    <string name="trip_band_purple">SETOR ROXO</string>
+    <string name="trip_seg_detail">%1$.1f km · méd %2$d km/h · máx %3$d km/h</string>
+    <string name="trip_seg_start">INÍCIO DA VIAGEM</string>
+    <string name="trip_seg_end">FIM DA VIAGEM</string>
+    <string name="trip_seg_of">TROÇO %1$d DE %2$d</string>
+    <string name="trip_seg_prev">Troço anterior</string>
+    <string name="trip_seg_next">Troço seguinte</string>
 </resources>

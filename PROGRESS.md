@@ -14,7 +14,7 @@
 
 ## Current status
 
-- **Active checkpoint:** **CP11–CP23 — post-first-drive fix batch** (2026-08-21/22). The app was driven
+- **Active checkpoint:** **CP11–CP24 — post-first-drive fix batch** (2026-08-21/22). The app was driven
   for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
   the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.
   - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
@@ -100,6 +100,15 @@
     from inside the app. `c2d13c59…` was in exactly that state; reaching it needed an end time
     stamped into Room by hand. Worth either finalising such a trip from its route points on the next
     cold start, or surfacing it so it can be deleted.
+  - **✅ CP24 — Segments tab built (the CP18 design). Done, verified on the emulator.** Replay is
+    gone; the tab steps through the drive one stretch of road at a time — whole route dimmed to its
+    speed band, selected stretch lit, distance-proportional rail, prev/next stepper, purple-sector
+    treatment on a personal best. Built now because CP22 is what made segments worth stepping through
+    (853 six-second slivers → 80 averaging 2.2 km). Also added the **dark map style** to both Trip
+    Detail maps; the live-tracking and place-editor maps are still light — **your call** (CP16's open
+    question). **Found and fixed an OOM crash** along the way: the Map tab drew one polyline per GPS
+    hop, so 5,162 on the 173 km drive, and the Maps renderer took the app down. Pre-existing since
+    CP8, never met a long drive before.
   - **⚠️ Also:** 9 orphan segment rows survive from trip `29675daa…` (deleted in the CP15 session,
     before trip deletion reached Firestore). Inert — `getBestDurationForRoadKey` INNER JOINs `trips`
     so they can't affect a personal best — but they're re-pulled on every sync.
