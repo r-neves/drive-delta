@@ -16,13 +16,10 @@ import app.drivedelta.domain.usecase.segment.MatchSegmentsUseCase
 import app.drivedelta.ui.navigation.NavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 enum class CompareBaseline { BEST, PREVIOUS }
@@ -35,9 +32,8 @@ data class TripDetailUiState(
     val hasPreviousRun: Boolean = false,
     val costChart: TripCostChart? = null,
     val showEnergyLog: Boolean = false,
-    val replayFraction: Float = 0f,
-    val isPlaying: Boolean = false,
-    val replaySpeed: Int = 1,
+    /** Which segment the Segments tab is showing (index into `detail.segments`). */
+    val selectedSegment: Int = 0,
     // Display strings for the app-bar title/subtitle (resolved from the trip's linked place/car ids).
     val originName: String? = null,
     val destName: String? = null,
@@ -48,7 +44,8 @@ data class TripDetailUiState(
 
 /**
  * Backs the Trip Detail screen (F10): loads the [TripDetail], computes a "previous run on this route"
- * baseline for the splits toggle, gates the first-open fuel prompt, and drives the replay scrubber.
+ * baseline for the splits toggle, gates the first-open fuel prompt, and tracks which segment the
+ * Segments tab is stepped to.
  */
 @HiltViewModel
 class TripDetailViewModel @Inject constructor(
@@ -67,8 +64,6 @@ class TripDetailViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(TripDetailUiState())
     val uiState: StateFlow<TripDetailUiState> = _uiState.asStateFlow()
-
-    private var replayJob: Job? = null
 
     init {
         load()
@@ -158,41 +153,13 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
-    // --- Replay ---------------------------------------------------------------------------------
+    // --- Segments -------------------------------------------------------------------------------
 
-    fun togglePlay() {
-        if (_uiState.value.isPlaying) pause() else play()
+    /** Selects a segment to light on the map and describe in the panel. Clamped to what exists. */
+    fun selectSegment(index: Int) = _uiState.update {
+        val last = (it.detail?.segments?.size ?: 0) - 1
+        it.copy(selectedSegment = index.coerceIn(0, maxOf(0, last)))
     }
 
-    fun setReplayFraction(fraction: Float) {
-        _uiState.update { it.copy(replayFraction = fraction.coerceIn(0f, 1f)) }
-    }
-
-    fun cycleSpeed() = _uiState.update { it.copy(replaySpeed = if (it.replaySpeed == 1) 2 else 1) }
-
-    private fun play() {
-        val durationMs = _uiState.value.detail?.trip?.durationMs ?: return
-        if (durationMs <= 0) return
-        // Restart from the beginning if we're at the end.
-        if (_uiState.value.replayFraction >= 1f) _uiState.update { it.copy(replayFraction = 0f) }
-        _uiState.update { it.copy(isPlaying = true) }
-        replayJob?.cancel()
-        replayJob = viewModelScope.launch {
-            while (isActive && _uiState.value.replayFraction < 1f) {
-                delay(TICK_MS)
-                val step = TICK_MS.toFloat() * _uiState.value.replaySpeed / durationMs
-                _uiState.update { it.copy(replayFraction = (it.replayFraction + step).coerceAtMost(1f)) }
-            }
-            _uiState.update { it.copy(isPlaying = false) }
-        }
-    }
-
-    private fun pause() {
-        replayJob?.cancel()
-        _uiState.update { it.copy(isPlaying = false) }
-    }
-
-    private companion object {
-        const val TICK_MS = 50L
-    }
+    fun stepSegment(by: Int) = selectSegment(_uiState.value.selectedSegment + by)
 }

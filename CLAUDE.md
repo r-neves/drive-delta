@@ -1635,7 +1635,7 @@ segment is lit, and prev/next steps through them.
 - [x] Two open questions left as tweak chips rather than decided unilaterally: whether the unlit
       route is colour-coded by speed band or recedes to flat grey, and whether the rail earns its
       place at all.
-- [ ] **Implementation is a future checkpoint** — no Compose written. When it happens it replaces
+- [x] **Implemented in CHECKPOINT 24.** Replaces `ReplayTab` and the `trip_tab_replay` string — no Compose written. When it happens it replaces
       `ReplayTab` in `TripDetailScreen.kt` and the `trip_tab_replay` string.
 
 ---
@@ -1792,6 +1792,67 @@ and 76 were under 250 m. Three defects, found in that order:
 > **Also noticed:** 9 orphan segment rows survive from trip `29675daa…`, deleted in the CP15 session
 > before trip deletion reached Firestore. They are inert — `getBestDurationForRoadKey` INNER JOINs
 > `trips`, so they cannot affect a personal best — but they are re-pulled on every sync.
+
+---
+
+### ✅ CHECKPOINT 24 — Segments tab (the CP18 design, built)
+
+**Goal:** Replace the Replay scrubber with segment-by-segment navigation of the drive.
+
+Built now rather than in CP18 because the design needed segments worth stepping through. When it was
+drawn, the reference drive was 853 segments averaging 146 m and six seconds; a stepper through those
+would have been worse than the replay it replaces. CP22 made it 80 segments averaging 2.2 km with
+real times, and the rail (bar width ∝ distance) only reads as the shape of a drive when the segments
+are chunky.
+
+- [x] `SegmentsTab` in `TripDetailScreen.kt`, per `design/segments-tab/Main.dc.html`: the whole route
+      dimmed to its speed band with the selected stretch lit, hollow start / filled end caps, the
+      `n / total` chip, the FAST·STEADY·SLOW legend, and the detail panel (band label, road name,
+      distance · avg · max, big mono time, delta or `★ PB`, best caption) over a distance-
+      proportional rail and a prev/next stepper that dims at either end and reads START/END OF DRIVE.
+- [x] **Purple-sector treatment** throughout when the stretch is a personal best — panel border,
+      accent, road name, rail block and map stroke all switch to `#B388FF`.
+- [x] **Segment geometry comes from the raw trace sliced by time**, not by matching coordinates back
+      to fixes: segments tile the drive and their durations sum to it (the CP22 contract), so each
+      one's window is the running total of the durations before it. Nearest-coordinate matching is
+      exactly what CP22 removed. Falls back to a straight line between the segment's endpoints when
+      the drive has no route points — they are local-only, so a drive restored onto another device
+      has none. **That fallback is not exercised on the emulator** (every seeded drive has points).
+- [x] **The rail is a Canvas, not a Row of boxes.** The artboard assumed eight segments; a real drive
+      has 80. Laying out 80 views with a 3dp gutter spends 237dp of a 320dp row on gutters, so every
+      block collapses to its minimum width and the proportionality — the whole point — is lost. One
+      canvas keeps the widths true at any count, and a tap maps back through the same split.
+- [x] **Speed bands are relative to the drive's own fastest stretch** (≥⅔ fast, ≥⅓ steady, else
+      slow), so a town run has fast stretches too rather than being uniformly "slow".
+- [x] **Dark map style** (`res/raw/map_style_dark.json`, `design/tokens.md` §2.1) on both Trip Detail
+      maps — the default Google styling washes out the colouring these tabs exist to show. **The live
+      tracking and place-editor maps are deliberately left light** (CP16's open question: a light map
+      is arguably more legible while driving in daylight). Your call.
+- [x] Replay is gone: `ReplayTab`, the replay state and job in `TripDetailViewModel`, and the
+      `trip_tab_replay` / `trip_replay_*` / `trip_play_pause` strings. New en+pt strings for the tab,
+      the bands, the detail line and the stepper.
+- [x] **Fixed an OutOfMemoryError that crashed the app** — found by opening the Map tab on the 173 km
+      drive. `MapTab` drew one `Polyline` per hop, so 5,162 of them, and the Maps renderer ran the
+      heap out and took the process down. Pre-existing since CP8; it had only ever met short drives.
+      The trace is now split into at most 120 stretches coloured by mean speed. Merging *similar*
+      speeds instead was tried first and does not work: GPS speed jitters across any threshold, so a
+      noisy trace still yields thousands of runs. The budget has to be a hard cap.
+- [x] **Acceptance test:** ✅ On the emulator, seeded with the phone's real database (same account, so
+      the 173 km drive brings its 5,163 route points and 80 segments). Segments tab: opens on 1/80
+      as a PURPLE SECTOR stretch — "Lad. da Barreira · 1.0 km · avg 23 km/h · max 45 km/h · 2:32.7 ·
+      ★ PB"; stepping reaches SEGMENT 4 OF 80 with the camera reframing each lit stretch; tapping the
+      rail near its right end jumps to segment 51, a 9.1 km run at 139 km/h. Map tab renders the full
+      speed-coloured trace over the dark style with no crash. No `FATAL`/`OutOfMemory` in logcat
+      across the whole pass.
+
+> **Deviation from the artboard, deliberate:** it frames the *whole* route with the segment lit "in
+> context". At 173 km a 2.6 km stretch is then a sliver, so the camera frames the selection with
+> generous padding instead — neighbouring segments still show. The whole route stays drawn.
+>
+> **Seen once, not reproduced:** opening a drive while the initial Firestore pull was mid
+> delete-then-insert showed "No segments for this drive" and did not recover until the app was
+> restarted. `TripDetailViewModel` observes segments and reloads when the count changes, which should
+> cover it. Could not reproduce on a second attempt.
 
 ---
 

@@ -1,5 +1,26 @@
 package app.drivedelta.ui.tripdetail
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.Circle
+import com.google.maps.android.compose.MapProperties
+import app.drivedelta.ui.theme.DdAmber
+import app.drivedelta.ui.theme.DdBackground
+import app.drivedelta.ui.theme.DdSurfaceElevated
+import app.drivedelta.ui.theme.DdSurfaceSheet
+import app.drivedelta.ui.theme.DdTextBright
+import app.drivedelta.ui.theme.DdTextDim
+import app.drivedelta.ui.theme.DdTextSecondary
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +42,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CompareArrows
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Insights
@@ -103,7 +122,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_replay, R.string.trip_tab_cost)
+private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_segments, R.string.trip_tab_cost)
 
 /** How far a summary stat's value may shrink to fit its column, and in what steps. */
 private const val MIN_STAT_VALUE_SP = 15
@@ -206,7 +225,7 @@ fun TripDetailScreen(
                     when (selectedTab) {
                         0 -> MapTab(detail)
                         1 -> SplitsTab(detail, state, viewModel::setBaseline)
-                        2 -> ReplayTab(detail, state, viewModel)
+                        2 -> SegmentsTab(detail, state, viewModel)
                         else -> CostTab(state.costChart)
                     }
                 }
@@ -258,13 +277,21 @@ private fun MapTab(detail: TripDetail) {
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = camera,
+        // The dark map from design/tokens.md §2.1: the default Google styling washes out the
+        // speed colouring this tab exists to show.
+        properties = MapProperties(mapStyleOptions = rememberDarkMapStyle()),
         uiSettings = MapUiSettings(zoomControlsEnabled = true),
     ) {
-        // Colour each hop by its speed relative to the trip max: green fast → red slow.
-        for (i in 1 until detail.routePoints.size) {
+        // Colour by speed relative to the trip max: green fast → red slow. One Polyline per *run* of
+        // similar speed, not per hop: a hop-by-hop draw meant 5,162 Polyline objects on the 173 km
+        // reference drive, which ran the Maps renderer out of heap and took the whole app down with
+        // an OutOfMemoryError. Quantising the gradient to a few dozen steps collapses that to tens of
+        // objects and is indistinguishable at any zoom the map will show.
+        val runs = remember(detail) { speedRuns(detail.routePoints, maxSpeed) }
+        runs.forEach { run ->
             Polyline(
-                points = listOf(points[i - 1], points[i]),
-                color = speedColor(detail.routePoints[i].speedMps, maxSpeed),
+                points = run.indices.map { points[it] },
+                color = speedColor(run.speedMps, maxSpeed),
                 width = 12f,
             )
         }
@@ -619,21 +646,47 @@ private fun OverflowMenu(
     }
 }
 
-// --- Tab 3: Replay ------------------------------------------------------------------------------
+// --- Tab 3: Segments ----------------------------------------------------------------------------
 
+/**
+ * Steps through the drive one stretch of road at a time (`design/segments-tab/Main.dc.html`).
+ *
+ * This replaced a Replay scrubber that slid a marker along the whole trace: pretty, but it answered
+ * no question a driver asks. Stepping segment by segment does — each stop is a named road with a
+ * time, a delta and a place on the map. It only became worth building once segments were worth
+ * looking at: the same 173 km drive used to be 853 segments averaging six seconds, and a stepper
+ * through those would have been worse than the replay it replaces.
+ */
 @Composable
-private fun ReplayTab(detail: TripDetail, state: TripDetailUiState, viewModel: TripDetailViewModel) {
-    val tokens = LocalDdTokens.current
-    val points = detail.routePoints
-    if (points.isEmpty()) {
-        CenteredHint(stringResource(R.string.trip_no_route))
+private fun SegmentsTab(detail: TripDetail, state: TripDetailUiState, viewModel: TripDetailViewModel) {
+    if (detail.segments.isEmpty()) {
+        CenteredHint(
+            stringResource(
+                if (state.processing) R.string.trip_splits_processing else R.string.trip_no_segments,
+            ),
+        )
         return
     }
-    val idx = (state.replayFraction * (points.size - 1)).roundToInt().coerceIn(0, points.size - 1)
-    val current = points[idx]
-    val latLng = LatLng(current.lat, current.lng)
+
+    val selected = state.selectedSegment.coerceIn(0, detail.segments.lastIndex)
+    val shapes = remember(detail) { segmentShapes(detail) }
+    val bands = remember(detail) { speedBands(detail.segments) }
+    val records = remember(detail) {
+        detail.segments.map { s -> detail.bestPerRoadKey[s.roadKey]?.let { s.durationMs <= it } == true }
+    }
+    val segment = detail.segments[selected]
+    val bestMs = detail.bestPerRoadKey[segment.roadKey]
+    val isPersonalBest = records[selected]
+    val accent = if (isPersonalBest) DdPurpleSector else bands[selected].color
+
     val camera = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLng, 16f)
+        position = CameraPosition.fromLatLngZoom(shapes[selected].first(), 14f)
+    }
+    // Follow the selection rather than the drive: framing the lit stretch is the whole point of
+    // stepping. Bounds can be rejected before the map has been measured, hence the guard.
+    LaunchedEffect(selected, shapes) {
+        val bounds = LatLngBounds.builder().apply { shapes[selected].forEach { include(it) } }.build()
+        runCatching { camera.animate(CameraUpdateFactory.newLatLngBounds(bounds, 140), 600) }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -641,37 +694,398 @@ private fun ReplayTab(detail: TripDetail, state: TripDetailUiState, viewModel: T
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = camera,
-                uiSettings = MapUiSettings(zoomControlsEnabled = false),
+                properties = MapProperties(mapStyleOptions = rememberDarkMapStyle()),
+                uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
             ) {
-                Polyline(points = points.map { LatLng(it.lat, it.lng) }, color = MaterialTheme.colorScheme.primary, width = 8f)
-                Marker(state = MarkerState(latLng))
+                // The whole route stays visible so the lit stretch reads in context, dimmed to its
+                // speed band — which doubles as the shape of the drive.
+                shapes.forEachIndexed { index, path ->
+                    if (index != selected) {
+                        Polyline(points = path, color = bands[index].color.copy(alpha = 0.30f), width = 10f)
+                    }
+                }
+                Polyline(points = shapes[selected], color = DdBackground, width = 22f)
+                Polyline(points = shapes[selected], color = accent, width = 13f)
+                Circle(
+                    center = shapes[selected].first(),
+                    radius = 25.0,
+                    fillColor = DdBackground,
+                    strokeColor = accent,
+                    strokeWidth = 6f,
+                )
+                Circle(
+                    center = shapes[selected].last(),
+                    radius = 20.0,
+                    fillColor = accent,
+                    strokeColor = accent,
+                    strokeWidth = 2f,
+                )
             }
+            SpeedBandLegend(Modifier.align(Alignment.BottomStart))
+            OrdinalChip(selected + 1, detail.segments.size, Modifier.align(Alignment.TopEnd))
         }
-        Column(Modifier.padding(tokens.screenPadding)) {
-            Text(
-                stringResource(R.string.trip_replay_speed, (current.speedMps * 3.6f).roundToInt()),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+        SegmentPanel(
+            segment = segment,
+            band = bands[selected],
+            isPersonalBest = isPersonalBest,
+            bestMs = bestMs,
+            deltaMs = (if (state.baseline == CompareBaseline.PREVIOUS) {
+                state.previousPerRoadKey
+            } else {
+                detail.bestPerRoadKey
+            })[segment.roadKey]?.let { segment.durationMs - it },
+            segments = detail.segments,
+            bands = bands,
+            records = records,
+            selected = selected,
+            onSelect = viewModel::selectSegment,
+            onStep = viewModel::stepSegment,
+        )
+    }
+}
+
+/** The detail card and stepper below the map. */
+@Composable
+private fun SegmentPanel(
+    segment: Segment,
+    band: SpeedBand,
+    isPersonalBest: Boolean,
+    bestMs: Long?,
+    deltaMs: Long?,
+    segments: List<Segment>,
+    bands: List<SpeedBand>,
+    records: List<Boolean>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    onStep: (Int) -> Unit,
+) {
+    val tokens = LocalDdTokens.current
+    val ddType = LocalDdType.current
+    val accent = if (isPersonalBest) DdPurpleSector else band.color
+    val ink = if (isPersonalBest) DdPurpleRowText else MaterialTheme.colorScheme.onSurface
+    val muted = if (isPersonalBest) DdPurpleRowMuted else DdTextDim
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .background(DdSurfaceSheet)
+            .border(
+                width = 1.dp,
+                color = if (isPersonalBest) DdPurpleRowBorder else MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             )
-            androidx.compose.material3.Slider(
-                value = state.replayFraction,
-                onValueChange = viewModel::setReplayFraction,
-                valueRange = 0f..1f,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = viewModel::togglePlay) {
-                    Icon(
-                        if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = stringResource(R.string.trip_play_pause),
+            .padding(horizontal = tokens.screenPadding, vertical = 18.dp),
+    ) {
+        Row(Modifier.fillMaxWidth()) {
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(accent))
+                    Text(
+                        stringResource(if (isPersonalBest) R.string.trip_band_purple else band.labelRes),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = DdTextSecondary,
                     )
                 }
-                TextButton(onClick = viewModel::cycleSpeed) {
-                    Text(stringResource(R.string.trip_replay_multiplier, state.replaySpeed))
+                Text(
+                    segment.roadName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                Text(
+                    stringResource(
+                        R.string.trip_seg_detail,
+                        segment.distanceMeters / 1000f,
+                        (segment.avgSpeedMps * 3.6f).roundToInt(),
+                        (segment.maxSpeedMps * 3.6f).roundToInt(),
+                    ),
+                    style = ddType.numericMono.copy(fontSize = 11.sp),
+                    color = muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 3.dp),
+                )
+            }
+            Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = tokens.spaceMd)) {
+                Text(formatTime(segment.durationMs), style = MaterialTheme.typography.displayMedium, color = ink)
+                if (isPersonalBest) {
+                    Text(
+                        "★ ${stringResource(R.string.trip_pb)}",
+                        style = ddType.deltaValue.copy(fontSize = 15.sp),
+                        color = DdPurpleSector,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                    Text(
+                        stringResource(R.string.trip_new_best),
+                        style = ddType.numericMono.copy(fontSize = 10.sp),
+                        color = muted,
+                    )
+                } else {
+                    if (deltaMs != null) {
+                        val faster = deltaMs < 0
+                        Text(
+                            (if (faster) "▾" else "▴") + formatDeltaSeconds(abs(deltaMs)),
+                            style = ddType.deltaValue.copy(fontSize = 15.sp),
+                            color = if (faster) DdDeltaFaster else DdError,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(top = 6.dp),
+                        )
+                    }
+                    if (bestMs != null) {
+                        Text(
+                            stringResource(R.string.trip_best_caption, formatTime(bestMs)),
+                            style = ddType.numericMono.copy(fontSize = 10.sp),
+                            color = muted,
+                        )
+                    }
                 }
+            }
+        }
+
+        SegmentRail(
+            segments = segments,
+            bands = bands,
+            records = records,
+            selected = selected,
+            onSelect = onSelect,
+            modifier = Modifier.fillMaxWidth().padding(top = 18.dp).height(26.dp),
+        )
+
+        Row(
+            Modifier.fillMaxWidth().padding(top = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(tokens.spaceMd),
+        ) {
+            StepButton(
+                icon = Icons.Filled.ChevronLeft,
+                enabled = selected > 0,
+                contentDescription = stringResource(R.string.trip_seg_prev),
+                onClick = { onStep(-1) },
+            )
+            Text(
+                when (selected) {
+                    0 -> stringResource(R.string.trip_seg_start)
+                    segments.lastIndex -> stringResource(R.string.trip_seg_end)
+                    else -> stringResource(R.string.trip_seg_of, selected + 1, segments.size)
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = DdTextTertiary,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.weight(1f),
+            )
+            StepButton(
+                icon = Icons.Filled.ChevronRight,
+                enabled = selected < segments.lastIndex,
+                contentDescription = stringResource(R.string.trip_seg_next),
+                onClick = { onStep(1) },
+            )
+        }
+    }
+}
+
+/**
+ * Every segment at a glance: one block per segment, as wide as its share of the drive's distance,
+ * coloured by speed band, with the selected one full height and lit. It is both the shape of the
+ * drive and a way to jump straight to a stretch.
+ *
+ * Drawn as one canvas rather than a row of boxes because a real drive has far more segments than the
+ * artboard's eight. At 80, laying out 80 views with a 3dp gutter spends 237dp of a 320dp row on
+ * gutters, so every block collapses to its minimum width and the proportionality — the entire point
+ * — is lost. Here the gap is a single pixel and the widths stay true at any count.
+ */
+@Composable
+private fun SegmentRail(
+    segments: List<Segment>,
+    bands: List<SpeedBand>,
+    records: List<Boolean>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier,
+) {
+    val total = segments.sumOf { it.distanceMeters.toDouble() }.coerceAtLeast(1.0)
+    val outline = MaterialTheme.colorScheme.outline
+
+    Canvas(
+        modifier.pointerInput(segments) {
+            detectTapGestures { offset ->
+                // Map the tap back through the same proportional split used to draw.
+                var travelled = 0.0
+                val fraction = (offset.x / size.width).coerceIn(0f, 1f) * total
+                segments.forEachIndexed { index, segment ->
+                    travelled += segment.distanceMeters
+                    if (fraction <= travelled) {
+                        onSelect(index)
+                        return@detectTapGestures
+                    }
+                }
+                onSelect(segments.lastIndex)
+            }
+        },
+    ) {
+        val gap = 1.dp.toPx()
+        val radius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx())
+        var x = 0f
+        segments.forEachIndexed { index, segment ->
+            val width = (segment.distanceMeters / total * size.width).toFloat()
+            val isSelected = index == selected
+            val height = if (isSelected) size.height else size.height * 0.55f
+            drawRoundRect(
+                color = when {
+                    isSelected && records[index] -> DdPurpleSector
+                    isSelected -> bands[index].color
+                    else -> bands[index].color.copy(alpha = 0.35f)
+                },
+                topLeft = androidx.compose.ui.geometry.Offset(x, (size.height - height) / 2f),
+                size = androidx.compose.ui.geometry.Size((width - gap).coerceAtLeast(1f), height),
+                cornerRadius = radius,
+            )
+            x += width
+        }
+        // A hairline under the whole rail so a drive of very short segments still reads as a strip.
+        drawLine(
+            color = outline,
+            start = androidx.compose.ui.geometry.Offset(0f, size.height),
+            end = androidx.compose.ui.geometry.Offset(size.width, size.height),
+            strokeWidth = 1.dp.toPx(),
+        )
+    }
+}
+
+@Composable
+private fun StepButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    enabled: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit,
+) {
+    // A dead control is dimmed rather than hidden, so the row doesn't reflow at either end.
+    Box(
+        Modifier
+            .size(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (enabled) DdSurfaceElevated else DdSurfaceSheet)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            icon,
+            contentDescription = contentDescription,
+            tint = if (enabled) DdTextBright else DdTextDisabled,
+            modifier = Modifier.size(22.dp),
+        )
+    }
+}
+
+@Composable
+private fun OrdinalChip(position: Int, total: Int, modifier: Modifier) {
+    val ddType = LocalDdType.current
+    Row(
+        modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(DdGlassPanel)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text("$position", style = ddType.numericMono.copy(fontSize = 16.sp), color = DdTextBright)
+        Text(" / $total", style = ddType.numericMono.copy(fontSize = 16.sp), color = DdTextTertiary)
+    }
+}
+
+@Composable
+private fun SpeedBandLegend(modifier: Modifier) {
+    Row(
+        modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(DdGlassPanel)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SpeedBand.entries.forEach { band ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(9.dp).clip(CircleShape).background(band.color))
+                Text(stringResource(band.labelRes), style = MaterialTheme.typography.labelSmall, color = DdTextSecondary)
             }
         }
     }
 }
+
+/** How a segment was driven relative to the rest of the drive. */
+private enum class SpeedBand(val color: Color, val labelRes: Int) {
+    FAST(DdSuccess, R.string.trip_band_fast),
+    STEADY(DdAmber, R.string.trip_band_steady),
+    SLOW(DdError, R.string.trip_band_slow),
+}
+
+/**
+ * Bands are relative to the drive's own fastest stretch, not to an absolute speed: the point is to
+ * show where *this* drive flowed and where it didn't, and a 50 km/h town run has fast stretches too.
+ */
+private fun speedBands(segments: List<Segment>): List<SpeedBand> {
+    val fastest = segments.maxOf { it.avgSpeedMps }.coerceAtLeast(0.1f)
+    return segments.map { segment ->
+        when {
+            segment.avgSpeedMps >= fastest * 0.66f -> SpeedBand.FAST
+            segment.avgSpeedMps >= fastest * 0.33f -> SpeedBand.STEADY
+            else -> SpeedBand.SLOW
+        }
+    }
+}
+
+/**
+ * The path to draw for each segment.
+ *
+ * Segments carry only their end coordinates, so the shape comes from the raw trace — sliced by
+ * *time*, not by matching coordinates back to fixes. Segments tile the drive and their durations sum
+ * to it (the CP22 contract), so each one's window is just the running total of the durations before
+ * it. Matching by nearest coordinate is what produced boundaries that jumped ahead and swallowed
+ * their neighbours, and there is no reason to reintroduce it here.
+ *
+ * Falls back to a straight line between the segment's endpoints when the drive has no route points —
+ * they are local-only, so a drive restored from Firestore onto another device has none.
+ */
+private fun segmentShapes(detail: TripDetail): List<List<LatLng>> {
+    val trace = detail.routePoints
+    val straight = detail.segments.map {
+        listOf(LatLng(it.startLat, it.startLng), LatLng(it.endLat, it.endLng))
+    }
+    if (trace.size < 2) return straight
+
+    val start = trace.first().timestamp
+    var elapsed = 0L
+    return detail.segments.mapIndexed { index, segment ->
+        val from = start + elapsed
+        elapsed += segment.durationMs
+        val to = start + elapsed
+        val slice = trace.filter { it.timestamp in from..to }.map { LatLng(it.lat, it.lng) }
+        if (slice.size >= 2) slice else straight[index]
+    }
+}
+
+/**
+ * The dark map from `design/tokens.md` §2.1 — the HUD and the Segments panel are both designed to
+ * sit over it, and the default Google styling washes the route colours out. Parsed once per
+ * composition; the resource never changes.
+ */
+@Composable
+private fun rememberDarkMapStyle(): MapStyleOptions {
+    val context = LocalContext.current
+    return remember(context) { MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark) }
+}
+
+/** Semi-opaque panel behind the map chips — the flat fallback for the design's backdrop blur. */
+private val DdGlassPanel = Color(0xE6101216)
+
+/** The disabled arrow ink from the artboard: present, but plainly not a control right now. */
+private val DdTextDisabled = Color(0xFF3A4048)
 
 // --- Shared helpers -----------------------------------------------------------------------------
 
@@ -706,6 +1120,36 @@ private fun CenteredHint(text: String) {
 }
 
 /** Linear green(fast)→red(slow) blend by speed relative to the trip max. */
+/** A stretch of the trace drawn as one polyline because its speed rounds to the same shade. */
+private class SpeedRun(val indices: IntRange, val speedMps: Float)
+
+/**
+ * Splits the trace into at most [MAX_SPEED_RUNS] stretches, each coloured by the mean speed of the
+ * fixes in it.
+ *
+ * The count has to be *bounded*, not merely reduced. Drawing one polyline per hop put 5,162 of them
+ * on the 173 km reference drive and the Maps renderer ran the heap out — a hard crash on the app's
+ * own showcase drive. Merging neighbours of similar speed is not enough either: GPS speed jitters
+ * across any threshold you pick, so a noisy trace still yields thousands of runs. A fixed budget
+ * cannot, however long the drive.
+ */
+private fun speedRuns(points: List<app.drivedelta.domain.model.RoutePoint>, maxSpeedMps: Float): List<SpeedRun> {
+    if (points.size < 2) return emptyList()
+    val stride = maxOf(1, (points.size - 1) / MAX_SPEED_RUNS)
+    val runs = mutableListOf<SpeedRun>()
+    var start = 0
+    while (start < points.lastIndex) {
+        // Stretches overlap by one point so the line stays continuous across a colour change.
+        val end = minOf(start + stride, points.lastIndex)
+        val mean = (start..end).map { points[it].speedMps }.average().toFloat()
+        runs += SpeedRun(start..end, mean)
+        start = end
+    }
+    return runs
+}
+
+private const val MAX_SPEED_RUNS = 120
+
 private fun speedColor(speedMps: Float, maxSpeedMps: Float): Color {
     val t = (speedMps / maxSpeedMps).coerceIn(0f, 1f)
     return lerp(DdError, DdSuccess, t)

@@ -43,7 +43,6 @@
     <string name="trip_detail_title">Ride</string>
     <string name="trip_tab_map">Map</string>
     <string name="trip_tab_splits">Splits</string>
-    <string name="trip_tab_replay">Replay</string>
     <string name="trip_compare">Compare</string>
     <string name="trip_not_found">Ride not found.</string>
     <string name="trip_no_route">No route recorded.</string>
@@ -72,9 +71,6 @@
     <string name="trip_menu_recalculate">Recalculate segments</string>
     <string name="trip_menu_delete">Delete ride</string>
     <string name="trip_more">More</string>
-    <string name="trip_replay_speed">%1$d km/h</string>
-    <string name="trip_replay_multiplier">%1$d×</string>
-    <string name="trip_play_pause">Play or pause</string>
     <string name="trip_fuel_prompt_title">Add a fill-up?</string>
     <string name="trip_fuel_prompt_body">Log fuel or charging for this ride to track consumption.</string>
     <string name="trip_fuel_skip">Skip</string>
@@ -342,4 +338,15 @@
     <string name="energy_estimate_body">Use the car\'s average consumption to fill gaps.</string>
     <string name="energy_ask_title">Ask after every drive</string>
     <string name="energy_ask_body">Show the log sheet when a ride finishes.</string>
+    <string name="trip_tab_segments">Segments</string>
+    <string name="trip_band_fast">FAST</string>
+    <string name="trip_band_steady">STEADY</string>
+    <string name="trip_band_slow">SLOW</string>
+    <string name="trip_band_purple">PURPLE SECTOR</string>
+    <string name="trip_seg_detail">%1$.1f km · avg %2$d km/h · max %3$d km/h</string>
+    <string name="trip_seg_start">START OF DRIVE</string>
+    <string name="trip_seg_end">END OF DRIVE</string>
+    <string name="trip_seg_of">SEGMENT %1$d OF %2$d</string>
+    <string name="trip_seg_prev">Previous segment</string>
+    <string name="trip_seg_next">Next segment</string>
 </resources>
