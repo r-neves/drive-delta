@@ -26,6 +26,13 @@ interface TripDao {
     @Query("SELECT * FROM trips WHERE userId = :userId AND syncedAt IS NULL")
     suspend fun getPendingSync(userId: String): List<TripEntity>
 
+    /**
+     * Rides that were started and never finished. Normally there is at most one, and only while it
+     * is being recorded; anything else is a ride whose recording was interrupted.
+     */
+    @Query("SELECT * FROM trips WHERE userId = :userId AND endTime IS NULL ORDER BY startTime ASC")
+    suspend fun getUnfinished(userId: String): List<TripEntity>
+
     @Query("DELETE FROM trips WHERE id = :id")
     suspend fun deleteById(id: String)
 }

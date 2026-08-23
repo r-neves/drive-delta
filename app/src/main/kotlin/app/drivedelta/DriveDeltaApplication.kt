@@ -13,6 +13,10 @@ import app.drivedelta.core.sync.SyncWorker
 import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -36,6 +40,12 @@ class DriveDeltaApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var syncTrigger: app.drivedelta.core.sync.SyncTrigger
 
+    @Inject
+    lateinit var finishAbandonedTrips: app.drivedelta.domain.usecase.trip.FinishAbandonedTripsUseCase
+
+    /** Outlives every screen, for the little startup work that must not be tied to one. */
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -48,6 +58,10 @@ class DriveDeltaApplication : Application(), Configuration.Provider {
         // Cold start while already signed in: pull the remote mirror into Room (restore across devices).
         if (authRepository.isSignedIn) {
             syncTrigger.requestInitialSync()
+            // Close out any ride left open by a killed process. Cold start is the one moment this is
+            // unambiguous: the tracking service is START_NOT_STICKY, so nothing of ours can be
+            // recording yet.
+            applicationScope.launch { finishAbandonedTrips() }
         }
     }
 
