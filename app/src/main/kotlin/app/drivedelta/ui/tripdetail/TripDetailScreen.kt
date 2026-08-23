@@ -89,6 +89,7 @@ import app.drivedelta.domain.model.Trip
 import app.drivedelta.domain.model.TripDetail
 import app.drivedelta.domain.usecase.fuel.TripCostChart
 import app.drivedelta.domain.usecase.fuel.TripCostPoint
+import app.drivedelta.ui.components.FittedText
 import app.drivedelta.ui.components.ScatterKind
 import app.drivedelta.ui.components.ScatterPoint
 import app.drivedelta.ui.components.SpeedCostScatter
@@ -124,9 +125,8 @@ import kotlin.math.roundToInt
 
 private val TABS = listOf(R.string.trip_tab_map, R.string.trip_tab_splits, R.string.trip_tab_segments, R.string.trip_tab_cost)
 
-/** How far a summary stat's value may shrink to fit its column, and in what steps. */
+/** How far a summary stat's value may shrink to fit its column. */
 private const val MIN_STAT_VALUE_SP = 15
-private const val STAT_SHRINK_STEP = 0.92f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -214,9 +214,13 @@ fun TripDetailScreen(
                                 selectedContentColor = MaterialTheme.colorScheme.onSurface,
                                 unselectedContentColor = DdTextTertiary,
                                 text = {
-                                    Text(
+                                    // "Segments" broke onto two lines on a 1080x2340 phone: four
+                                    // tabs leave ~66dp for a label that wants ~70dp.
+                                    FittedText(
                                         stringResource(labelRes),
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = if (selectedTab == i) FontWeight.SemiBold else FontWeight.Normal,
+                                        minSize = 12.sp,
                                     )
                                 },
                             )
@@ -577,20 +581,11 @@ private fun HeaderStat(
         // over its neighbour: a 1 h 30 drive rendered "1:29:50173.1". Shrink to fit instead, one
         // step at a time, down to a floor past which clipping beats unreadable. Only the value that
         // needs it shrinks, so a short drive keeps the designed 24sp headline.
-        val base = MaterialTheme.typography.headlineMedium
-        var style by remember(value, base) { mutableStateOf(base) }
-        Text(
+        FittedText(
             value,
-            style = style,
+            style = MaterialTheme.typography.headlineMedium,
             color = valueColor,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Clip,
-            onTextLayout = { layout ->
-                if (layout.hasVisualOverflow && style.fontSize > MIN_STAT_VALUE_SP.sp) {
-                    style = style.copy(fontSize = style.fontSize * STAT_SHRINK_STEP)
-                }
-            },
+            minSize = MIN_STAT_VALUE_SP.sp,
         )
         Text(
             label,
@@ -795,7 +790,7 @@ private fun SegmentPanel(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 6.dp),
                 )
-                Text(
+                FittedText(
                     stringResource(
                         R.string.trip_seg_detail,
                         segment.distanceMeters / 1000f,
@@ -804,8 +799,6 @@ private fun SegmentPanel(
                     ),
                     style = ddType.numericMono.copy(fontSize = 11.sp),
                     color = muted,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 3.dp),
                 )
             }
