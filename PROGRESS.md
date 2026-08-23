@@ -14,7 +14,7 @@
 
 ## Current status
 
-- **Active checkpoint:** **CP11–CP24 — post-first-drive fix batch** (2026-08-21/22). The app was driven
+- **Active checkpoint:** **CP11–CP25 — post-first-drive fix batch** (2026-08-21/22). The app was driven
   for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
   the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.
   - **✅ CP11 — System-bar insets. Done, verified, committed.** Trips/Cars/Places/Dashboard top +
@@ -95,11 +95,16 @@
   - **✅ The two throwaway test trips are gone** — `f78e1941…` and `c2d13c59…`, deleted through
     Trip Detail → ⋮ → Delete ride, then **two cold starts** to prove they stay gone (19 → 17 trips,
     232 → 210 segments, the six real drives untouched).
-  - **⚠️ Gap found doing that, NOT fixed:** a ride started and never finished has no `endTime`, and
-    the Trips list shows only completed rides — so an abandoned trip is **invisible and undeletable**
-    from inside the app. `c2d13c59…` was in exactly that state; reaching it needed an end time
-    stamped into Room by hand. Worth either finalising such a trip from its route points on the next
-    cold start, or surfacing it so it can be deleted.
+  - **✅ CP25 — Rides that were never finished. Done, verified.** Closes the CP23 gap: a ride started
+    and never finished had no `endTime`, and the Trips list shows only completed rides, so it was
+    **invisible and undeletable** from inside the app. `FinishAbandonedTripsUseCase` now runs on cold
+    start (the one moment nothing of ours can be recording — the service is `START_NOT_STICKY`), with
+    a 15-minute staleness check on top. A ride with a real trace is **salvaged** — closed at its last
+    fix as `ABANDONED` and sent through the normal post-ride pipeline, so it turns up in Trips like
+    any other drive; a ride that recorded nothing (under 2 fixes or under 100 m) is **deleted**.
+    Verified both ways on real data: an injected abandoned ride on the emulator came back as
+    2,475 m / 376 s / 3 segments and listed properly, and on the phone a genuinely live ride survived
+    a force-stop untouched.
   - **✅ CP24 — Segments tab built (the CP18 design). Done, verified on the emulator.** Replay is
     gone; the tab steps through the drive one stretch of road at a time — whole route dimmed to its
     speed band, selected stretch lit, distance-proportional rail, prev/next stepper, purple-sector

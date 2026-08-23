@@ -18,6 +18,9 @@ interface TripRepository {
     /** One-shot fetch of a single trip, or null if missing / not owned by the current user. */
     suspend fun getTrip(id: String): Trip?
 
+    /** Rides started and never finished — being recorded right now, or interrupted and stranded. */
+    suspend fun getUnfinishedTrips(): List<Trip>
+
     /** Inserts a freshly started trip (end fields null) and requests a sync. */
     suspend fun startTrip(trip: Trip)
 

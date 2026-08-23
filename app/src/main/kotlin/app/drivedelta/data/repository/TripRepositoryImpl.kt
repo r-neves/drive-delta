@@ -42,6 +42,11 @@ class TripRepositoryImpl @Inject constructor(
         return tripDao.getById(id)?.takeIf { it.userId == userId }?.toDomain()
     }
 
+    override suspend fun getUnfinishedTrips(): List<Trip> {
+        val userId = authRepository.currentUserId ?: return emptyList()
+        return tripDao.getUnfinished(userId).map(TripEntity::toDomain)
+    }
+
     override suspend fun startTrip(trip: Trip) {
         val userId = authRepository.currentUserId ?: return
         tripDao.insertOrReplace(trip.toEntity(userId))

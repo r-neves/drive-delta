@@ -1856,6 +1856,40 @@ are chunky.
 
 ---
 
+### ✅ CHECKPOINT 25 — Rides that were never finished
+
+**Goal:** Close the gap found in CP23 — a ride started and never finished is stranded forever.
+
+The tracking service is `START_NOT_STICKY`, so Android is free to kill it on a long drive; the app
+can also be force-stopped, or a ride started by accident. The trip then keeps `endTime = null`, and
+`TripsOverview` lists only completed rides — so it is **invisible and undeletable from inside the
+app**, with its route points sitting on the device counting for nothing. One such ride had to be
+reached by editing Room by hand.
+
+- [x] `FinishAbandonedTripsUseCase` + `TripDao.getUnfinished` / `TripRepository.getUnfinishedTrips`.
+- [x] **Salvage, don't discard.** The recording already happened, so a ride worth keeping is closed
+      at its last fix (`stopTrigger = "ABANDONED"`, distance measured from the trace, duration from
+      the trip's own start so it means the same as every other ride's) and handed to the normal
+      `PostRideTrigger` pipeline. It then appears in Trips like any other drive.
+- [x] **A ride that recorded nothing is deleted** — under 2 fixes or under 100 m. Tapping Start Ride
+      by accident should not leave a 0.0 km entry in the history.
+- [x] **Runs on cold start only**, from `DriveDeltaApplication`. That is the one moment the answer is
+      unambiguous: our service never survives process death, so nothing can be recording yet. A
+      15-minute staleness check sits on top of that, so a live ride can never be closed underneath
+      the service by some future caller.
+- [x] 4 unit tests pinning each branch — left alone / salvaged / deleted empty / deleted too short.
+      **47 tests green.**
+- [x] **Acceptance test:** ✅ Both halves on real data. **Salvage, on the emulator** (seeded with the
+      phone's database, so a real 172-fix trace): injected a ride with `endTime` null, cold-started,
+      and it came back closed at its last fix — **2,475 m, 376 s, `ABANDONED`, `roadsProcessed=1`,
+      3 segments** built against the live Roads API — and listed in Trips as "Home → —, 6:16, 2.5 km".
+      Deleted afterwards through the app; trip, route points and segments all gone.
+      **Left alone, on the Galaxy S25**, which is the branch that could destroy real data: started a
+      real ride, force-stopped the app mid-recording (process death), relaunched — the trip was still
+      open and untouched, because its activity was recent.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
