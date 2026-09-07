@@ -39,6 +39,8 @@
     It was opening on all of western Europe: the recenter used `newLatLng`, which carries no zoom.
   - **✅ CP34 — Place editor: haptic on marker long-press + a "hold to drag" hint. Done, committed.**
     ⚠️ The buzz itself can't be felt on an emulator — confirm on your device.
+  - **✅ CP35 — New places default to Portela (Loures). Done, verified, committed.**
+  - **All ten checkpoints of this batch are done.**
   - ⚠️ **ACTION FOR YOU — test trips on your real account.** Verifying this batch recorded a handful
     of short drives near Alverca on 7 Sep (all under 1 km). They are deleted through the app at the
     end of the session; if any survive, Trips → open → ⋮ → Delete ride.

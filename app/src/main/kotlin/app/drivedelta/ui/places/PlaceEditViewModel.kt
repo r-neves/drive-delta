@@ -26,9 +26,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Default map centre (Lisbon) for a brand-new place until the user positions the marker. */
-private const val DEFAULT_LAT = 38.7223
-private const val DEFAULT_LNG = -9.1393
+/**
+ * Where a brand-new place starts before the user positions the marker: **Portela, Loures**.
+ *
+ * It was the middle of Lisbon, which is nowhere in particular for this user and a long pan from
+ * anywhere they actually drive. A default is only a courtesy — the marker is meant to be moved, and
+ * the address search and "use my location" both override it — but the courtesy is worth something
+ * when it starts near home.
+ */
+private const val DEFAULT_LAT = 38.7838
+private const val DEFAULT_LNG = -9.1117
 
 data class PlaceEditUiState(
     val editingId: String? = null,
