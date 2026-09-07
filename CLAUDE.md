@@ -2170,6 +2170,49 @@ abandoned a beat too early.
 
 ---
 
+### ✅ CHECKPOINT 36 — Acting on the batch's own code review
+
+A `/code-review` pass over CP26–CP35 raised seven findings; all seven are fixed. Two were
+reachable defects, not polish.
+
+- [x] **A stale origin could be saved on the wrong ride** (medium). `origin` resets on each sheet
+      open, but `_nearbyPlace` is Dashboard-scoped and kept its last answer — so opening the sheet
+      at the office refilled "Home" from the morning, and when detection came back *null* the
+      `!= null` guard meant nothing ever cleared it. The hint vanished too (`origin != nearbyPlace`),
+      so it read as a deliberate choice. `refreshNearbyPlace()` now drops the previous answer before
+      asking again, and the sheet follows detection all the way to null.
+- [x] **Double-tapping Start Ride minted two rides** (medium). `StartTripUseCase` suspends on a
+      location lookup before it writes, and the sheet lives on for a frame or two after the trip
+      exists. Measured: four rapid taps left an extra trip with no end time, invisible until the next
+      cold start's sweep. The guard is now held from the first tap until the host has navigated away
+      (`onStartHandled`), and `startTracking` cancels the previous ride's three coroutines rather
+      than reassigning over them — two collectors were appending to one buffer.
+      Re-measured after the fix: **six rapid taps, one ride.**
+- [x] **The red button meant the wrong thing on a short ride.** The filled destructive red sat on
+      *Keep* — where "Finish Ride" sits on a normal ride — while Discard was a quiet outline. A
+      driver who has learned "red ends this" read the colour backwards at the one moment the two
+      actions differ. Keep is now the neutral primary; the red moved to Discard.
+- [x] **`tracking_discarding` was a dead string** — a discard showed "Finishing…", the wrong verb, on
+      the wrong button. The sheet now tracks which action is in flight, and the spinner and label
+      land on the button that was pressed.
+- [x] **Promotion is guarded, but never skips the command.** On API 34+ a `location`-typed
+      foreground service is refused without the location permission, which the stop/discard paths
+      can hit. First attempt returned early on failure — and **that broke discard outright**: caught
+      on the emulator, the trip survived every discard. A failure to promote must not stop the
+      command being handled, so the call is simply wrapped and the action always runs.
+- [x] **Duration tick labels** now switch to `h:mm:ss` above an hour, with three ticks instead of
+      five — a 90-minute route was labelling ticks "84:00", which reads as hours and minutes.
+- [x] **The x-domain minimum window** is applied after the zero clamp, not before: a single
+      sub-minute drive was ending up with a 0..2 window against a minimum of 3.
+- [x] **Acceptance test:** ✅ Every fix re-verified on the emulator. Origin fills at Home and
+      **clears** when the driver is nowhere near a saved place. Six rapid Start Ride taps produce one
+      ride and no orphan. The short sheet renders Keep in primary blue and Discard in red, and shows
+      "Discarding…" on the Discard button mid-flight. Discard deletes the trip again. A normal
+      >30 s ride still shows the red Finish and saves (555 m, 50 s, `MANUAL`, `roadsProcessed=1`).
+      49 unit tests green.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

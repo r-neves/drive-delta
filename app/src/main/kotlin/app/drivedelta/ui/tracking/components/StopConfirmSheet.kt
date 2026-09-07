@@ -28,6 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +56,8 @@ import java.util.Locale
  * Under [SHORT_RIDE_MS] the sheet changes its question. A ride that short is almost always Start Ride
  * pressed by mistake, and finishing it silently left a 0.0 km entry in the history that then had to
  * be hunted down and deleted — so the short version asks whether to keep it and offers [onDiscard],
- * which throws the recording away entirely. The default answer is still Keep: the destructive option
- * never becomes the one you hit by reflex.
+ * which throws the recording away entirely. The default answer is still Keep — it holds the primary
+ * button's position — but the *red* moves with the meaning, onto Discard.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +71,9 @@ fun StopConfirmSheet(
 ) {
     val tokens = LocalDdTokens.current
     val isShortRide = state.elapsedMs < SHORT_RIDE_MS
+    // Which action the in-flight [finishing] belongs to, so the spinner and the verb land on the
+    // button that was actually pressed.
+    var discardRequested by remember { mutableStateOf(false) }
 
     // Fully expanded + scrollable: at the half-expanded height the Finish Ride button can fall
     // inside the navigation-bar strip and become unreachable.
@@ -132,29 +139,43 @@ fun StopConfirmSheet(
                 StatItem(Modifier.weight(1f), stringResource(R.string.tracking_stat_avg), avgSpeedKph(state).toString(), "km/h")
             }
 
+            // Red means "this ends/destroys the ride". On a normal ride that is Finish, and it keeps
+            // the destructive styling. On a short ride the primary button *keeps* the recording, so
+            // it drops to the neutral primary and the red moves to Discard — otherwise a driver who
+            // has learned "the red button is the one that ends this" would read the colour backwards
+            // at exactly the moment the two actions stop being the same thing.
+            val keepingRide = isShortRide
             Button(
                 onClick = onFinish,
                 enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DdError,
-                    contentColor = MaterialTheme.colorScheme.onError,
-                ),
+                colors = if (keepingRide) {
+                    ButtonDefaults.buttonColors()
+                } else {
+                    ButtonDefaults.buttonColors(
+                        containerColor = DdError,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    )
+                },
             ) {
-                if (finishing) {
+                if (finishing && !discardRequested) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onError,
+                        color = if (keepingRide) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onError
+                        },
                     )
                     Spacer(Modifier.size(tokens.spaceMd))
                 }
                 Text(
                     stringResource(
                         when {
-                            finishing -> R.string.tracking_finishing
-                            isShortRide -> R.string.tracking_keep
+                            finishing && !discardRequested -> R.string.tracking_finishing
+                            keepingRide -> R.string.tracking_keep
                             else -> R.string.tracking_finish
                         },
                     ),
@@ -164,13 +185,26 @@ fun StopConfirmSheet(
             }
             if (isShortRide) {
                 OutlinedButton(
-                    onClick = onDiscard,
+                    onClick = { discardRequested = true; onDiscard() },
                     enabled = !finishing,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(tokens.radiusMd),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = DdError),
                 ) {
-                    Text(stringResource(R.string.tracking_discard), style = MaterialTheme.typography.labelLarge)
+                    if (finishing && discardRequested) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = DdError,
+                        )
+                        Spacer(Modifier.size(tokens.spaceMd))
+                    }
+                    Text(
+                        stringResource(
+                            if (discardRequested) R.string.tracking_discarding else R.string.tracking_discard,
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
             OutlinedButton(
