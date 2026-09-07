@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,6 +51,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +76,7 @@ import com.google.android.libraries.places.api.model.Place as PlacesPlace
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.maps.android.compose.Circle
+import com.google.maps.android.compose.DragState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -200,6 +204,25 @@ fun PlaceEditScreen(
                         .padding(horizontal = tokens.screenPadding, vertical = tokens.spaceXl),
                     verticalArrangement = Arrangement.spacedBy(tokens.spaceLg),
                 ) {
+                    // First thing under the map, because the map is what it is about: nothing on
+                    // screen otherwise says the pin can be moved by hand at all.
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm),
+                    ) {
+                        Icon(
+                            Icons.Filled.TouchApp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            stringResource(R.string.place_drag_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
                     LabeledSection(stringResource(R.string.place_label_name)) {
                         OutlinedTextField(
                             value = state.name,
@@ -296,6 +319,18 @@ private fun PlaceMap(
                 CameraPosition.fromLatLngZoom(target, zoomFor(radiusMeters, lat, hasMarker)),
             ),
         )
+    }
+
+    // Buzz the moment the marker lifts. Maps recognises a long-press before it will follow a finger,
+    // and until it fires there is nothing on screen to say the press has registered — so the drag
+    // reads as broken and gets abandoned a beat too early. DragState.START *is* that moment.
+    // performHapticFeedback goes through the view's own feedback, so a phone with haptics turned off
+    // stays silent rather than needing a VIBRATE permission and ignoring the setting.
+    val haptics = LocalHapticFeedback.current
+    LaunchedEffect(markerState) {
+        snapshotFlow { markerState.dragState }.collect { drag ->
+            if (drag == DragState.START) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
     }
 
     // Report every marker position; PlaceEditViewModel.onMarkerMoved drops the echo when the marker

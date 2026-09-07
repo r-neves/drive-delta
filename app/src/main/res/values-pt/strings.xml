@@ -22,6 +22,7 @@
     <string name="dashboard_week_fuel">Custo combustível</string>
 
     <!-- Edição de local -->
+    <string name="place_drag_hint">Mantém o dedo no pino para o arrastar para outro sítio.</string>
     <string name="place_label_name">NOME DO LOCAL</string>
     <string name="place_label_icon">ÍCONE</string>
     <string name="place_label_radius">RAIO DA GEOCERCA</string>
