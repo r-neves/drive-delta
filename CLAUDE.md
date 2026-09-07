@@ -2072,7 +2072,30 @@ which was which could only be learned by tapping one to read its title.
       unnamed** (Auchan Alverca → —): 🛒 in blue at the start, the green ⚑ finish flag at the end.
       Legible against the dark map style in both. 47 unit tests green.
 
-### CHECKPOINT 32 — Cost against duration, not only speed
+### ✅ CHECKPOINT 32 — Cost against duration, not only speed
+
+**Goal:** Plot what the driver actually asked — "did arriving sooner cost me more?" — by default.
+
+- [x] `ScatterAxis { DURATION, SPEED }`, with **DURATION the default**. "Did going faster cost me
+      more?" is really "did arriving sooner cost me more?", and the duration is the number the driver
+      felt; average speed is the same drive divided by its distance, which only compares cleanly
+      across drives of the same length. Speed stays one tap away, because on a fixed route it *is*
+      the cleaner independent variable.
+- [x] `ScatterPoint` carries **both** metrics, so the toggle switches axis without rebuilding
+      anything upstream. Duration ticks render as m:ss so a 2.4-minute drive doesn't read as "2".
+- [x] The heading follows the toggle — "Duration vs. cost" / "Speed vs. cost" — rather than being a
+      fixed label that can contradict the axis under it. Both `TripCostPoint` and `RouteDrivePoint`
+      gained `durationMs`; the trip's own duration was already in hand at both call sites.
+- [x] Applied to **both** places the chart appears: the Trip Detail Cost tab (state on the ViewModel,
+      like the splits baseline, so it survives tab switches) and Route Summary (`rememberSaveable`).
+- [x] The dashed trend curve is unchanged and self-guarding: it is only drawn when the quadratic fit
+      is genuinely U-shaped, so an axis where cost moves monotonically leaves the dots without a
+      curve rather than inventing one.
+- [x] **Acceptance test:** ✅ On the emulator, the 20.9 km Home → Palito drive (€2.40 logged). Cost
+      tab opens on **By duration** with the x axis running 15:00 → 19:00 and the drive plotted at
+      17:15, matching its 17:15 duration; **By avg speed** switches the axis to 60 → 80 with the
+      drive at 73, matching its 73 km/h; the heading changes with it. Route insights shows the same
+      default. 47 unit tests green.
 
 ### CHECKPOINT 33 — The place editor opens on the place
 

@@ -38,6 +38,7 @@ data class RouteSummary(
 data class RouteDrivePoint(
     val tripId: String,
     val avgSpeedKph: Float,
+    val durationMs: Long,
     val energyCost: Float,
     val isThisDrive: Boolean,
     val isFastest: Boolean,

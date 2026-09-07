@@ -91,6 +91,7 @@ class RouteSummaryUseCase @Inject constructor(
             RouteDrivePoint(
                 tripId = t.id,
                 avgSpeedKph = speed,
+                durationMs = t.durationMs,
                 energyCost = cost,
                 isThisDrive = t.id == trip.id,
                 isFastest = t.id == fastestId,
