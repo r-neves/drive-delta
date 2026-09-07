@@ -2146,7 +2146,18 @@ abandoned a beat too early.
 > `draganddrop` logged no drag events at all. **Confirm the buzz on your device**; the event that
 > triggers it is proven to fire.
 
-### CHECKPOINT 35 — New places start in Portela
+### ✅ CHECKPOINT 35 — New places start in Portela
+
+**Goal:** A new place opens somewhere the user actually is, not the middle of Lisbon.
+
+- [x] The default centre moved from Intendente (38.7223, −9.1393) to **Portela, Loures**
+      (38.7838, −9.1117). A default is only a courtesy — the marker is meant to be moved, and both
+      the address search and "use my location" override it — but the courtesy is worth something
+      when it starts near home.
+- [x] **Acceptance test:** ✅ On the emulator: the new-place editor opens with the pin sitting on
+      the "Portela" label, framed at CP33's neighbourhood zoom with Moscavide, Prior Velho and the
+      A1/A36 interchange around it. The first coordinates tried landed ~440 m north-west of the
+      label and were corrected against the rendered map. 47 unit tests green.
 
 ---
 
