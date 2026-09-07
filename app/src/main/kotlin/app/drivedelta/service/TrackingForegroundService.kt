@@ -111,7 +111,7 @@ class TrackingForegroundService : Service() {
         // emulator by tapping STOP on a tracking screen that had been opened without a ride.
         // Promoting and immediately stopping is cheap: the notification never gets a frame on
         // screen, and stopSelfCleanly() removes it.
-        startForegroundCompat(buildNotification(getString(app.drivedelta.R.string.tracking_notification_starting)))
+        startForegroundCompat(buildNotification(notificationText()))
         when (intent?.action) {
             ACTION_START -> {
                 val id = intent.getStringExtra(EXTRA_TRIP_ID)
@@ -324,6 +324,11 @@ class TrackingForegroundService : Service() {
 
     private fun stopTracking(trigger: String) {
         val id = tripId
+        // Claim the trip before doing anything slow with it: the finalisation below is a coroutine,
+        // and a second STOP arriving while it runs would otherwise finalise the same trip twice and
+        // queue post-ride processing twice. The screen guards against a double tap, but the service
+        // should not depend on that.
+        tripId = null
         locationJob?.cancel()
         flushJob?.cancel()
         notificationJob?.cancel()
@@ -401,14 +406,20 @@ class TrackingForegroundService : Service() {
     }
 
     private fun updateNotification() {
+        getSystemService(NotificationManager::class.java)
+            .notify(NOTIFICATION_ID, buildNotification(notificationText()))
+    }
+
+    /** Live stats once a ride is running, the "starting" line before that. */
+    private fun notificationText(): String {
         val state = _trackingState.value
-        val text = getString(
+        if (tripId == null) return getString(app.drivedelta.R.string.tracking_notification_starting)
+        return getString(
             app.drivedelta.R.string.tracking_notification_body,
             formatElapsed(state.elapsedMs),
             state.currentSpeedKph.roundToInt(),
             state.distanceMeters / 1000f,
         )
-        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text))
     }
 
     private fun buildNotification(contentText: String): Notification {
