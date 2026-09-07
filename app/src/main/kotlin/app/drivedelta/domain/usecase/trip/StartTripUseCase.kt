@@ -48,7 +48,7 @@ class StartTripUseCase @Inject constructor(
         )
         tripRepository.startTrip(trip)
 
-        TrackingForegroundService.start(context, tripId, destinationPlaceId)
+        TrackingForegroundService.start(context, tripId, startPlaceId, destinationPlaceId)
         return tripId
     }
 }

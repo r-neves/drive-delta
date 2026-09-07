@@ -14,6 +14,28 @@
 
 ## Current status
 
+- **Active checkpoint:** **CP26–CP35 — second-drive fix batch** (2026-09-07). Ten items reported
+  after further real use, ordered by blast radius; the full list and the reasoning live in the
+  "Second-drive-batch fix list" section of `CLAUDE.md`. One commit per item, each verified on the
+  emulator before the next started.
+  - **✅ CP26 — Second ride started itself; STOP could kill the app. Done, verified, committed.**
+    `PreRideViewModel` is scoped to the Dashboard, not the sheet, so its `startedTripId` replayed the
+    previous ride's id and skipped the sheet entirely. The crash under it was a foreground-service
+    contract violation: `startForeground()` only ran on the START branch.
+  - **✅ CP27 — Rides under 30 s ask keep-or-discard. Done, verified, committed.** Discard deletes
+    the trip, its route points and its segments, locally and remotely.
+  - **✅ CP28 — The pre-ride sheet fills in the origin. Done, verified, committed.** Also found that
+    `lastLocation()` can be minutes stale — measured 800 m off — so `currentLocation()` refetches
+    anything older than a minute.
+  - **✅ CP29 — The destination's geofence and both places' icons on the live map. Done, verified,
+    committed.**
+  - ⚠️ **ACTION FOR YOU — test trips on your real account.** Verifying this batch recorded a handful
+    of short drives near Alverca on 7 Sep (all under 1 km). They are deleted through the app at the
+    end of the session; if any survive, Trips → open → ⋮ → Delete ride.
+
+### Previous batch (CP11–CP25)
+
+
 - **Active checkpoint:** **CP11–CP25 — post-first-drive fix batch** (2026-08-21/22). The app was driven
   for real for the first time; it worked end to end but surfaced a batch of defects. Plan agreed with
   the user; see the "Post-first-drive fix batch" section in `CLAUDE.md` for the checkpoint list.

@@ -2007,7 +2007,32 @@ had to be tapped, which is a question with one sensible answer.
       choice stuck. With the stale-cache rule removed the same test detected nothing — the cached fix
       was 800 m north from an earlier test drive — which is what put the rule there. 47 tests green.
 
-### CHECKPOINT 29 — The finish line is visible while driving to it
+### ✅ CHECKPOINT 29 — The finish line is visible while driving to it
+
+**Goal:** Both ends of the ride are on the live map, wearing the icons the user chose for them.
+
+The live map drew the trace and the driver's puck and nothing else. The destination existed only as
+a shrinking number in a chip, so "am I close to where this auto-finishes?" could only be guessed at.
+
+- [x] **The destination's geofence is drawn at its real radius**, in the success green, and
+      brightens the moment the arrival detector says the driver is inside — which is when the ride is
+      about to auto-finish, worth seeing *before* the sheet appears rather than at the same time.
+- [x] **Both places wear their own emoji.** New `ui/components/MapMarkers.kt`: a dark disc ringed in
+      an accent colour with a glyph inside and a short tail on the coordinate. The default Google
+      teardrop says nothing — the same red pin for a start, an end and a saved place — so a pin now
+      carries the meaning it has: the emoji picked in the place editor, or a start/finish glyph when
+      the endpoint isn't a saved place. The driver's puck moved onto the same file
+      (`rememberMapDot`), which is where its rasteriser already was in spirit.
+- [x] **`TrackingState` carries the places, not just the destination's name.** The map needs
+      coordinates, a radius and an emoji; `destinationName` survives as a derived accessor so the
+      arrival sheet and the chip are untouched. `StartTripUseCase` now passes the origin place id to
+      the service as well.
+- [x] **Acceptance test:** ✅ On the emulator, a scripted drive from Home to Auchan Alverca (330 m
+      apart, so both fit one screen). The map shows the 🏠 pin ringed blue at the start of the trace,
+      the 🛒 pin ringed green at the destination, and the green 100 m geofence circle around it —
+      which brightened on entry. Arrival still fired: "You've arrived at Auchan Alverca 🎉" with the
+      countdown, and the ride auto-finished as "Home → Auchan Alverca · 0.4 km". No crashes.
+      47 unit tests green.
 
 ### CHECKPOINT 30 — The HUD clock that never moved
 

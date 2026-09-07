@@ -1,7 +1,5 @@
 package app.drivedelta.ui.tracking
 
-import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -35,28 +33,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
 import app.drivedelta.domain.model.ArrivalStatus
+import app.drivedelta.domain.model.Place
 import app.drivedelta.service.TrackingForegroundService
-import app.drivedelta.ui.theme.DdMapBase
 import app.drivedelta.ui.theme.DdPrimary
 import app.drivedelta.ui.theme.DdRouteCasing
+import app.drivedelta.ui.theme.DdSuccess
 import app.drivedelta.ui.theme.DdTextSecondary
 import app.drivedelta.ui.theme.LocalDdTokens
 import app.drivedelta.ui.theme.LocalDdType
+import app.drivedelta.ui.components.rememberMapDot
+import app.drivedelta.ui.components.rememberMapPin
 import app.drivedelta.ui.tracking.components.ArrivalSheet
 import app.drivedelta.ui.tracking.components.HudOverlay
 import app.drivedelta.ui.tracking.components.StopConfirmSheet
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Circle
@@ -135,6 +131,12 @@ fun TrackingScreen(
                 Polyline(points = routePoints, color = DdRouteCasing, width = 22f)
                 Polyline(points = routePoints, color = DdPrimary, width = 14f)
             }
+            // The finish area, drawn at its real geofence radius: the driver can see the circle
+            // coming rather than watching a number shrink and guessing where it hits zero. Its own
+            // icon rides on top, and the origin's does too, so both ends of the ride are on the map
+            // with the icons the user picked for those places.
+            state.destinationPlace?.let { DestinationGeofence(it, state.arrivalStatus) }
+            state.originPlace?.let { PlacePin(it, DdPrimary) }
             state.currentLocation?.let { LocationPuck(it) }
         }
 
@@ -221,7 +223,7 @@ fun TrackingScreen(
 @Composable
 private fun LocationPuck(location: android.location.Location) {
     val position = LatLng(location.latitude, location.longitude)
-    val puck = rememberPuckDescriptor()
+    val puck = rememberMapDot(DdPrimary, diameter = PUCK_DIAMETER)
     // maps-compose 4.4.1 has no rememberUpdatedMarkerState, and rememberMarkerState treats its
     // position argument as an initial value only, so the state has to be pushed each fix.
     val markerState = remember { MarkerState(position) }
@@ -246,29 +248,37 @@ private fun LocationPuck(location: android.location.Location) {
 }
 
 /**
- * Rasterises the puck once and caches it: [BitmapDescriptorFactory] needs a bitmap, and rebuilding
- * it on every location fix would allocate several times a second.
+ * The destination's geofence, drawn as it actually is: a circle at the saved place's own radius.
+ * It brightens once the arrival detector says the driver is inside, which is the moment the ride is
+ * about to auto-finish — worth seeing before the sheet appears rather than at the same time.
  */
 @Composable
-private fun rememberPuckDescriptor(): BitmapDescriptor {
-    val density = LocalDensity.current
-    return remember(density) {
-        val sizePx = with(density) { PUCK_DIAMETER.toPx() }.toInt().coerceAtLeast(1)
-        val bitmap = createBitmap(sizePx, sizePx)
-        val canvas = AndroidCanvas(bitmap)
-        val centre = sizePx / 2f
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+private fun DestinationGeofence(place: Place, arrivalStatus: ArrivalStatus) {
+    val inside = arrivalStatus != ArrivalStatus.EN_ROUTE
+    Circle(
+        center = LatLng(place.lat, place.lng),
+        radius = place.radiusMeters.toDouble(),
+        fillColor = DdSuccess.copy(alpha = if (inside) 0.28f else 0.14f),
+        strokeColor = DdSuccess.copy(alpha = if (inside) 1f else 0.75f),
+        strokeWidth = 5f,
+    )
+    PlacePin(place, DdSuccess)
+}
 
-        // Glow → dark ring → blue fill, painted outside-in.
-        paint.color = DdPrimary.copy(alpha = 0.22f).toArgb()
-        canvas.drawCircle(centre, centre, centre, paint)
-        paint.color = DdMapBase.toArgb()
-        canvas.drawCircle(centre, centre, centre * 0.62f, paint)
-        paint.color = DdPrimary.toArgb()
-        canvas.drawCircle(centre, centre, centre * 0.46f, paint)
-
-        BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
+/** A saved place on the live map, wearing the emoji chosen for it in the place editor. */
+@Composable
+private fun PlacePin(place: Place, accent: androidx.compose.ui.graphics.Color) {
+    val position = LatLng(place.lat, place.lng)
+    val icon = rememberMapPin(place.iconEmoji, accent)
+    val markerState = remember(place.id) { MarkerState(position) }
+    LaunchedEffect(position) { markerState.position = position }
+    Marker(
+        state = markerState,
+        icon = icon,
+        anchor = Offset(0.5f, 1f),
+        title = place.name,
+        zIndex = 1f,
+    )
 }
 
 /** "◆ X.X km left" pill — matches the top-left chip in the mockup. */
@@ -320,4 +330,4 @@ private val FOLLOW_ZOOM = 17f
 /** Matches the ~3 s camera update throttle so rotation sweeps instead of snapping. */
 private const val CAMERA_ANIMATION_MS = 2_500
 
-private val PUCK_DIAMETER = 46.dp
+private const val PUCK_DIAMETER = 46f
