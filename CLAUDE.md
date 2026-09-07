@@ -1944,6 +1944,13 @@ reproduced on the emulator before touching anything.
       sequence opens the pre-ride sheet both times; ride 2 recorded and finished normally with an
       empty crash buffer and the process still alive. 47 unit tests green.
 
+**Hardened afterwards, while reviewing the batch:** `stopTracking` now claims the trip (`tripId =
+null`) before starting the finalisation coroutine, so a second STOP arriving while it runs can't
+finalise the same drive twice and queue post-ride processing twice — the screen guards the double
+tap, but the service shouldn't depend on that. And the unconditional promotion posts the *current*
+notification text rather than always "Starting ride…", so finishing a ride no longer flashes the
+starting line.
+
 > The crash's *trigger* is now unreachable from the UI — the phantom screen was the only way to send
 > a STOP with nothing recording — so the surviving proof for that half is structural plus the
 > before-state repro. The service was also confirmed unreachable by `am start-foreground-service`
