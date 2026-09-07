@@ -121,6 +121,7 @@
     <string name="tracking_unit_kmh">KM/H</string>
     <string name="tracking_label_elapsed">ELAPSED</string>
     <string name="tracking_label_distance">DISTANCE</string>
+    <string name="tracking_label_avg">AVG</string>
     <string name="tracking_ahead_of_best">AHEAD OF BEST</string>
     <string name="tracking_behind_best">BEHIND BEST</string>
     <string name="tracking_new_best">NEW BEST</string>
