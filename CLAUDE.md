@@ -1950,7 +1950,36 @@ reproduced on the emulator before touching anything.
 > from adb (non-exported) and unkillable by `am kill` while in the foreground, so there is no way to
 > stage the condition from outside the app.
 
-### CHECKPOINT 27 — Rides that recorded nothing worth keeping
+### ✅ CHECKPOINT 27 — Rides that recorded nothing worth keeping
+
+**Goal:** A ride started by mistake can be thrown away instead of silently entering the history.
+
+"When starting a ride by mistake and cancelling/stopping it, it still gets recorded." It did: STOP
+had exactly one outcome, and a two-second ride became a 0.0 km row that then had to be hunted down
+in Trips and deleted — with its route points sitting on the device counting for nothing.
+
+- [x] **Under 30 s the stop sheet asks a different question.** Title becomes "Keep this ride?", the
+      subtitle names the actual elapsed time, and a third button appears: Discard Ride. Thirty
+      seconds is long enough that a genuine short hop is never questioned and short enough that
+      Start-then-Stop always is. **The default answer is still Keep** — the destructive option is
+      never the one you hit by reflex, so the primary button keeps its position and its weight.
+- [x] **Discarding is a service action, not a screen action** (`ACTION_DISCARD` →
+      `DiscardTripUseCase`). The service owns the point buffer and the flush loop, so it is the only
+      thing that can stop recording and delete the trip without racing its own writes. It clears the
+      buffer, deletes trip + route points + segments locally *and remotely* (a surviving Firestore
+      document comes straight back on the next pull — CP23's lesson), and publishes a finish with no
+      trip id so the screen returns to the dashboard rather than opening a drive that no longer
+      exists. No post-ride processing is queued: there is nothing left to process.
+- [x] **Acceptance test:** ✅ On the emulator. A 12-second ride opened the short sheet — "Keep this
+      ride?", "Only 00:00 recorded…", with Keep Ride / Discard Ride / Keep Going. Discard returned
+      to the dashboard and left **nothing**: no trip row in the window it was recorded in, **0 orphan
+      route points**, no crash. A 36-second ride immediately after showed the unchanged sheet
+      ("Finish this ride?", no Discard button) and saved normally — 613 m, 54 s, `MANUAL`,
+      `roadsProcessed=1`. 47 unit tests green.
+
+> Verifying this needs the `-wal` file, not just `drivedelta.db`: Room runs in WAL mode, so a trip
+> written seconds ago is invisible in a copy of the main database alone. An earlier read of the
+> stale file made a finished ride look like it had never been saved.
 
 ### CHECKPOINT 28 — The origin place fills itself in
 

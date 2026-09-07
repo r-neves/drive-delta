@@ -132,6 +132,9 @@ class TrackingForegroundService : Service() {
                     stopSelfCleanly()
                 }
 
+            ACTION_DISCARD ->
+                if (tripId != null) discardTracking() else stopSelfCleanly()
+
             else -> stopSelfCleanly()
         }
         // Don't auto-restart with a stale intent: mid-trip process death is out of scope for the POC.
@@ -341,6 +344,28 @@ class TrackingForegroundService : Service() {
         }
     }
 
+    /**
+     * Throws the ride away instead of finalising it (F6-C): a ride started by mistake should leave
+     * nothing behind. Deletes the trip, its route points and its segments — locally and remotely,
+     * since a surviving remote document comes straight back on the next pull — and publishes a
+     * finish with no trip id, so the screen returns to the dashboard rather than opening a drive
+     * that no longer exists. No post-ride processing is queued: there is nothing left to process.
+     */
+    private fun discardTracking() {
+        val id = tripId
+        locationJob?.cancel()
+        flushJob?.cancel()
+        notificationJob?.cancel()
+        tripId = null
+
+        serviceScope.launch {
+            bufferMutex.withLock { buffer.clear() }
+            if (id != null) tripRepository.deleteTrip(id)
+            _trackingState.update { it.copy(isTracking = false, finishedTripId = null) }
+            stopSelfCleanly()
+        }
+    }
+
     private fun stopSelfCleanly() {
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -414,6 +439,7 @@ class TrackingForegroundService : Service() {
 
         private const val ACTION_START = "app.drivedelta.action.START_TRACKING"
         private const val ACTION_STOP = "app.drivedelta.action.STOP_TRACKING"
+        private const val ACTION_DISCARD = "app.drivedelta.action.DISCARD_TRACKING"
         private const val EXTRA_TRIP_ID = "trip_id"
         private const val EXTRA_DEST_PLACE_ID = "dest_place_id"
         private const val EXTRA_TRIGGER = "trigger"
@@ -436,6 +462,14 @@ class TrackingForegroundService : Service() {
                 action = ACTION_START
                 putExtra(EXTRA_TRIP_ID, tripId)
                 putExtra(EXTRA_DEST_PLACE_ID, destinationPlaceId)
+            }
+            ContextCompat.startForegroundService(context, intent)
+        }
+
+        /** Signals the running service to throw the trip away instead of saving it. */
+        fun discard(context: Context) {
+            val intent = Intent(context, TrackingForegroundService::class.java).apply {
+                action = ACTION_DISCARD
             }
             ContextCompat.startForegroundService(context, intent)
         }

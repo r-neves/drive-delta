@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.drivedelta.core.util.GeoUtils
 import app.drivedelta.domain.model.TrackingState
+import app.drivedelta.domain.usecase.trip.DiscardTripUseCase
 import app.drivedelta.domain.usecase.trip.StopTripUseCase
 import app.drivedelta.service.TrackingForegroundService
 import com.google.android.gms.maps.model.LatLng
@@ -32,6 +33,7 @@ import kotlinx.coroutines.launch
 class TrackingViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val stopTripUseCase: StopTripUseCase,
+    private val discardTripUseCase: DiscardTripUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TrackingState())
@@ -147,6 +149,21 @@ class TrackingViewModel @Inject constructor(
         // counts as a finish. Observed on the emulator: the sheet sat on "Finishing…" indefinitely.
         // Leaving the driver stranded on a dead tracking screen is the worst outcome here, so give
         // the service a moment and then leave anyway.
+        viewModelScope.launch {
+            delay(STOP_CONFIRM_TIMEOUT_MS)
+            if (_finishedTripId.value == null) _finishedTripId.value = ""
+        }
+    }
+
+    /**
+     * Throw the ride away rather than saving it. Shares [finishing] and the same safety-net timeout
+     * as [stop]: the service confirms by flipping isTracking, and if it was never tracking that
+     * transition never arrives.
+     */
+    fun discard() {
+        if (_finishing.value) return
+        _finishing.value = true
+        discardTripUseCase()
         viewModelScope.launch {
             delay(STOP_CONFIRM_TIMEOUT_MS)
             if (_finishedTripId.value == null) _finishedTripId.value = ""
