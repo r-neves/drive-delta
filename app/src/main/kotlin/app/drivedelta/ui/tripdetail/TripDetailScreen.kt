@@ -73,6 +73,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
@@ -90,9 +91,11 @@ import app.drivedelta.domain.model.TripDetail
 import app.drivedelta.domain.usecase.fuel.TripCostChart
 import app.drivedelta.domain.usecase.fuel.TripCostPoint
 import app.drivedelta.ui.components.FittedText
+import app.drivedelta.ui.components.MapPinGlyphs
 import app.drivedelta.ui.components.ScatterKind
 import app.drivedelta.ui.components.ScatterPoint
 import app.drivedelta.ui.components.SpeedCostScatter
+import app.drivedelta.ui.components.rememberMapPin
 import app.drivedelta.ui.components.routeTitle
 import app.drivedelta.ui.fuel.EnergyLogSheet
 import app.drivedelta.ui.theme.DdDeltaFaster
@@ -227,7 +230,7 @@ fun TripDetailScreen(
                         }
                     }
                     when (selectedTab) {
-                        0 -> MapTab(detail)
+                        0 -> MapTab(detail, state)
                         1 -> SplitsTab(detail, state, viewModel::setBaseline)
                         2 -> SegmentsTab(detail, state, viewModel)
                         else -> CostTab(state.costChart)
@@ -268,7 +271,7 @@ fun TripDetailScreen(
 // --- Tab 1: Map (speed-coloured polyline) -------------------------------------------------------
 
 @Composable
-private fun MapTab(detail: TripDetail) {
+private fun MapTab(detail: TripDetail, state: TripDetailUiState) {
     val points = detail.routePoints.map { LatLng(it.lat, it.lng) }
     if (points.isEmpty()) {
         CenteredHint(stringResource(R.string.trip_no_route))
@@ -299,8 +302,21 @@ private fun MapTab(detail: TripDetail) {
                 width = 12f,
             )
         }
-        Marker(state = MarkerState(points.first()), title = stringResource(R.string.trip_start))
-        Marker(state = MarkerState(points.last()), title = stringResource(R.string.trip_end))
+        // Two identical red teardrops told you nothing about which end was which. The drive's ends
+        // now wear the icon of the saved place they are, or a start/finish glyph when they aren't
+        // one, in the same blue/green the live map uses for origin and destination.
+        Marker(
+            state = MarkerState(points.first()),
+            icon = rememberMapPin(state.originEmoji ?: MapPinGlyphs.START, DdPrimary),
+            anchor = Offset(0.5f, 1f),
+            title = state.originName ?: stringResource(R.string.trip_start),
+        )
+        Marker(
+            state = MarkerState(points.last()),
+            icon = rememberMapPin(state.destEmoji ?: MapPinGlyphs.FINISH, DdSuccess),
+            anchor = Offset(0.5f, 1f),
+            title = state.destName ?: stringResource(R.string.trip_end),
+        )
     }
 }
 

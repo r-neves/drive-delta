@@ -2054,7 +2054,23 @@ permanent `0:00.0` in `displayMedium` right beside the speed. A prominent number
       on the right against `00:30 / 0.3 km` — 36 km/h, so the number is right — where it used to read
       `0:00.0` forever. 47 unit tests green.
 
-### CHECKPOINT 31 — Start and finish markers that mean something
+### ✅ CHECKPOINT 31 — Start and finish markers that mean something
+
+**Goal:** Tell the two ends of a drive apart without tapping either of them.
+
+The Trip Detail map used two bare `Marker`s, so both ends were the same red Google teardrop, and
+which was which could only be learned by tapping one to read its title.
+
+- [x] Both ends now use the CP29 pin factory: **the emoji of the saved place they are**, or a
+      start (▶) / finish (⚑) glyph when the endpoint isn't a saved place, in the same blue and green
+      the live map uses for origin and destination. The marker title carries the place name when
+      there is one, so tapping still says more than "Start".
+- [x] `TripDetailViewModel` resolves the whole `Place` rather than just its name — the emoji comes
+      from the same lookup that was already being made twice.
+- [x] **Acceptance test:** ✅ On the emulator, both branches. **Places on both ends** (Home → Auchan
+      Alverca): a 🏠 pin ringed blue on the start and a 🛒 pin ringed green on the end. **One end
+      unnamed** (Auchan Alverca → —): 🛒 in blue at the start, the green ⚑ finish flag at the end.
+      Legible against the dark map style in both. 47 unit tests green.
 
 ### CHECKPOINT 32 — Cost against duration, not only speed
 

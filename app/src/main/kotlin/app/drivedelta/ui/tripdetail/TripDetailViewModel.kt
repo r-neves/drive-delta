@@ -38,6 +38,10 @@ data class TripDetailUiState(
     val originName: String? = null,
     val destName: String? = null,
     val carName: String? = null,
+    // The emoji those places carry, so the map can mark the drive's ends with the icons the user
+    // chose for them rather than with two identical pins.
+    val originEmoji: String? = null,
+    val destEmoji: String? = null,
     /** Post-ride snapping still running: the drive is open but its segments don't exist yet. */
     val processing: Boolean = false,
 )
@@ -86,8 +90,8 @@ class TripDetailViewModel @Inject constructor(
                 ?.let { tripRepository.getSegments(it.id).associate { s -> s.roadKey to s.durationMs } }
                 ?: emptyMap()
             val trip = detail?.trip
-            val originName = trip?.startPlaceId?.let { placeRepository.getPlace(it)?.name }
-            val destName = trip?.endPlaceId?.let { placeRepository.getPlace(it)?.name }
+            val originPlace = trip?.startPlaceId?.let { placeRepository.getPlace(it) }
+            val destPlace = trip?.endPlaceId?.let { placeRepository.getPlace(it) }
             val carName = trip?.carId?.let { carRepository.getCar(it)?.name }
             val costChart = getTripCostChart(tripId)
             val askAfterEveryDrive = energyPricesRepository.getPrices().askAfterEveryDrive
@@ -107,9 +111,11 @@ class TripDetailViewModel @Inject constructor(
                     hasPreviousRun = previous.isNotEmpty(),
                     costChart = costChart,
                     showEnergyLog = it.showEnergyLog || autoAsk,
-                    originName = originName,
-                    destName = destName,
+                    originName = originPlace?.name,
+                    destName = destPlace?.name,
                     carName = carName,
+                    originEmoji = originPlace?.iconEmoji,
+                    destEmoji = destPlace?.iconEmoji,
                 )
             }
         }

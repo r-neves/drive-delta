@@ -32,6 +32,7 @@
   - **✅ CP30 — The always-zero HUD clock. Done, verified, committed.** It was the live segment
     split, dead by design since CP9 deferred live splits; the slot now shows the ride's average
     speed and the split treatment returns automatically if live splits ever land.
+  - **✅ CP31 — Meaningful start/finish markers on the Trip Detail map. Done, verified, committed.**
   - ⚠️ **ACTION FOR YOU — test trips on your real account.** Verifying this batch recorded a handful
     of short drives near Alverca on 7 Sep (all under 1 km). They are deleted through the app at the
     end of the session; if any survive, Trips → open → ⋮ → Delete ride.
