@@ -146,6 +146,14 @@ class TrackingForegroundService : Service() {
     }
 
     private fun startTracking(tripId: String, originPlaceId: String?, destinationPlaceId: String?) {
+        // Never leave a previous ride's coroutines running. A second START — a double-tapped Start
+        // Ride, since each tap mints its own trip — used to reassign these three jobs without
+        // cancelling them, leaving two collectors appending to the same buffer and the first trip
+        // stranded with no end time.
+        locationJob?.cancel()
+        flushJob?.cancel()
+        notificationJob?.cancel()
+
         this.tripId = tripId
         recordingStartEpoch = System.currentTimeMillis()
         warmupUntilElapsed = SystemClock.elapsedRealtime() + WARMUP_MS
@@ -439,14 +447,27 @@ class TrackingForegroundService : Service() {
             .build()
     }
 
+    /**
+     * Promotes to the foreground with the `location` type the manifest declares.
+     *
+     * Guarded, because on API 34+ this is refused with a `SecurityException` when the location
+     * permission isn't held — possible on the stop and discard paths, which can create the service,
+     * if the permission was revoked while we were backgrounded. **A failure must not stop the
+     * command being handled**: dropping out early here meant a discard promoted, failed, and
+     * returned without ever deleting the trip, which is worse than the crash it was guarding
+     * against. Handle the action either way; the non-recording paths call `stopSelfCleanly()`
+     * moments later regardless.
+     */
     @SuppressLint("InlinedApi") // FOREGROUND_SERVICE_TYPE_LOCATION is ignored by ServiceCompat < API 29.
     private fun startForegroundCompat(notification: Notification) {
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
-        )
+        runCatching {
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+            )
+        }
     }
 
     private fun formatElapsed(ms: Long): String {

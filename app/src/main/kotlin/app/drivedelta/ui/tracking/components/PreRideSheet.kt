@@ -85,8 +85,10 @@ fun PreRideSheet(
     var destination by remember { mutableStateOf<Place?>(null) }
     // Detection can land after the sheet is already up, so the fill is an effect rather than an
     // initial value — but it stops the moment the driver expresses an opinion, including "none".
+    // It follows detection all the way to null, too: a suggestion that survives leaving the place it
+    // was detected in would quietly save the ride as starting somewhere it didn't.
     var originChosen by remember { mutableStateOf(false) }
-    LaunchedEffect(nearbyPlace) { if (!originChosen && nearbyPlace != null) origin = nearbyPlace }
+    LaunchedEffect(nearbyPlace) { if (!originChosen) origin = nearbyPlace }
 
     // Open fully expanded and let the content scroll: at the half-expanded height the Start Ride
     // button falls below the screen edge, inside the navigation-bar strip, and is unreachable.

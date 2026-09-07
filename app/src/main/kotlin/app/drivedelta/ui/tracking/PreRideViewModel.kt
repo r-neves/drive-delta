@@ -56,6 +56,9 @@ class PreRideViewModel @Inject constructor(
 
     private var nearbyJob: Job? = null
 
+    /** Held from the Start Ride tap until the host has navigated away; blocks a second ride. */
+    private var starting = false
+
     init {
         refreshNearbyPlace()
     }
@@ -69,24 +72,51 @@ class PreRideViewModel @Inject constructor(
      */
     fun refreshNearbyPlace() {
         nearbyJob?.cancel()
+        // Drop the previous answer *before* asking again. This flow feeds the sheet's origin, and a
+        // suggestion that outlives the place it was detected in is worse than none: open the sheet at
+        // home, drive to the office, open it there — the stale "Home" would still be filled in, and
+        // once detection came back with null nothing would ever clear it, so a ride would be saved
+        // as starting somewhere it didn't.
+        _nearbyPlace.value = null
         nearbyJob = viewModelScope.launch {
             val location = locationProvider.currentLocation() ?: return@launch
             _nearbyPlace.value = detectNearbyPlaceUseCase(location.latitude, location.longitude)
         }
     }
 
-    /** Consumes the [startedTripId] event so re-opening the sheet can't replay it. */
+    /**
+     * Consumes the [startedTripId] event so re-opening the sheet can't replay it, and reopens the
+     * door to starting another ride. Releasing [starting] here rather than when the trip is created
+     * is the point: the sheet is still on screen for a frame or two after the trip exists, and a tap
+     * landing in that window started a *second* ride — measured, four rapid taps left an extra trip
+     * behind with no end time.
+     */
     fun onStartHandled() {
         _startedTripId.value = null
+        starting = false
     }
 
+    /**
+     * Creates the trip and starts recording. Guarded from the first tap until the host has
+     * navigated away ([onStartHandled]): [StartTripUseCase] suspends on a location lookup before it
+     * writes anything, and the sheet stays on screen for a frame or two after the trip exists, so a
+     * second tap anywhere in that window minted a second trip and started the service twice —
+     * leaving the first stranded with no end time, invisible until the next cold start's
+     * abandoned-ride sweep.
+     */
     fun startRide(carId: String?, originPlaceId: String?, destinationPlaceId: String?) {
+        if (starting) return
+        starting = true
         viewModelScope.launch {
-            _startedTripId.value = startTripUseCase(
+            val newTripId = startTripUseCase(
                 carId = carId,
                 startPlaceId = originPlaceId,
                 destinationPlaceId = destinationPlaceId,
             )
+            // Nothing was started (no signed-in user) — release the guard so the driver can retry.
+            // On success it stays held until the host has navigated away, in onStartHandled.
+            if (newTripId == null) starting = false
+            _startedTripId.value = newTripId
         }
     }
 }

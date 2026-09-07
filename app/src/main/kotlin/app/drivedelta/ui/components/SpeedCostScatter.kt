@@ -20,6 +20,7 @@ import app.drivedelta.ui.theme.DdPrimary
 import app.drivedelta.ui.theme.DdPurpleSector
 import app.drivedelta.ui.theme.DdSuccess
 import app.drivedelta.ui.theme.DdTextTertiary
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -107,8 +108,13 @@ fun SpeedCostScatter(
     val minWindow = if (axis == ScatterAxis.SPEED) 20.0 else 3.0
     var xMin = floor(((xs.minOrNull() ?: step * 4) - step / 2) / step) * step
     var xMax = ceil(((xs.maxOrNull() ?: step * 10) + step / 2) / step) * step
-    if (xMax - xMin < minWindow) { xMin -= step; xMax += step }
+    // Clamp before widening, then widen from wherever the clamp left us: doing it the other way
+    // round meant a single sub-minute drive ended up with a 0..2 window against a minimum of 3.
     if (xMin < 0) xMin = 0.0
+    if (xMax - xMin < minWindow) {
+        xMin = (xMin - minWindow / 2).coerceAtLeast(0.0)
+        xMax = xMin + minWindow
+    }
 
     // Y domain over costed drives only; fall back to the design's €2–€6 band when none are costed.
     val costs = points.mapNotNull { it.cost }
@@ -143,8 +149,9 @@ fun SpeedCostScatter(
                 currencySymbol + v.roundToInt(), 0f, y + axisPaint.textSize / 3f, axisPaint,
             )
         }
-        // X-axis labels: km/h, or minutes as m:ss so a 2.4-minute drive doesn't read as "2".
-        val xSteps = 4
+        // X-axis labels: km/h, or a clock. Long routes get fewer ticks — "1:24:00" five times across
+        // a phone's width collides, and five is only worth having when the labels are short.
+        val xSteps = if (axis == ScatterAxis.DURATION && xMax >= MINUTES_PER_HOUR) 3 else 4
         for (i in 0..xSteps) {
             val v = xMin + (xMax - xMin) * i / xSteps
             val x = sx(v)
@@ -227,14 +234,30 @@ fun SpeedCostScatter(
     }
 }
 
-/** Axis tick label: whole km/h on the speed axis, m:ss on the duration axis. */
+/**
+ * Axis tick label: whole km/h on the speed axis, a clock on the duration axis.
+ *
+ * The clock carries seconds below an hour, so a 2.4-minute drive doesn't read as "2", and hours
+ * above it — an unbounded minutes field turned a 90-minute route's ticks into "84:00", which reads
+ * as hours and minutes at a glance and means something else entirely.
+ */
 private fun formatAxisValue(value: Double, axis: ScatterAxis): String = when (axis) {
     ScatterAxis.SPEED -> value.roundToInt().toString()
     ScatterAxis.DURATION -> {
         val totalSeconds = (value * 60).roundToInt()
-        String.format(java.util.Locale.US, "%d:%02d", totalSeconds / 60, totalSeconds % 60)
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
+        if (hours > 0) {
+            String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.US, "%d:%02d", minutes, seconds)
+        }
     }
 }
+
+/** The duration axis works in minutes, so this is where its labels switch to h:mm:ss. */
+private const val MINUTES_PER_HOUR = 60.0
 
 /** Least-squares quadratic fit y = a·x² + b·x + c; null if fewer than 3 points, singular, or not a U. */
 private fun fitQuadratic(pts: List<Pair<Double, Double>>): Triple<Double, Double, Double>? {

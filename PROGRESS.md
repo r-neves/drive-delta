@@ -40,6 +40,10 @@
   - **✅ CP34 — Place editor: haptic on marker long-press + a "hold to drag" hint. Done, committed.**
     ⚠️ The buzz itself can't be felt on an emulator — confirm on your device.
   - **✅ CP35 — New places default to Portela (Loures). Done, verified, committed.**
+  - **✅ CP36 — acted on the batch's own code review.** Seven findings, all fixed; two were
+    reachable defects (a stale origin place could be saved on the wrong ride; double-tapping Start
+    Ride minted two rides). One of the fixes broke discard and was caught on the emulator before it
+    was committed — a failure to promote to the foreground must not stop the command being handled.
   - **All ten checkpoints of this batch are done.** 49 unit tests green (two new, on the pre-ride
     ViewModel's Dashboard-scoped lifetime — the source of CP26 and half of CP28).
   - **Test data cleaned up.** Verifying this batch recorded eight short drives near Alverca on your
