@@ -118,7 +118,11 @@ class TrackingForegroundService : Service() {
                 if (id == null) {
                     stopSelfCleanly()
                 } else {
-                    startTracking(id, intent.getStringExtra(EXTRA_DEST_PLACE_ID))
+                    startTracking(
+                        tripId = id,
+                        originPlaceId = intent.getStringExtra(EXTRA_ORIGIN_PLACE_ID),
+                        destinationPlaceId = intent.getStringExtra(EXTRA_DEST_PLACE_ID),
+                    )
                 }
             }
 
@@ -141,7 +145,7 @@ class TrackingForegroundService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun startTracking(tripId: String, destinationPlaceId: String?) {
+    private fun startTracking(tripId: String, originPlaceId: String?, destinationPlaceId: String?) {
         this.tripId = tripId
         recordingStartEpoch = System.currentTimeMillis()
         warmupUntilElapsed = SystemClock.elapsedRealtime() + WARMUP_MS
@@ -152,12 +156,21 @@ class TrackingForegroundService : Service() {
         detectArrival.reset()
         _trackingState.value = TrackingState(isTracking = true)
 
+        // Both places are published, not just the destination's name: the live map draws the
+        // origin's own icon and the destination's real geofence circle, so the driver can see the
+        // finish area coming rather than only reading a shrinking number.
+        if (originPlaceId != null) {
+            serviceScope.launch {
+                val place = placeRepository.getPlace(originPlaceId) ?: return@launch
+                _trackingState.update { it.copy(originPlace = place) }
+            }
+        }
         if (destinationPlaceId != null) {
             serviceScope.launch {
                 val place = placeRepository.getPlace(destinationPlaceId)
                 destination = place
                 if (place != null) {
-                    _trackingState.update { it.copy(destinationName = place.name) }
+                    _trackingState.update { it.copy(destinationPlace = place) }
                 }
             }
         }
@@ -441,6 +454,7 @@ class TrackingForegroundService : Service() {
         private const val ACTION_STOP = "app.drivedelta.action.STOP_TRACKING"
         private const val ACTION_DISCARD = "app.drivedelta.action.DISCARD_TRACKING"
         private const val EXTRA_TRIP_ID = "trip_id"
+        private const val EXTRA_ORIGIN_PLACE_ID = "origin_place_id"
         private const val EXTRA_DEST_PLACE_ID = "dest_place_id"
         private const val EXTRA_TRIGGER = "trigger"
 
@@ -457,10 +471,16 @@ class TrackingForegroundService : Service() {
         private const val MPS_TO_KPH = 3.6f
 
         /** Starts recording [tripId]; the trip row must already exist in Room. */
-        fun start(context: Context, tripId: String, destinationPlaceId: String?) {
+        fun start(
+            context: Context,
+            tripId: String,
+            originPlaceId: String?,
+            destinationPlaceId: String?,
+        ) {
             val intent = Intent(context, TrackingForegroundService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_TRIP_ID, tripId)
+                putExtra(EXTRA_ORIGIN_PLACE_ID, originPlaceId)
                 putExtra(EXTRA_DEST_PLACE_ID, destinationPlaceId)
             }
             ContextCompat.startForegroundService(context, intent)
