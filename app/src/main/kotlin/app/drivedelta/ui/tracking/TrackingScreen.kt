@@ -189,6 +189,7 @@ fun TrackingScreen(
             state = state,
             finishing = finishing,
             onFinish = { viewModel.stop(TrackingForegroundService.TRIGGER_MANUAL) },
+            onDiscard = { viewModel.discard() },
             onKeepGoing = { showStopConfirm = false },
             onDismiss = { if (!finishing) showStopConfirm = false },
         )

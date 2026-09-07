@@ -187,6 +187,11 @@
     <string name="tracking_finish">Terminar viagem</string>
     <string name="tracking_finishing">A terminar…</string>
     <string name="tracking_keep_going">Continuar</string>
+    <string name="tracking_short_title">Guardar esta viagem?</string>
+    <string name="tracking_short_subtitle">Só %1$s gravados — quase não foi uma viagem. Guardar no histórico ou descartar?</string>
+    <string name="tracking_keep">Guardar viagem</string>
+    <string name="tracking_discard">Descartar viagem</string>
+    <string name="tracking_discarding">A descartar…</string>
     <string name="tracking_just_passing">Estou só de passagem</string>
     <string name="tracking_arrived_title">Chegaste a %1$s 🎉</string>
     <string name="tracking_arrived_countdown">A terminar automaticamente em %1$ds…</string>

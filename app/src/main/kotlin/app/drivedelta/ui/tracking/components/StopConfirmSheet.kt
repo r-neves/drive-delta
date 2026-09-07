@@ -48,6 +48,12 @@ import java.util.Locale
  * stop badge, "Finish this ride?" + a save-to-history subtitle, a bordered Elapsed/Distance/Avg stats
  * card, and Finish (red) / Keep going buttons. [onFinish] fires the manual stop; [onKeepGoing]/
  * [onDismiss] leave the ride running.
+ *
+ * Under [SHORT_RIDE_MS] the sheet changes its question. A ride that short is almost always Start Ride
+ * pressed by mistake, and finishing it silently left a 0.0 km entry in the history that then had to
+ * be hunted down and deleted — so the short version asks whether to keep it and offers [onDiscard],
+ * which throws the recording away entirely. The default answer is still Keep: the destructive option
+ * never becomes the one you hit by reflex.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +61,12 @@ fun StopConfirmSheet(
     state: TrackingState,
     finishing: Boolean,
     onFinish: () -> Unit,
+    onDiscard: () -> Unit,
     onKeepGoing: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val tokens = LocalDdTokens.current
+    val isShortRide = state.elapsedMs < SHORT_RIDE_MS
 
     // Fully expanded + scrollable: at the half-expanded height the Finish Ride button can fall
     // inside the navigation-bar strip and become unreachable.
@@ -90,13 +98,19 @@ fun StopConfirmSheet(
 
             Column(verticalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
                 Text(
-                    text = stringResource(R.string.tracking_stop_title),
+                    text = stringResource(
+                        if (isShortRide) R.string.tracking_short_title else R.string.tracking_stop_title,
+                    ),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = stringResource(R.string.tracking_stop_subtitle),
+                    text = if (isShortRide) {
+                        stringResource(R.string.tracking_short_subtitle, formatElapsedStat(state.elapsedMs))
+                    } else {
+                        stringResource(R.string.tracking_stop_subtitle)
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     color = DdTextTertiary,
                 )
@@ -137,10 +151,27 @@ fun StopConfirmSheet(
                     Spacer(Modifier.size(tokens.spaceMd))
                 }
                 Text(
-                    stringResource(if (finishing) R.string.tracking_finishing else R.string.tracking_finish),
+                    stringResource(
+                        when {
+                            finishing -> R.string.tracking_finishing
+                            isShortRide -> R.string.tracking_keep
+                            else -> R.string.tracking_finish
+                        },
+                    ),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                 )
+            }
+            if (isShortRide) {
+                OutlinedButton(
+                    onClick = onDiscard,
+                    enabled = !finishing,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(tokens.radiusMd),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DdError),
+                ) {
+                    Text(stringResource(R.string.tracking_discard), style = MaterialTheme.typography.labelLarge)
+                }
             }
             OutlinedButton(
                 onClick = onKeepGoing,
@@ -172,6 +203,13 @@ private fun StatItem(modifier: Modifier, label: String, value: String, unit: Str
         Text(text = label, style = MaterialTheme.typography.bodyMedium, color = DdTextTertiary)
     }
 }
+
+/**
+ * Below this a ride is treated as a mis-tap rather than a drive. Thirty seconds: long enough that a
+ * genuine short hop (moving the car off a driveway) is never questioned, short enough that pressing
+ * Start Ride and immediately pressing Stop always is.
+ */
+private const val SHORT_RIDE_MS = 30_000L
 
 private fun avgSpeedKph(state: TrackingState): Int {
     val seconds = state.elapsedMs / 1000f

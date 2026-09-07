@@ -138,6 +138,12 @@
     <string name="tracking_finish">Finish Ride</string>
     <string name="tracking_finishing">Finishing…</string>
     <string name="tracking_keep_going">Keep Going</string>
+    <!-- Very short ride (< 30 s): started by mistake, most likely. -->
+    <string name="tracking_short_title">Keep this ride?</string>
+    <string name="tracking_short_subtitle">Only %1$s recorded — that is barely a drive. Keep it in your history, or throw it away?</string>
+    <string name="tracking_keep">Keep Ride</string>
+    <string name="tracking_discard">Discard Ride</string>
+    <string name="tracking_discarding">Discarding…</string>
     <string name="tracking_arrived_title">You\'ve arrived at %1$s 🎉</string>
     <string name="tracking_arrived_countdown">Auto-finishing in %1$ds…</string>
     <string name="tracking_just_passing">I\'m just passing</string>
