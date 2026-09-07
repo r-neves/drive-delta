@@ -1890,6 +1890,51 @@ reached by editing Room by hand.
 
 ---
 
+## Second-drive-batch fix list (CP26–CP35)
+
+Reported after further real use. Ordered by blast radius, riskiest first — the two ride-lifecycle
+defects go first both because they are the most dangerous to get wrong and because they *gate manual
+testing of everything else*: with CP26 open you cannot even record a second ride to test against.
+The isolated UI changes follow in descending order of what they can break. One commit per item,
+each verified on the emulator before the next starts.
+
+| CP | Change | Risk |
+|---|---|---|
+| 26 | Second ride starts itself; STOP can crash the app | ride lifecycle + service |
+| 27 | Rides under 30 s ask keep-or-discard | ride lifecycle + deletes data |
+| 28 | Pre-ride auto-fills the origin place | pre-ride sheet |
+| 29 | Live map shows the origin marker and the destination geofence circle | service state + live map |
+| 30 | The HUD clock that is always 0:00.0 | live HUD only |
+| 31 | Meaningful start/finish markers on the Trip Detail map | one tab |
+| 32 | Cost chart toggles duration ⇄ avg speed (duration default) | one tab + shared chart |
+| 33 | Place editor opens framed on the place's circle | one screen |
+| 34 | Place editor: haptic + "hold to drag" hint | one screen |
+| 35 | New places default to Portela (Loures), not Intendente | one constant |
+
+---
+
+### CHECKPOINT 26 — Starting a second ride
+
+### CHECKPOINT 27 — Rides that recorded nothing worth keeping
+
+### CHECKPOINT 28 — The origin place fills itself in
+
+### CHECKPOINT 29 — The finish line is visible while driving to it
+
+### CHECKPOINT 30 — The HUD clock that never moved
+
+### CHECKPOINT 31 — Start and finish markers that mean something
+
+### CHECKPOINT 32 — Cost against duration, not only speed
+
+### CHECKPOINT 33 — The place editor opens on the place
+
+### CHECKPOINT 34 — Telling the user the pin can be dragged
+
+### CHECKPOINT 35 — New places start in Portela
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)
