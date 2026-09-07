@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,10 +46,14 @@ import app.drivedelta.domain.model.Place
 import app.drivedelta.ui.tracking.PreRideViewModel
 
 /**
- * Pre-ride setup sheet (F5): car selector (pre-selects the default), optional origin/destination
- * place dropdowns, a nearby-place suggestion chip, and Start Ride. Requires at least one car — with
- * none, it shows a prompt to add one. On start it calls the ViewModel, which creates the trip +
- * launches the service and emits the trip id via [onStarted].
+ * Pre-ride setup sheet (F5): car selector (pre-selects the default), origin/destination place
+ * dropdowns and Start Ride. Requires at least one car — with none, it shows a prompt to add one. On
+ * start it calls the ViewModel, which creates the trip + launches the service and emits the trip id
+ * via [onStarted].
+ *
+ * The origin fills itself in from the saved place the driver is standing in, and says so. It used to
+ * be offered as a chip that had to be tapped, which is a question with only one sensible answer —
+ * you are where you are. It stays a plain dropdown, so changing it costs the same as before.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,9 +76,17 @@ fun PreRideSheet(
         }
     }
 
+    // Re-detect on every open: the ViewModel is scoped to the Dashboard, so without this the sheet
+    // would show wherever the driver happened to be the first time it was opened.
+    LaunchedEffect(Unit) { viewModel.refreshNearbyPlace() }
+
     var selectedCar by remember(cars) { mutableStateOf(cars.firstOrNull { it.isDefault } ?: cars.firstOrNull()) }
     var origin by remember { mutableStateOf<Place?>(null) }
     var destination by remember { mutableStateOf<Place?>(null) }
+    // Detection can land after the sheet is already up, so the fill is an effect rather than an
+    // initial value — but it stops the moment the driver expresses an opinion, including "none".
+    var originChosen by remember { mutableStateOf(false) }
+    LaunchedEffect(nearbyPlace) { if (!originChosen && nearbyPlace != null) origin = nearbyPlace }
 
     // Open fully expanded and let the content scroll: at the half-expanded height the Start Ride
     // button falls below the screen edge, inside the navigation-bar strip, and is unreachable.
@@ -110,21 +121,21 @@ fun PreRideSheet(
 
             CarDropdown(cars = cars, selected = selectedCar, onSelect = { selectedCar = it })
 
-            nearbyPlace?.let { place ->
-                if (origin == null) {
-                    AssistChip(
-                        onClick = { origin = place },
-                        label = { Text(stringResource(R.string.preride_nearby_chip, place.iconEmoji, place.name)) },
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                PlaceDropdown(
+                    label = stringResource(R.string.preride_origin),
+                    places = places,
+                    selected = origin,
+                    onSelect = { origin = it; originChosen = true },
+                )
+                if (!originChosen && origin != null && origin == nearbyPlace) {
+                    Text(
+                        stringResource(R.string.preride_origin_detected),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-
-            PlaceDropdown(
-                label = stringResource(R.string.preride_origin),
-                places = places,
-                selected = origin,
-                onSelect = { origin = it },
-            )
             PlaceDropdown(
                 label = stringResource(R.string.preride_destination),
                 places = places,

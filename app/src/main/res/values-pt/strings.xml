@@ -223,7 +223,7 @@
     <string name="preride_origin">Origem (opcional)</string>
     <string name="preride_destination">Destino (opcional)</string>
     <string name="preride_place_none">Nenhum</string>
-    <string name="preride_nearby_chip">%1$s Perto de %2$s — usar como origem?</string>
+    <string name="preride_origin_detected">Preenchido a partir de onde estás — muda se quiseres.</string>
     <string name="preride_start">Iniciar viagem</string>
     <string name="preride_hint">Define um destino para terminar a viagem automaticamente à chegada.</string>
 

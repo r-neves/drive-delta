@@ -107,7 +107,7 @@
     <string name="preride_origin">Origin (optional)</string>
     <string name="preride_destination">Destination (optional)</string>
     <string name="preride_place_none">None</string>
-    <string name="preride_nearby_chip">%1$s Near %2$s — use as origin?</string>
+    <string name="preride_origin_detected">Filled in from where you are — change it if you like.</string>
     <string name="preride_start">Start Ride</string>
     <string name="preride_hint">Set a destination to auto-finish the ride on arrival.</string>
 
