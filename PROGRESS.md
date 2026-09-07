@@ -41,9 +41,17 @@
     ⚠️ The buzz itself can't be felt on an emulator — confirm on your device.
   - **✅ CP35 — New places default to Portela (Loures). Done, verified, committed.**
   - **All ten checkpoints of this batch are done.**
-  - ⚠️ **ACTION FOR YOU — test trips on your real account.** Verifying this batch recorded a handful
-    of short drives near Alverca on 7 Sep (all under 1 km). They are deleted through the app at the
-    end of the session; if any survive, Trips → open → ⋮ → Delete ride.
+  - **Test data cleaned up.** Verifying this batch recorded eight short drives near Alverca on your
+    real account (all under 1 km). All were deleted through the app — so remotely too, per CP23 —
+    and two cold starts confirmed none came back: **22 trips, all real, none newer than 6 Sep, zero
+    orphan route points**. One abandoned ride was cleaned up by CP25's own salvage pass, which
+    re-verified that too. (The 9 orphan segment rows from trip `29675daa…` are the pre-existing ones
+    CP23 noted, not from this session.)
+  - ⚠️ **TWO THINGS TO CONFIRM ON YOUR DEVICE**, neither of which an emulator can show:
+    1. **CP34** — the buzz when you press and hold the place marker. The event that fires it
+       (`DragState.START`) is proven to fire on long-press; the vibration itself can't be felt here.
+    2. **CP26's crash half** — the crash is reproduced and fixed, but its trigger (a tracking screen
+       with no ride behind it) is now unreachable, so there is no way to re-stage it from outside.
 
 ### Previous batch (CP11–CP25)
 
