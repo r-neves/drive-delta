@@ -1981,7 +1981,31 @@ in Trips and deleted — with its route points sitting on the device counting fo
 > written seconds ago is invisible in a copy of the main database alone. An earlier read of the
 > stale file made a finished ride look like it had never been saved.
 
-### CHECKPOINT 28 — The origin place fills itself in
+### ✅ CHECKPOINT 28 — The origin place fills itself in
+
+**Goal:** The pre-ride sheet answers "where are you starting from?" itself, and lets you disagree.
+
+The saved place the driver is standing in was already detected — it was just offered as a chip that
+had to be tapped, which is a question with one sensible answer.
+
+- [x] Origin is filled from the detected place; the dropdown is unchanged, so changing it costs
+      exactly what it did before. A caption under the field says where the value came from. The fill
+      is an effect rather than an initial value because detection can land after the sheet is up,
+      and it stops the moment the driver expresses an opinion — including choosing "None".
+- [x] **Detection re-runs on every open.** `PreRideViewModel` is scoped to the Dashboard's
+      back-stack entry, so it outlives the sheet; the old one-shot in `init` meant the sheet showed
+      wherever the driver happened to be the first time it was opened that session.
+- [x] **`lastLocation()` was not a good enough answer to "where am I".** It is empty on a device that
+      has not used location recently — routinely so on the emulator — and when populated it can be
+      minutes old: measured here, a 15-minute-stale cache put the driver **800 m** from the place
+      they were standing in, which is the whole difference. `LocationProvider.currentLocation()`
+      now takes the cached fix only while it is under a minute old (measured on the monotonic clock)
+      and otherwise asks for a fresh one, falling back to the stale fix rather than to nothing.
+- [x] **Acceptance test:** ✅ On the emulator, standing inside Home's 50 m radius: the sheet opens
+      with Origin already reading "🏠 Home" and the caption "Filled in from where you are — change it
+      if you like." Choosing Palito from the dropdown replaced it and dropped the caption, and the
+      choice stuck. With the stale-cache rule removed the same test detected nothing — the cached fix
+      was 800 m north from an earlier test drive — which is what put the rule there. 47 tests green.
 
 ### CHECKPOINT 29 — The finish line is visible while driving to it
 

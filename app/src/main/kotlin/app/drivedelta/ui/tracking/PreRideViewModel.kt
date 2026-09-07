@@ -10,6 +10,7 @@ import app.drivedelta.domain.usecase.place.DetectNearbyPlaceUseCase
 import app.drivedelta.domain.usecase.place.GetPlacesUseCase
 import app.drivedelta.domain.usecase.trip.StartTripUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -53,9 +54,23 @@ class PreRideViewModel @Inject constructor(
     private val _startedTripId = MutableStateFlow<String?>(null)
     val startedTripId: StateFlow<String?> = _startedTripId.asStateFlow()
 
+    private var nearbyJob: Job? = null
+
     init {
-        viewModelScope.launch {
-            val location = locationProvider.lastLocation() ?: return@launch
+        refreshNearbyPlace()
+    }
+
+    /**
+     * Re-detects the saved place the driver is standing in, which the sheet uses to fill the origin.
+     *
+     * Called every time the sheet opens rather than once at construction: this ViewModel is scoped
+     * to the Dashboard's back-stack entry, so it outlives the sheet, and a suggestion detected on
+     * this morning's drive would otherwise still be sitting there this evening.
+     */
+    fun refreshNearbyPlace() {
+        nearbyJob?.cancel()
+        nearbyJob = viewModelScope.launch {
+            val location = locationProvider.currentLocation() ?: return@launch
             _nearbyPlace.value = detectNearbyPlaceUseCase(location.latitude, location.longitude)
         }
     }
