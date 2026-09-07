@@ -1942,7 +1942,9 @@ reproduced on the emulator before touching anything.
       straight to a screen reading RECORDING / 00:00 with no sheet; STOP → Finish Ride killed the
       process (back to the launcher, `pidof` empty, FATAL in the crash buffer). **After:** the same
       sequence opens the pre-ride sheet both times; ride 2 recorded and finished normally with an
-      empty crash buffer and the process still alive. 47 unit tests green.
+      empty crash buffer and the process still alive. **49 unit tests green** — two new in
+      `PreRideViewModelTest` pinning the consumed start event and the per-open nearby re-detection,
+      which are the two behaviours this ViewModel's Dashboard-scoped lifetime keeps getting wrong.
 
 **Hardened afterwards, while reviewing the batch:** `stopTracking` now claims the trip (`tripId =
 null`) before starting the finalisation coroutine, so a second STOP arriving while it runs can't

@@ -40,7 +40,8 @@
   - **✅ CP34 — Place editor: haptic on marker long-press + a "hold to drag" hint. Done, committed.**
     ⚠️ The buzz itself can't be felt on an emulator — confirm on your device.
   - **✅ CP35 — New places default to Portela (Loures). Done, verified, committed.**
-  - **All ten checkpoints of this batch are done.**
+  - **All ten checkpoints of this batch are done.** 49 unit tests green (two new, on the pre-ride
+    ViewModel's Dashboard-scoped lifetime — the source of CP26 and half of CP28).
   - **Test data cleaned up.** Verifying this batch recorded eight short drives near Alverca on your
     real account (all under 1 km). All were deleted through the app — so remotely too, per CP23 —
     and two cold starts confirmed none came back: **22 trips, all real, none newer than 6 Sep, zero
