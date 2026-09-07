@@ -1913,7 +1913,42 @@ each verified on the emulator before the next starts.
 
 ---
 
-### CHECKPOINT 26 — Starting a second ride
+### ✅ CHECKPOINT 26 — Starting a second ride
+
+**Goal:** A second ride opens the pre-ride sheet like the first, and STOP can never kill the app.
+
+Two compounding defects behind "starting another ride after finishing one goes straight to the GPS
+recording screen without selecting start or finish, and if retried it crashes the app". Both
+reproduced on the emulator before touching anything.
+
+- [x] **The sheet's start event replayed.** `PreRideViewModel` is reached through `hiltViewModel()`
+      from inside `PreRideSheet`, which is composed by `DashboardScreen` — so its ViewModelStoreOwner
+      is the *Dashboard's* back-stack entry, not the sheet. It outlives every open and close.
+      `startedTripId` stayed set to the last ride's id, so the next time the sheet opened its
+      "did we start?" effect fired immediately and called `onStarted()` before the user could touch
+      anything: sheet dismissed, straight to a tracking screen with no ride behind it. It is a
+      one-shot event, so it is now consumed (`onStartHandled()`) as soon as the host acts on it.
+- [x] **STOP on that phantom screen killed the process.** `onStartCommand` only called
+      `startForeground()` on the ACTION_START branch. `TrackingForegroundService.stop()` uses
+      `startForegroundService()`, which gives the service ~5 s to promote **whatever action it
+      carries** — and a STOP arriving while nothing is recording *creates* the service, which then
+      fell through to `stopSelf` without ever promoting. Android killed the whole app with
+      `ForegroundServiceDidNotStartInTimeException` (captured in logcat, thrown from
+      `TrackingForegroundService.kt:434` via `StopTripUseCase`). Promotion is now unconditional and
+      happens before the branch; the notification never gets a frame because `stopSelfCleanly()`
+      removes it. A STOP with no trip in flight now just stops the service instead of finalising
+      nothing.
+- [x] **Acceptance test:** ✅ On the emulator. **Before:** ride 1 → finish → Start Ride jumped
+      straight to a screen reading RECORDING / 00:00 with no sheet; STOP → Finish Ride killed the
+      process (back to the launcher, `pidof` empty, FATAL in the crash buffer). **After:** the same
+      sequence opens the pre-ride sheet both times; ride 2 recorded and finished normally with an
+      empty crash buffer and the process still alive. 47 unit tests green.
+
+> The crash's *trigger* is now unreachable from the UI — the phantom screen was the only way to send
+> a STOP with nothing recording — so the surviving proof for that half is structural plus the
+> before-state repro. The service was also confirmed unreachable by `am start-foreground-service`
+> from adb (non-exported) and unkillable by `am kill` while in the foreground, so there is no way to
+> stage the condition from outside the app.
 
 ### CHECKPOINT 27 — Rides that recorded nothing worth keeping
 
