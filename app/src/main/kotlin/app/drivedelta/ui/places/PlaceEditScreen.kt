@@ -79,6 +79,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlin.math.cos
+import kotlin.math.log2
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -177,6 +179,7 @@ fun PlaceEditScreen(
                     lat = state.lat,
                     lng = state.lng,
                     radiusMeters = state.radiusMeters,
+                    hasMarker = state.hasMarker,
                     recenterSignal = state.recenterSignal,
                     onMarkerMoved = viewModel::onMarkerMoved,
                 )
@@ -270,19 +273,29 @@ private fun PlaceMap(
     lat: Double,
     lng: Double,
     radiusMeters: Float,
+    hasMarker: Boolean,
     recenterSignal: Int,
     onMarkerMoved: (Double, Double) -> Unit,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     val markerState = rememberMarkerState(position = LatLng(lat, lng))
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(lat, lng), 15f)
+        position = CameraPosition.fromLatLngZoom(LatLng(lat, lng), zoomFor(radiusMeters, lat, hasMarker))
     }
 
+    // Recenter with a *full* camera position, zoom included. It used to use `newLatLng`, which
+    // carries only a target — and since this effect runs before the map has applied the state's
+    // initial position, the zoom that survived was the map's own default. Opening a saved place
+    // therefore showed the whole of western Europe with a pin somewhere over Portugal, and the
+    // geofence circle it exists to show was sub-pixel. Now the camera is told where *and* how close.
     LaunchedEffect(recenterSignal) {
         val target = LatLng(lat, lng)
         markerState.position = target
-        cameraPositionState.animate(CameraUpdateFactory.newLatLng(target))
+        cameraPositionState.animate(
+            CameraUpdateFactory.newCameraPosition(
+                CameraPosition.fromLatLngZoom(target, zoomFor(radiusMeters, lat, hasMarker)),
+            ),
+        )
     }
 
     // Report every marker position; PlaceEditViewModel.onMarkerMoved drops the echo when the marker
@@ -319,6 +332,38 @@ private fun PlaceMap(
         )
     }
 }
+
+/**
+ * Zoom that frames the geofence circle in the 300dp map hero, so the thing being edited is the thing
+ * you can see. Derived rather than fixed: a 50 m home and a 500 m industrial estate need three zoom
+ * levels between them, and a single constant makes one of them a dot and the other a wall of colour.
+ *
+ * At zoom z a map dp covers `156543.03392 · cos(latitude) / 2^z` metres. Solving for the circle's
+ * diameter plus a margin filling [MAP_FRACTION] of [MAP_HEIGHT_DP] gives the zoom below.
+ *
+ * A place with no position yet ([hasMarker] false) is framed at neighbourhood level instead: its
+ * coordinates are a default, not a choice, so showing its surroundings is more useful than showing
+ * a circle drawn around a guess.
+ */
+private fun zoomFor(radiusMeters: Float, latitude: Double, hasMarker: Boolean): Float {
+    if (!hasMarker) return NEW_PLACE_ZOOM
+    val metresAcross = (2 * radiusMeters / MAP_FRACTION).coerceAtLeast(1f)
+    val metresPerDpAtZoom0 = EQUATOR_METRES_PER_DP * cos(Math.toRadians(latitude)).toFloat()
+    val zoom = log2(metresPerDpAtZoom0 * MAP_HEIGHT_DP / metresAcross)
+    return zoom.coerceIn(MIN_ZOOM, MAX_ZOOM)
+}
+
+/** Metres covered by one dp at zoom 0 on the equator (Web Mercator, 256dp tiles). */
+private const val EQUATOR_METRES_PER_DP = 156_543.034f
+private const val MAP_HEIGHT_DP = 300f
+
+/** Share of the map's height the circle should fill — enough margin to see what surrounds it. */
+private const val MAP_FRACTION = 0.62f
+private const val MIN_ZOOM = 10f
+private const val MAX_ZOOM = 18f
+
+/** Neighbourhood level: wide enough to get your bearings, close enough to recognise streets. */
+private const val NEW_PLACE_ZOOM = 14.5f
 
 @SuppressLint("MissingPermission")
 @Composable
