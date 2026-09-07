@@ -13,6 +13,7 @@ import javax.inject.Inject
 data class TripCostPoint(
     val tripId: String,
     val speedKph: Float,
+    val durationMs: Long,
     val cost: Float?,
     val isThisDrive: Boolean,
     val isFastest: Boolean,
@@ -65,11 +66,11 @@ class GetTripCostChartUseCase @Inject constructor(
             if (speed <= 0f) return@mapNotNull null
             val realCost = costByTrip[t.id]
             when {
-                t.id == trip.id -> TripCostPoint(t.id, speed, realCost, isThisDrive = true, isFastest = t.id == fastestId, isCheapest = t.id == cheapestId, isEstimated = false)
-                realCost != null -> TripCostPoint(t.id, speed, realCost, isThisDrive = false, isFastest = t.id == fastestId, isCheapest = t.id == cheapestId, isEstimated = false)
+                t.id == trip.id -> TripCostPoint(t.id, speed, t.durationMs, realCost, isThisDrive = true, isFastest = t.id == fastestId, isCheapest = t.id == cheapestId, isEstimated = false)
+                realCost != null -> TripCostPoint(t.id, speed, t.durationMs, realCost, isThisDrive = false, isFastest = t.id == fastestId, isCheapest = t.id == cheapestId, isEstimated = false)
                 prices.estimateWhenNotLogged -> {
                     val est = estimatedCost(t, prices) ?: return@mapNotNull null
-                    TripCostPoint(t.id, speed, est, isThisDrive = false, isFastest = false, isCheapest = false, isEstimated = true)
+                    TripCostPoint(t.id, speed, t.durationMs, est, isThisDrive = false, isFastest = false, isCheapest = false, isEstimated = true)
                 }
                 else -> null
             }

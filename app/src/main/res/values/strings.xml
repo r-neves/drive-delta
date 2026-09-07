@@ -89,10 +89,9 @@
     <string name="route_summary_faster">FASTER</string>
     <string name="route_summary_slower">SLOWER</string>
     <string name="route_summary_purple">PURPLE</string>
-    <string name="route_summary_speed_cost">Speed vs. cost</string>
     <string name="route_summary_drive_count">%1$d drives</string>
     <string name="route_summary_scatter_caption">Each dot is one drive on this route. Over time the dots trace a curve — cost rises when you crawl and when you push.</string>
-    <string name="route_summary_scatter_empty">Log fuel on a few drives of this route to see the speed-vs-cost curve.</string>
+    <string name="route_summary_scatter_empty">Log fuel on a few drives of this route to see the cost curve.</string>
 
     <!-- Compare (F8) -->
     <string name="compare_title">Compare rides</string>
@@ -319,7 +318,10 @@
     <string name="trip_fuel_not_logged">Fuel not logged</string>
     <string name="trip_fuel_not_logged_body">Add it to see cost and plot this drive.</string>
     <string name="trip_fuel_add_short">Add</string>
-    <string name="trip_cost_title">Speed vs. cost</string>
+    <string name="cost_chart_title_duration">Duration vs. cost</string>
+    <string name="cost_chart_title_speed">Speed vs. cost</string>
+    <string name="cost_axis_duration">By duration</string>
+    <string name="cost_axis_speed">By avg speed</string>
     <string name="trip_cost_no_cost_yet">NO COST YET</string>
     <string name="trip_cost_empty">Log fuel on this drive to see the speed-vs-cost curve.</string>
     <string name="trip_cost_caption_pending">This drive sits on the speed axis only. Log its fuel to place it on the curve.</string>

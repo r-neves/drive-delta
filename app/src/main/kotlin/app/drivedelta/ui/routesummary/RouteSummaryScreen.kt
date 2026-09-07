@@ -25,11 +25,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.drivedelta.R
 import app.drivedelta.domain.model.RouteDrivePoint
 import app.drivedelta.domain.model.RouteSummary
+import app.drivedelta.ui.components.ScatterAxis
 import app.drivedelta.ui.components.ScatterKind
 import app.drivedelta.ui.components.ScatterPoint
 import app.drivedelta.ui.components.SpeedCostScatter
@@ -315,15 +320,21 @@ private fun SegmentTile(modifier: Modifier, count: Int, label: String, color: Co
     }
 }
 
-// --- Speed vs. cost scatter ---------------------------------------------------------------------
+// --- Cost scatter (against duration or average speed) -------------------------------------------
 
 @Composable
 private fun ScatterSection(summary: RouteSummary, currencyCode: String) {
     val tokens = LocalDdTokens.current
+    // Same toggle and same default as the Trip Detail cost tab; rememberSaveable so it survives a
+    // rotation, since this screen has no ViewModel state to hang it on.
+    var axis by rememberSaveable { mutableStateOf(ScatterAxis.DURATION) }
     Column(verticalArrangement = Arrangement.spacedBy(tokens.spaceMd)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
             Text(
-                stringResource(R.string.route_summary_speed_cost),
+                stringResource(
+                    if (axis == ScatterAxis.DURATION) R.string.cost_chart_title_duration
+                    else R.string.cost_chart_title_speed,
+                ),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -355,9 +366,22 @@ private fun ScatterSection(summary: RouteSummary, currencyCode: String) {
                     modifier = Modifier.padding(vertical = tokens.spaceLg),
                 )
             } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+                    FilterChip(
+                        selected = axis == ScatterAxis.DURATION,
+                        onClick = { axis = ScatterAxis.DURATION },
+                        label = { Text(stringResource(R.string.cost_axis_duration)) },
+                    )
+                    FilterChip(
+                        selected = axis == ScatterAxis.SPEED,
+                        onClick = { axis = ScatterAxis.SPEED },
+                        label = { Text(stringResource(R.string.cost_axis_speed)) },
+                    )
+                }
                 SpeedCostScatter(
                     points = summary.scatter.map { it.toScatterPoint() },
                     currencySymbol = currencySymbol(currencyCode),
+                    axis = axis,
                 )
             }
         }
@@ -367,6 +391,7 @@ private fun ScatterSection(summary: RouteSummary, currencyCode: String) {
 /** Maps a route drive to a scatter marker; this-drive wins over fastest/cheapest, matching the design. */
 private fun RouteDrivePoint.toScatterPoint(): ScatterPoint = ScatterPoint(
     speedKph = avgSpeedKph,
+    durationMs = durationMs,
     cost = energyCost,
     kind = when {
         isThisDrive -> ScatterKind.THIS_DRIVE

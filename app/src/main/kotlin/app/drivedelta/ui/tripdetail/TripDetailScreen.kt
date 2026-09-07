@@ -92,6 +92,7 @@ import app.drivedelta.domain.usecase.fuel.TripCostChart
 import app.drivedelta.domain.usecase.fuel.TripCostPoint
 import app.drivedelta.ui.components.FittedText
 import app.drivedelta.ui.components.MapPinGlyphs
+import app.drivedelta.ui.components.ScatterAxis
 import app.drivedelta.ui.components.ScatterKind
 import app.drivedelta.ui.components.ScatterPoint
 import app.drivedelta.ui.components.SpeedCostScatter
@@ -233,7 +234,7 @@ fun TripDetailScreen(
                         0 -> MapTab(detail, state)
                         1 -> SplitsTab(detail, state, viewModel::setBaseline)
                         2 -> SegmentsTab(detail, state, viewModel)
-                        else -> CostTab(state.costChart)
+                        else -> CostTab(state.costChart, state.costAxis, viewModel::setCostAxis)
                     }
                 }
             }
@@ -534,10 +535,14 @@ private fun FuelNotLoggedBanner(onAdd: () -> Unit) {
     }
 }
 
-// --- Tab 4: Cost (speed vs. cost scatter) -------------------------------------------------------
+// --- Tab 4: Cost (cost vs. duration or average speed) -------------------------------------------
 
 @Composable
-private fun CostTab(costChart: TripCostChart?) {
+private fun CostTab(
+    costChart: TripCostChart?,
+    axis: ScatterAxis,
+    onAxis: (ScatterAxis) -> Unit,
+) {
     val tokens = LocalDdTokens.current
     if (costChart == null || costChart.points.isEmpty()) {
         CenteredHint(stringResource(R.string.trip_cost_empty))
@@ -551,13 +556,36 @@ private fun CostTab(costChart: TripCostChart?) {
         verticalArrangement = Arrangement.spacedBy(tokens.spaceMd),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-            Text(stringResource(R.string.trip_cost_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
+            // The heading names what is actually plotted, so it can't disagree with the toggle.
+            Text(
+                stringResource(
+                    if (axis == ScatterAxis.DURATION) R.string.cost_chart_title_duration
+                    else R.string.cost_chart_title_speed,
+                ),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(stringResource(R.string.route_summary_drive_count, costChart.driveCount), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        // Duration first, and selected by default: "did going faster cost me more?" is really "did
+        // arriving sooner cost me more?", and the duration is the number the driver actually felt.
+        Row(horizontalArrangement = Arrangement.spacedBy(tokens.spaceSm)) {
+            FilterChip(
+                selected = axis == ScatterAxis.DURATION,
+                onClick = { onAxis(ScatterAxis.DURATION) },
+                label = { Text(stringResource(R.string.cost_axis_duration)) },
+            )
+            FilterChip(
+                selected = axis == ScatterAxis.SPEED,
+                onClick = { onAxis(ScatterAxis.SPEED) },
+                label = { Text(stringResource(R.string.cost_axis_speed)) },
+            )
         }
         val symbol = currencySymbol(costChart.currencyCode)
         SpeedCostScatter(
             points = costChart.points.map { it.toScatterPoint() },
             currencySymbol = symbol,
+            axis = axis,
             pendingLabel = stringResource(R.string.trip_cost_no_cost_yet),
         )
         Text(
@@ -572,6 +600,7 @@ private fun CostTab(costChart: TripCostChart?) {
 
 private fun TripCostPoint.toScatterPoint(): ScatterPoint = ScatterPoint(
     speedKph = speedKph,
+    durationMs = durationMs,
     cost = cost,
     kind = when {
         isThisDrive && cost == null -> ScatterKind.THIS_PENDING

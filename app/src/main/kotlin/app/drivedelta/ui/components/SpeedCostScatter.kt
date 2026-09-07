@@ -25,30 +25,53 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-/** How a single drive renders on the speed-vs-cost scatter. */
+/**
+ * What a drive's cost is plotted against.
+ *
+ * [DURATION] is the default because it is the question actually being asked — "did going faster cost
+ * me more?" is really "did arriving sooner cost me more?", and a duration is the number the driver
+ * felt. Average speed is the same drive seen through its distance, which only compares across drives
+ * of the same length; it stays available because on a fixed route it is the cleaner independent
+ * variable.
+ */
+enum class ScatterAxis { DURATION, SPEED }
+
+/** How a single drive renders on the cost scatter. */
 enum class ScatterKind { NORMAL, THIS_DRIVE, THIS_PENDING, FASTEST, CHEAPEST, ESTIMATED }
 
 /**
- * One drive on the speed-vs-cost scatter. [cost] is null only for [ScatterKind.THIS_PENDING] — a
- * drive whose fuel hasn't been logged yet, plotted on the speed axis with no cost.
+ * One drive on the cost scatter. Carries **both** x metrics so the axis can be switched without
+ * rebuilding the data upstream. [cost] is null only for [ScatterKind.THIS_PENDING] — a drive whose
+ * fuel hasn't been logged yet, plotted on the x axis with no cost.
  */
 data class ScatterPoint(
     val speedKph: Float,
+    val durationMs: Long,
     val cost: Float?,
     val kind: ScatterKind,
-)
+) {
+    fun x(axis: ScatterAxis): Double = when (axis) {
+        ScatterAxis.SPEED -> speedKph.toDouble()
+        ScatterAxis.DURATION -> durationMs / 60_000.0
+    }
+}
 
 /**
- * Speed (km/h) vs. energy cost scatter with a dashed quadratic trend U-curve — the shared chart behind
- * both the Route Summary and the Trip Detail "Speed vs. cost" sections (design/mockups/trip-summary.png,
- * Energy Logging-saved-drive-not-logged.png). Costed points drive the curve; a not-yet-logged drive is
- * marked on the speed axis with the [pendingLabel]. Money labels use [currencySymbol].
+ * Energy cost against either ride duration or average speed, with a dashed quadratic trend U-curve —
+ * the shared chart behind both the Route Summary and the Trip Detail cost sections
+ * (design/mockups/trip-summary.png, Energy Logging-saved-drive-not-logged.png). Costed points drive
+ * the curve; a not-yet-logged drive is marked on the x axis with the [pendingLabel]. Money labels use
+ * [currencySymbol].
+ *
+ * The trend is only drawn when the fit is genuinely U-shaped, so switching [axis] to one where cost
+ * rises or falls monotonically simply leaves the points without a curve rather than inventing one.
  */
 @Composable
 fun SpeedCostScatter(
     points: List<ScatterPoint>,
     currencySymbol: String,
     modifier: Modifier = Modifier,
+    axis: ScatterAxis = ScatterAxis.DURATION,
     thisDriveLabel: String = "THIS DRIVE",
     pendingLabel: String = "NO COST YET",
 ) {
@@ -77,11 +100,15 @@ fun SpeedCostScatter(
         }
     }
 
-    // X domain over every drive (padded to sensible 10-km/h steps, min 20-wide window).
-    val speeds = points.map { it.speedKph }
-    var xMin = floor(((speeds.minOrNull() ?: 40f) - 5) / 10.0) * 10
-    var xMax = ceil(((speeds.maxOrNull() ?: 100f) + 5) / 10.0) * 10
-    if (xMax - xMin < 20) { xMin -= 10; xMax += 10 }
+    // X domain over every drive, padded out to round steps: 10 km/h on the speed axis, 1 minute on
+    // the duration axis, each with a minimum window so two near-identical drives don't fill the plot.
+    val xs = points.map { it.x(axis) }
+    val step = if (axis == ScatterAxis.SPEED) 10.0 else 1.0
+    val minWindow = if (axis == ScatterAxis.SPEED) 20.0 else 3.0
+    var xMin = floor(((xs.minOrNull() ?: step * 4) - step / 2) / step) * step
+    var xMax = ceil(((xs.maxOrNull() ?: step * 10) + step / 2) / step) * step
+    if (xMax - xMin < minWindow) { xMin -= step; xMax += step }
+    if (xMin < 0) xMin = 0.0
 
     // Y domain over costed drives only; fall back to the design's €2–€6 band when none are costed.
     val costs = points.mapNotNull { it.cost }
@@ -93,7 +120,7 @@ fun SpeedCostScatter(
     val leftPad = with(density) { 34.dp.toPx() }
     val bottomPad = with(density) { 22.dp.toPx() }
     val topPad = with(density) { 18.dp.toPx() }
-    val trend = fitQuadratic(points.mapNotNull { p -> p.cost?.let { p.speedKph.toDouble() to it.toDouble() } })
+    val trend = fitQuadratic(points.mapNotNull { p -> p.cost?.let { p.x(axis) to it.toDouble() } })
 
     Canvas(modifier.fillMaxWidth().height(220.dp)) {
         val plotLeft = leftPad
@@ -116,13 +143,13 @@ fun SpeedCostScatter(
                 currencySymbol + v.roundToInt(), 0f, y + axisPaint.textSize / 3f, axisPaint,
             )
         }
-        // X-axis speed labels.
+        // X-axis labels: km/h, or minutes as m:ss so a 2.4-minute drive doesn't read as "2".
         val xSteps = 4
         for (i in 0..xSteps) {
             val v = xMin + (xMax - xMin) * i / xSteps
             val x = sx(v)
             drawContext.canvas.nativeCanvas.drawText(
-                v.roundToInt().toString(), x - axisPaint.textSize, size.height - 2f, axisPaint,
+                formatAxisValue(v, axis), x - axisPaint.textSize, size.height - 2f, axisPaint,
             )
         }
 
@@ -151,7 +178,7 @@ fun SpeedCostScatter(
         // Points.
         val r = with(density) { 4.dp.toPx() }
         points.forEach { p ->
-            val cx = sx(p.speedKph.toDouble())
+            val cx = sx(p.x(axis))
             when (p.kind) {
                 ScatterKind.THIS_PENDING -> {
                     // Drive not yet logged: sits on the speed axis only, marked on the bottom edge.
@@ -197,6 +224,15 @@ fun SpeedCostScatter(
                 }
             }
         }
+    }
+}
+
+/** Axis tick label: whole km/h on the speed axis, m:ss on the duration axis. */
+private fun formatAxisValue(value: Double, axis: ScatterAxis): String = when (axis) {
+    ScatterAxis.SPEED -> value.roundToInt().toString()
+    ScatterAxis.DURATION -> {
+        val totalSeconds = (value * 60).roundToInt()
+        String.format(java.util.Locale.US, "%d:%02d", totalSeconds / 60, totalSeconds % 60)
     }
 }
 

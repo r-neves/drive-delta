@@ -284,10 +284,9 @@
     <string name="route_summary_faster">MAIS RÁPIDO</string>
     <string name="route_summary_slower">MAIS LENTO</string>
     <string name="route_summary_purple">RECORDE</string>
-    <string name="route_summary_speed_cost">Velocidade vs. custo</string>
     <string name="route_summary_drive_count">%1$d viagens</string>
     <string name="route_summary_scatter_caption">Cada ponto é uma viagem neste percurso. Ao longo do tempo os pontos traçam uma curva — o custo sobe quando andas devagar e quando forças.</string>
-    <string name="route_summary_scatter_empty">Regista combustível em algumas viagens deste percurso para ver a curva velocidade-custo.</string>
+    <string name="route_summary_scatter_empty">Regista combustível em algumas viagens deste percurso para ver a curva de custo.</string>
 
     <!-- Energy logging (per-drive sheet) -->
     <string name="energy_log_title_electric">Registar energia usada</string>
@@ -314,7 +313,10 @@
     <string name="trip_fuel_not_logged">Combustível não registado</string>
     <string name="trip_fuel_not_logged_body">Regista para ver o custo e traçar esta viagem.</string>
     <string name="trip_fuel_add_short">Adicionar</string>
-    <string name="trip_cost_title">Velocidade vs. custo</string>
+    <string name="cost_chart_title_duration">Duração vs. custo</string>
+    <string name="cost_chart_title_speed">Velocidade vs. custo</string>
+    <string name="cost_axis_duration">Por duração</string>
+    <string name="cost_axis_speed">Por vel. média</string>
     <string name="trip_cost_no_cost_yet">SEM CUSTO AINDA</string>
     <string name="trip_cost_empty">Regista combustível nesta viagem para ver a curva velocidade-custo.</string>
     <string name="trip_cost_caption_pending">Esta viagem está apenas no eixo da velocidade. Regista o combustível para a colocar na curva.</string>

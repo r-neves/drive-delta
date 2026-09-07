@@ -8,6 +8,7 @@ import app.drivedelta.domain.model.TripDetail
 import app.drivedelta.domain.repository.CarRepository
 import app.drivedelta.domain.repository.EnergyPricesRepository
 import app.drivedelta.domain.repository.PlaceRepository
+import app.drivedelta.ui.components.ScatterAxis
 import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.domain.usecase.fuel.GetTripCostChartUseCase
 import app.drivedelta.domain.usecase.fuel.TripCostChart
@@ -31,6 +32,8 @@ data class TripDetailUiState(
     val previousPerRoadKey: Map<String, Long> = emptyMap(),
     val hasPreviousRun: Boolean = false,
     val costChart: TripCostChart? = null,
+    /** What the Cost tab plots energy cost against. Duration by default — see [ScatterAxis]. */
+    val costAxis: ScatterAxis = ScatterAxis.DURATION,
     val showEnergyLog: Boolean = false,
     /** Which segment the Segments tab is showing (index into `detail.segments`). */
     val selectedSegment: Int = 0,
@@ -133,6 +136,9 @@ class TripDetailViewModel @Inject constructor(
     }
 
     fun setBaseline(baseline: CompareBaseline) = _uiState.update { it.copy(baseline = baseline) }
+
+    /** Switches the Cost tab between cost-vs-duration and cost-vs-average-speed. */
+    fun setCostAxis(axis: ScatterAxis) = _uiState.update { it.copy(costAxis = axis) }
 
     /** Deletes this ride (soft-delete + Firestore sync + Room removal); caller navigates back. */
     fun deleteTrip(onDeleted: () -> Unit) {
