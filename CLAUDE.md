@@ -2097,7 +2097,28 @@ which was which could only be learned by tapping one to read its title.
       drive at 73, matching its 73 km/h; the heading changes with it. Route insights shows the same
       default. 47 unit tests green.
 
-### CHECKPOINT 33 — The place editor opens on the place
+### ✅ CHECKPOINT 33 — The place editor opens on the place
+
+**Goal:** Editing a place shows the place, not the continent.
+
+Opening a saved place rendered **western Europe** — Ireland to Libya — with a pin somewhere over
+Portugal, and the geofence circle the screen exists to edit was sub-pixel.
+
+- [x] **Cause:** the recenter effect used `CameraUpdateFactory.newLatLng`, which carries a target and
+      nothing else. It runs before the map has applied the camera state's initial position, so the
+      zoom that survived was the map's own default, not the 15f the state was created with. The
+      camera is now moved with a full `CameraPosition` — where *and* how close.
+- [x] **The zoom is derived from the radius, not fixed.** At zoom z a map dp covers
+      `156543.034 · cos(lat) / 2^z` metres; solving for the circle's diameter filling 62% of the
+      300dp hero gives the zoom. A single constant can't serve both a 50 m home and a 500 m
+      industrial estate — one becomes a dot, the other a wall of colour. Clamped to 10–18.
+- [x] A place with **no position yet** is framed at neighbourhood level (14.5) instead: its
+      coordinates are a default rather than a choice, so its surroundings are more use than a circle
+      drawn around a guess.
+- [x] **Acceptance test:** ✅ On the emulator. Before: all of western Europe. After, Palito (50 m):
+      the circle fills roughly the designed 62% of the hero with streets and shop names readable
+      around it. Vasco da Gama (175 m): the same proportion at a correspondingly wider zoom, so the
+      zoom really is following the radius. 47 unit tests green.
 
 ### CHECKPOINT 34 — Telling the user the pin can be dragged
 
