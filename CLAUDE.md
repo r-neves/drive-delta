@@ -2120,7 +2120,31 @@ Portugal, and the geofence circle the screen exists to edit was sub-pixel.
       around it. Vasco da Gama (175 m): the same proportion at a correspondingly wider zoom, so the
       zoom really is following the radius. 47 unit tests green.
 
-### CHECKPOINT 34 — Telling the user the pin can be dragged
+### ✅ CHECKPOINT 34 — Telling the user the pin can be dragged
+
+**Goal:** Make the drag discoverable, and confirm it the instant the press registers.
+
+CP17 fixed the gesture contention that stopped the marker drag working. Nothing was ever done about
+the fact that **nothing on screen says the pin can be moved by hand**, or that Maps recognises a
+long-press well before it will follow a finger — until it does, the press reads as ignored and gets
+abandoned a beat too early.
+
+- [x] **A buzz on `DragState.START`**, which is exactly the moment the marker lifts. Through
+      `LocalHapticFeedback.performHapticFeedback(LongPress)`, so a phone with haptics turned off
+      stays silent — rather than a `Vibrator` call that needs the VIBRATE permission and ignores the
+      setting.
+- [x] **A hint immediately under the map**, where the pin is: "Press and hold the pin to drag it
+      somewhere else", with a touch icon, in the secondary text colour so it doesn't compete with
+      the fields. en + pt.
+- [x] **Acceptance test:** ✅ On the emulator. The hint renders between the map and PLACE NAME. The
+      drag-start path was proven by instrumenting the collector and long-pressing the pin through
+      adb: `dragState=START` on press, `END` on release — so the haptic fires at long-press
+      recognition, as intended.
+
+> The vibration itself can't be felt on an emulator, and `adb` still can't drive a real
+> long-press-and-drag of a Maps marker (CP17 hit the same wall) — `input swipe` won't hold and
+> `draganddrop` logged no drag events at all. **Confirm the buzz on your device**; the event that
+> triggers it is proven to fire.
 
 ### CHECKPOINT 35 — New places start in Portela
 

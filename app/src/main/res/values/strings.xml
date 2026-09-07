@@ -241,6 +241,7 @@
     <string name="place_field_search">Search address</string>
     <string name="place_search_unavailable">Address search needs a Places API key.</string>
     <string name="place_field_radius">Geofence radius</string>
+    <string name="place_drag_hint">Press and hold the pin to drag it somewhere else.</string>
     <string name="place_label_name">PLACE NAME</string>
     <string name="place_label_icon">ICON</string>
     <string name="place_label_radius">GEOFENCE RADIUS</string>
