@@ -2034,7 +2034,25 @@ a shrinking number in a chip, so "am I close to where this auto-finishes?" could
       countdown, and the ride auto-finished as "Home → Auchan Alverca · 0.4 km". No crashes.
       47 unit tests green.
 
-### CHECKPOINT 30 — The HUD clock that never moved
+### ✅ CHECKPOINT 30 — The HUD clock that never moved
+
+**Goal:** Answer "is that number important, bugged, or should it go?" — and stop showing it.
+
+It was the **live segment split time**, and it was dead by design, not bugged. CP9 deferred live
+splits: knowing which stretch of road you are on mid-ride means calling the Roads API while driving,
+which the project's cost rule forbids. So `bestSegmentMs` is always null and
+`currentSegmentElapsedMs` is never written — but the block rendered the clock anyway, putting a
+permanent `0:00.0` in `displayMedium` right beside the speed. A prominent number measuring nothing.
+
+- [x] Removing it outright would leave the HUD's designed two-column telemetry lopsided, so the slot
+      now shows **the ride's average speed** — a real measurement over telemetry the HUD already
+      has, in the same position and type. The split treatment (AHEAD/BEHIND BEST, coloured delta,
+      best caption) returns on its own the day `bestSegmentMs` becomes non-null.
+- [x] Tidied the block while there: after the early return `bestMs` is non-null, so the two
+      duplicated `if (bestMs != null)` arms and their recomputed delta collapsed into one.
+- [x] **Acceptance test:** ✅ On the emulator: the HUD reads `1 KM/H` on the left and `AVG 34 KM/H`
+      on the right against `00:30 / 0.3 km` — 36 km/h, so the number is right — where it used to read
+      `0:00.0` forever. 47 unit tests green.
 
 ### CHECKPOINT 31 — Start and finish markers that mean something
 

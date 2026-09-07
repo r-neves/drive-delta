@@ -54,8 +54,16 @@ import kotlin.math.roundToInt
  * panel pinned to the bottom of the map. Header: a RECORDING pulse (SEARCHING while acquiring GPS) +
  * the current road. Main block: the big speed readout (left) beside the segment time, AHEAD/BEHIND
  * BEST status and coloured seconds delta (right). Footer: ELAPSED / DISTANCE stats and the STOP
- * button. The segment status / best / delta only render once a best time is known — live splits are
- * deferred by design (bestSegmentMs stays null), so the delta area is quietly omitted until then.
+ * button.
+ *
+ * The right-hand block shows the live segment time, AHEAD/BEHIND BEST and the coloured delta **only
+ * once a best time for the current stretch is known**. Live splits are deferred by design — knowing
+ * which road you are on mid-ride would mean calling the Roads API while driving, which the cost rule
+ * forbids — so today `bestSegmentMs` is always null and `currentSegmentElapsedMs` is never written.
+ * That slot used to render the segment clock regardless, which put a permanent, prominent `0:00.0`
+ * beside the speed: a number that looked broken because it was measuring nothing. It now shows the
+ * ride's average speed, a real measurement over the same telemetry, and the split treatment returns
+ * on its own the day live splits land.
  */
 @Composable
 fun HudOverlay(
@@ -176,43 +184,73 @@ private fun RecordingIndicator(acquiring: Boolean) {
 private fun SegmentBlock(state: TrackingState, acquiring: Boolean) {
     val ddType = LocalDdType.current
     val bestMs = state.bestSegmentMs
+    if (bestMs == null) {
+        AverageSpeedBlock(state, acquiring)
+        return
+    }
+    val deltaMs = state.currentSegmentElapsedMs - bestMs
+    val faster = deltaMs < 0
+    val statusColor = if (faster) DdDeltaFaster else DdError
     Column(horizontalAlignment = Alignment.End) {
-        if (bestMs != null) {
-            val deltaMs = state.currentSegmentElapsedMs - bestMs
-            val faster = deltaMs < 0
-            val statusColor = if (faster) DdDeltaFaster else DdError
-            Text(
-                text = stringResource(
-                    if (faster) R.string.tracking_ahead_of_best else R.string.tracking_behind_best,
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = statusColor,
-            )
-        }
+        Text(
+            text = stringResource(
+                if (faster) R.string.tracking_ahead_of_best else R.string.tracking_behind_best,
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = statusColor,
+        )
         Text(
             text = if (acquiring) "--:--" else formatSegment(state.currentSegmentElapsedMs),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (bestMs != null) {
-            val deltaMs = state.currentSegmentElapsedMs - bestMs
-            val faster = deltaMs < 0
-            val statusColor = if (faster) DdDeltaFaster else DdError
-            val glyph = if (faster) "▾" else "▴"
-            val sign = if (faster) "−" else "+"
-            Text(
-                text = "$glyph $sign${formatDeltaSeconds(abs(deltaMs))}",
-                style = ddType.deltaValue,
-                color = statusColor,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = stringResource(R.string.tracking_best_caption, formatSegment(bestMs)),
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.5.sp),
-                color = DdTextTertiary,
-            )
-        }
+        Text(
+            text = (if (faster) "▾ −" else "▴ +") + formatDeltaSeconds(abs(deltaMs)),
+            style = ddType.deltaValue,
+            color = statusColor,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = stringResource(R.string.tracking_best_caption, formatSegment(bestMs)),
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.5.sp),
+            color = DdTextTertiary,
+        )
     }
+}
+
+/**
+ * Stands in for the split block until live splits exist: the ride's average speed so far, in the
+ * same slot and the same type, so the HUD keeps its designed two-column shape without showing a
+ * clock that never moves.
+ */
+@Composable
+private fun AverageSpeedBlock(state: TrackingState, acquiring: Boolean) {
+    val tokens = LocalDdTokens.current
+    Column(horizontalAlignment = Alignment.End) {
+        Text(
+            text = stringResource(R.string.tracking_label_avg),
+            style = MaterialTheme.typography.labelSmall,
+            color = DdTextTertiary,
+        )
+        Text(
+            text = if (acquiring) "--" else averageSpeedKph(state).toString(),
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = stringResource(R.string.tracking_unit_kmh),
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 3.sp),
+            color = DdTextSecondary,
+            modifier = Modifier.padding(top = tokens.spaceXs),
+        )
+    }
+}
+
+/** Distance over elapsed time — the whole-ride average, including time spent stopped. */
+private fun averageSpeedKph(state: TrackingState): Int {
+    val seconds = state.elapsedMs / 1000f
+    if (seconds <= 0f) return 0
+    return ((state.distanceMeters / seconds) * 3.6f).roundToInt()
 }
 
 @Composable

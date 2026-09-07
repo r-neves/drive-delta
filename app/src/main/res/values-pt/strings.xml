@@ -204,6 +204,7 @@
     <string name="tracking_unit_kmh">KM/H</string>
     <string name="tracking_label_elapsed">DECORRIDO</string>
     <string name="tracking_label_distance">DISTÂNCIA</string>
+    <string name="tracking_label_avg">MÉDIA</string>
     <string name="tracking_ahead_of_best">À FRENTE DO MELHOR</string>
     <string name="tracking_behind_best">ATRÁS DO MELHOR</string>
     <string name="tracking_new_best">NOVO RECORDE</string>
