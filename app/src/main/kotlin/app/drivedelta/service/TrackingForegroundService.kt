@@ -103,10 +103,17 @@ class TrackingForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Promote to foreground before anything else, on EVERY path. startForegroundService() gives
+        // the service about five seconds to call startForeground() regardless of which action the
+        // intent carries, and a STOP delivered while nothing is recording *creates* the service —
+        // it used to fall straight through to stopSelf without ever promoting, and Android killed
+        // the whole process with ForegroundServiceDidNotStartInTimeException. Reproduced on the
+        // emulator by tapping STOP on a tracking screen that had been opened without a ride.
+        // Promoting and immediately stopping is cheap: the notification never gets a frame on
+        // screen, and stopSelfCleanly() removes it.
+        startForegroundCompat(buildNotification(getString(app.drivedelta.R.string.tracking_notification_starting)))
         when (intent?.action) {
             ACTION_START -> {
-                // Promote to foreground immediately to avoid the start-timeout ANR, then record.
-                startForegroundCompat(buildNotification(getString(app.drivedelta.R.string.tracking_notification_starting)))
                 val id = intent.getStringExtra(EXTRA_TRIP_ID)
                 if (id == null) {
                     stopSelfCleanly()
@@ -115,7 +122,15 @@ class TrackingForegroundService : Service() {
                 }
             }
 
-            ACTION_STOP -> stopTracking(intent.getStringExtra(EXTRA_TRIGGER) ?: TRIGGER_MANUAL)
+            // Only finalise a trip we are actually recording. A STOP that arrives with no trip in
+            // flight has nothing to finish, and running the finalisation would stamp an end time on
+            // nothing and publish a bogus finish event.
+            ACTION_STOP ->
+                if (tripId != null) {
+                    stopTracking(intent.getStringExtra(EXTRA_TRIGGER) ?: TRIGGER_MANUAL)
+                } else {
+                    stopSelfCleanly()
+                }
 
             else -> stopSelfCleanly()
         }

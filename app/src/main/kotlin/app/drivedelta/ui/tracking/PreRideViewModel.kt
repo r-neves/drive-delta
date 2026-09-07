@@ -42,6 +42,14 @@ class PreRideViewModel @Inject constructor(
     private val _nearbyPlace = MutableStateFlow<Place?>(null)
     val nearbyPlace: StateFlow<Place?> = _nearbyPlace.asStateFlow()
 
+    /**
+     * The id of the trip [startRide] just created, or null. A one-shot event, not a fact: this
+     * ViewModel is scoped to the Dashboard's back-stack entry, not to the sheet, so it outlives
+     * every open/close of the sheet. Leaving the id set meant the *next* time the sheet opened, its
+     * "did we start?" effect fired immediately on the previous ride's id and skipped the whole
+     * sheet, dropping the driver onto a tracking screen with no ride behind it. Call
+     * [onStartHandled] once the host has acted on it.
+     */
     private val _startedTripId = MutableStateFlow<String?>(null)
     val startedTripId: StateFlow<String?> = _startedTripId.asStateFlow()
 
@@ -50,6 +58,11 @@ class PreRideViewModel @Inject constructor(
             val location = locationProvider.lastLocation() ?: return@launch
             _nearbyPlace.value = detectNearbyPlaceUseCase(location.latitude, location.longitude)
         }
+    }
+
+    /** Consumes the [startedTripId] event so re-opening the sheet can't replay it. */
+    fun onStartHandled() {
+        _startedTripId.value = null
     }
 
     fun startRide(carId: String?, originPlaceId: String?, destinationPlaceId: String?) {

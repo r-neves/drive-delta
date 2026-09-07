@@ -64,7 +64,14 @@ fun PreRideSheet(
     val nearbyPlace by viewModel.nearbyPlace.collectAsStateWithLifecycle()
     val startedTripId by viewModel.startedTripId.collectAsStateWithLifecycle()
 
-    LaunchedEffect(startedTripId) { if (startedTripId != null) onStarted() }
+    // Consume the event: the ViewModel is scoped to the Dashboard, not to this sheet, so an
+    // unconsumed id would replay on the next open and skip straight to tracking with no ride.
+    LaunchedEffect(startedTripId) {
+        if (startedTripId != null) {
+            onStarted()
+            viewModel.onStartHandled()
+        }
+    }
 
     var selectedCar by remember(cars) { mutableStateOf(cars.firstOrNull { it.isDefault } ?: cars.firstOrNull()) }
     var origin by remember { mutableStateOf<Place?>(null) }
