@@ -144,13 +144,12 @@ fun StopConfirmSheet(
             // it drops to the neutral primary and the red moves to Discard — otherwise a driver who
             // has learned "the red button is the one that ends this" would read the colour backwards
             // at exactly the moment the two actions stop being the same thing.
-            val keepingRide = isShortRide
             Button(
                 onClick = onFinish,
                 enabled = !finishing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(tokens.radiusMd),
-                colors = if (keepingRide) {
+                colors = if (isShortRide) {
                     ButtonDefaults.buttonColors()
                 } else {
                     ButtonDefaults.buttonColors(
@@ -163,7 +162,7 @@ fun StopConfirmSheet(
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color = if (keepingRide) {
+                        color = if (isShortRide) {
                             MaterialTheme.colorScheme.onPrimary
                         } else {
                             MaterialTheme.colorScheme.onError
@@ -175,7 +174,7 @@ fun StopConfirmSheet(
                     stringResource(
                         when {
                             finishing && !discardRequested -> R.string.tracking_finishing
-                            keepingRide -> R.string.tracking_keep
+                            isShortRide -> R.string.tracking_keep
                             else -> R.string.tracking_finish
                         },
                     ),
