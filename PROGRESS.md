@@ -46,12 +46,13 @@
     was committed — a failure to promote to the foreground must not stop the command being handled.
   - **All ten checkpoints of this batch are done.** 49 unit tests green (two new, on the pre-ride
     ViewModel's Dashboard-scoped lifetime — the source of CP26 and half of CP28).
-  - **Test data cleaned up.** Verifying this batch recorded eight short drives near Alverca on your
-    real account (all under 1 km). All were deleted through the app — so remotely too, per CP23 —
-    and two cold starts confirmed none came back: **22 trips, all real, none newer than 6 Sep, zero
-    orphan route points**. One abandoned ride was cleaned up by CP25's own salvage pass, which
-    re-verified that too. (The 9 orphan segment rows from trip `29675daa…` are the pre-existing ones
-    CP23 noted, not from this session.)
+  - **Test data cleaned up.** Verifying this batch recorded a dozen short drives near Alverca on your
+    real account (all under 1 km). The finished ones were deleted through the app — so remotely too,
+    per CP23 — and the empty abandoned ones were swept by CP25's own path on a cold start, which
+    re-verified that checkpoint along the way. Final state: **22 trips, all real, newest 6 Sep
+    19:02, zero unfinished, zero orphan route points**, confirmed after repeated cold starts.
+    (The 9 orphan segment rows from trip `29675daa…` are the pre-existing ones CP23 noted, not from
+    this session.)
   - ⚠️ **TWO THINGS TO CONFIRM ON YOUR DEVICE**, neither of which an emulator can show:
     1. **CP34** — the buzz when you press and hold the place marker. The event that fires it
        (`DragState.START`) is proven to fire on long-press; the vibration itself can't be felt here.
