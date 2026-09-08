@@ -2204,12 +2204,47 @@ reachable defects, not polish.
       five — a 90-minute route was labelling ticks "84:00", which reads as hours and minutes.
 - [x] **The x-domain minimum window** is applied after the zero clamp, not before: a single
       sub-minute drive was ending up with a 0..2 window against a minimum of 3.
+A **second** review pass, over those fixes, found seven more — including one where the first fix had
+over-corrected. All seven are fixed too.
+
+- [x] **The stale-origin fix blanked a *correct* origin while the lookup ran.** Clearing
+      `_nearbyPlace` eagerly meant the field sat empty for as long as a fresh high-accuracy fix takes,
+      so tapping Start Ride a second after opening the sheet saved the ride with no origin — the
+      common case, degraded to fix an uncommon one. And a lookup that returned no location at all
+      left it empty forever, conflating "we don't know where you are" with "you are not near a
+      place". Now the flow only ever publishes a *definite* answer, and always publishes it: the
+      previous value stands while the lookup runs, and a location we couldn't get clears it.
+- [x] **The origin/destination place lookups outlived their ride.** CP36 cancelled the three
+      recording coroutines on a second START but not these two, so trip A's destination could resolve
+      onto trip B and arm a geofence auto-stop at a place that driver never selected. They are now a
+      cancellable job like the others, dropped on start, stop and discard.
+- [x] **A failed promotion on START must abort, not continue.** Swallowing it on every path meant a
+      START that couldn't promote carried on recording — and the platform kills that process within
+      about five seconds, leaving the trip open with no end time. START now aborts cleanly; stop and
+      discard still ignore the failure, which is the case that mattered.
+- [x] **The x-domain widening went off-grid and could clip a drive.** Widening symmetrically from the
+      clamped minimum left ticks at 7:30 / 8:15 and put a real drive exactly on the plot edge. It now
+      widens in whole steps, outward only. **Extracted as `scatterXDomain` and unit-tested** — this
+      arithmetic has now been wrong three times in three different ways, which is what a test is for.
+- [x] **The clock format was chosen per tick, so one axis mixed both.** A 50–62 minute route rendered
+      `50:00 · 54:00 · 1:02:00`, and the first two then read as hours beside their sibling — exactly
+      the ambiguity the format change set out to remove. Chosen once, from the axis maximum.
+- [x] **The widest label ran off the canvas.** Ticks are drawn at `x − textSize` against a plot that
+      ended at the full width, so "1:30:00" was clipped. The plot now reserves precisely the overhang.
+- [x] **`isShortRide` is latched when the sheet opens.** It was recomputed from the live elapsed time,
+      so a discard begun at 29.x s lost its own button — spinner, label and all — as the clock crossed
+      30 s, and the button set could morph under a finger.
+- [x] **8 new unit tests** (`ScatterAxisTest`) pinning the domain invariants and both label formats.
+      **57 green.**
 - [x] **Acceptance test:** ✅ Every fix re-verified on the emulator. Origin fills at Home and
       **clears** when the driver is nowhere near a saved place. Six rapid Start Ride taps produce one
       ride and no orphan. The short sheet renders Keep in primary blue and Discard in red, and shows
       "Discarding…" on the Discard button mid-flight. Discard deletes the trip again. A normal
       >30 s ride still shows the red Finish and saves (555 m, 50 s, `MANUAL`, `roadsProcessed=1`).
-      49 unit tests green.
+      After the second pass: the origin fills at Home **and fills again within three seconds on a
+      re-open** (the blanking is gone), clears when the driver is far from every saved place and the
+      location cache has expired, and the cost chart's duration axis renders 15:00 → 18:00 with the
+      drive at 17:15 and the last label fully on canvas. 57 unit tests green, empty crash buffer.
 
 ---
 
