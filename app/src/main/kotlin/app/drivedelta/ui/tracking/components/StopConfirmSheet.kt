@@ -70,7 +70,11 @@ fun StopConfirmSheet(
     onDismiss: () -> Unit,
 ) {
     val tokens = LocalDdTokens.current
-    val isShortRide = state.elapsedMs < SHORT_RIDE_MS
+    // Latched at open, not recomputed from the live elapsed time. The sheet asks about the ride as
+    // it was when the driver decided to stop; leaving it live meant the whole button set could morph
+    // under a finger as the clock crossed 30 s, and a discard started at 29.x s lost its own button —
+    // spinner, label and all — mid-flight.
+    val isShortRide = remember { state.elapsedMs < SHORT_RIDE_MS }
     // Which action the in-flight [finishing] belongs to, so the spinner and the verb land on the
     // button that was actually pressed.
     var discardRequested by remember { mutableStateOf(false) }

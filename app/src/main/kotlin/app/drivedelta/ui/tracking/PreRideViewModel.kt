@@ -72,15 +72,22 @@ class PreRideViewModel @Inject constructor(
      */
     fun refreshNearbyPlace() {
         nearbyJob?.cancel()
-        // Drop the previous answer *before* asking again. This flow feeds the sheet's origin, and a
-        // suggestion that outlives the place it was detected in is worse than none: open the sheet at
-        // home, drive to the office, open it there — the stale "Home" would still be filled in, and
-        // once detection came back with null nothing would ever clear it, so a ride would be saved
-        // as starting somewhere it didn't.
-        _nearbyPlace.value = null
         nearbyJob = viewModelScope.launch {
-            val location = locationProvider.currentLocation() ?: return@launch
-            _nearbyPlace.value = detectNearbyPlaceUseCase(location.latitude, location.longitude)
+            // Only ever publish a definite answer, and always publish it — including "no place".
+            //
+            // Both halves matter. Publishing null *eagerly*, before the lookup, empties a correct
+            // origin for as long as the fix takes: `currentLocation()` falls back to a fresh
+            // high-accuracy request whenever the cache is stale, and a driver who opens the sheet
+            // and taps Start Ride a second later would save the ride with no origin at all.
+            // Publishing only non-null answers is the mirror failure: the suggestion then outlives
+            // the place it was detected in, and a ride gets saved as starting somewhere it didn't.
+            //
+            // A location we couldn't get is not evidence of anything, so it clears too — "we don't
+            // know where you are" must not read as "you are still where you were this morning".
+            val location = locationProvider.currentLocation()
+            _nearbyPlace.value = location?.let {
+                detectNearbyPlaceUseCase(it.latitude, it.longitude)
+            }
         }
     }
 

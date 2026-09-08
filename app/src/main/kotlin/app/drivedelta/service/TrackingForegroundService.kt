@@ -90,6 +90,7 @@ class TrackingForegroundService : Service() {
     private var locationJob: Job? = null
     private var flushJob: Job? = null
     private var notificationJob: Job? = null
+    private var placeJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -111,11 +112,15 @@ class TrackingForegroundService : Service() {
         // emulator by tapping STOP on a tracking screen that had been opened without a ride.
         // Promoting and immediately stopping is cheap: the notification never gets a frame on
         // screen, and stopSelfCleanly() removes it.
-        startForegroundCompat(buildNotification(notificationText()))
+        val promoted = startForegroundCompat(buildNotification(notificationText()))
         when (intent?.action) {
             ACTION_START -> {
                 val id = intent.getStringExtra(EXTRA_TRIP_ID)
-                if (id == null) {
+                // A recording that couldn't promote is a recording the platform will kill within
+                // about five seconds, leaving the trip open with no end time — so don't start one.
+                // The stop and discard paths below deliberately ignore `promoted`: they have work to
+                // finish and are about to stop anyway.
+                if (id == null || !promoted) {
                     stopSelfCleanly()
                 } else {
                     startTracking(
@@ -153,6 +158,7 @@ class TrackingForegroundService : Service() {
         locationJob?.cancel()
         flushJob?.cancel()
         notificationJob?.cancel()
+        placeJob?.cancel()
 
         this.tripId = tripId
         recordingStartEpoch = System.currentTimeMillis()
@@ -167,17 +173,19 @@ class TrackingForegroundService : Service() {
         // Both places are published, not just the destination's name: the live map draws the
         // origin's own icon and the destination's real geofence circle, so the driver can see the
         // finish area coming rather than only reading a shrinking number.
-        if (originPlaceId != null) {
-            serviceScope.launch {
-                val place = placeRepository.getPlace(originPlaceId) ?: return@launch
-                _trackingState.update { it.copy(originPlace = place) }
+        //
+        // Held in a cancellable job like the other three. These are database reads that resolve
+        // after `startTracking` returns, so an untracked one belonging to a previous ride could land
+        // on the current one — arming a geofence auto-stop at a place this driver never selected.
+        placeJob = serviceScope.launch {
+            if (originPlaceId != null) {
+                placeRepository.getPlace(originPlaceId)?.let { place ->
+                    _trackingState.update { it.copy(originPlace = place) }
+                }
             }
-        }
-        if (destinationPlaceId != null) {
-            serviceScope.launch {
-                val place = placeRepository.getPlace(destinationPlaceId)
-                destination = place
-                if (place != null) {
+            if (destinationPlaceId != null) {
+                placeRepository.getPlace(destinationPlaceId)?.let { place ->
+                    destination = place
                     _trackingState.update { it.copy(destinationPlace = place) }
                 }
             }
@@ -340,6 +348,7 @@ class TrackingForegroundService : Service() {
         locationJob?.cancel()
         flushJob?.cancel()
         notificationJob?.cancel()
+        placeJob?.cancel()
 
         serviceScope.launch {
             flushBuffer()
@@ -382,6 +391,7 @@ class TrackingForegroundService : Service() {
         locationJob?.cancel()
         flushJob?.cancel()
         notificationJob?.cancel()
+        placeJob?.cancel()
         tripId = null
 
         serviceScope.launch {
@@ -450,16 +460,16 @@ class TrackingForegroundService : Service() {
     /**
      * Promotes to the foreground with the `location` type the manifest declares.
      *
-     * Guarded, because on API 34+ this is refused with a `SecurityException` when the location
-     * permission isn't held — possible on the stop and discard paths, which can create the service,
-     * if the permission was revoked while we were backgrounded. **A failure must not stop the
-     * command being handled**: dropping out early here meant a discard promoted, failed, and
-     * returned without ever deleting the trip, which is worse than the crash it was guarding
-     * against. Handle the action either way; the non-recording paths call `stopSelfCleanly()`
-     * moments later regardless.
+     * Returns whether it worked, and never throws. On API 34+ this is refused with a
+     * `SecurityException` when the location permission isn't held — possible on the stop and discard
+     * paths, which can create the service, if the permission was revoked while we were backgrounded.
+     *
+     * **A failure must not stop a stop or a discard being handled**: an earlier attempt returned out
+     * of `onStartCommand` on failure and a discard then never deleted its trip, which is worse than
+     * the crash it was guarding against. A failed START is the opposite case — see the caller.
      */
     @SuppressLint("InlinedApi") // FOREGROUND_SERVICE_TYPE_LOCATION is ignored by ServiceCompat < API 29.
-    private fun startForegroundCompat(notification: Notification) {
+    private fun startForegroundCompat(notification: Notification): Boolean =
         runCatching {
             ServiceCompat.startForeground(
                 this,
@@ -467,8 +477,7 @@ class TrackingForegroundService : Service() {
                 notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
             )
-        }
-    }
+        }.isSuccess
 
     private fun formatElapsed(ms: Long): String {
         val totalSec = ms / 1000

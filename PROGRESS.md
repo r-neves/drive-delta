@@ -40,7 +40,12 @@
   - **✅ CP34 — Place editor: haptic on marker long-press + a "hold to drag" hint. Done, committed.**
     ⚠️ The buzz itself can't be felt on an emulator — confirm on your device.
   - **✅ CP35 — New places default to Portela (Loures). Done, verified, committed.**
-  - **✅ CP36 — acted on the batch's own code review.** Seven findings, all fixed; two were
+  - **✅ CP36 — acted on the batch's own code review, twice.** A second pass over the first round of
+    fixes found seven more, including one where the first fix had over-corrected (clearing the
+    detected place *before* the lookup blanked a correct origin for as long as a GPS fix takes).
+    The cost chart's axis arithmetic is now extracted and unit-tested — it had been wrong three
+    times in three different ways. **57 tests green.**
+  - **✅ CP36 — first pass.** Seven findings, all fixed; two were
     reachable defects (a stale origin place could be saved on the wrong ride; double-tapping Start
     Ride minted two rides). One of the fixes broke discard and was caught on the emulator before it
     was committed — a failure to promote to the foreground must not stop the command being handled.

@@ -101,20 +101,7 @@ fun SpeedCostScatter(
         }
     }
 
-    // X domain over every drive, padded out to round steps: 10 km/h on the speed axis, 1 minute on
-    // the duration axis, each with a minimum window so two near-identical drives don't fill the plot.
-    val xs = points.map { it.x(axis) }
-    val step = if (axis == ScatterAxis.SPEED) 10.0 else 1.0
-    val minWindow = if (axis == ScatterAxis.SPEED) 20.0 else 3.0
-    var xMin = floor(((xs.minOrNull() ?: step * 4) - step / 2) / step) * step
-    var xMax = ceil(((xs.maxOrNull() ?: step * 10) + step / 2) / step) * step
-    // Clamp before widening, then widen from wherever the clamp left us: doing it the other way
-    // round meant a single sub-minute drive ended up with a 0..2 window against a minimum of 3.
-    if (xMin < 0) xMin = 0.0
-    if (xMax - xMin < minWindow) {
-        xMin = (xMin - minWindow / 2).coerceAtLeast(0.0)
-        xMax = xMin + minWindow
-    }
+    val (xMin, xMax) = scatterXDomain(points.map { it.x(axis) }, axis)
 
     // Y domain over costed drives only; fall back to the design's €2–€6 band when none are costed.
     val costs = points.mapNotNull { it.cost }
@@ -123,14 +110,24 @@ fun SpeedCostScatter(
     if (yMax - yMin < 2) { yMin -= 1; yMax += 1 }
     if (yMin < 0) yMin = 0.0
 
+    // A clock label needs hours once the axis runs past one, and that decision is made here, for the
+    // whole axis, so every tick reads the same way.
+    val useHours = axis == ScatterAxis.DURATION && xMax >= MINUTES_PER_HOUR
+    val xSteps = if (useHours) 3 else 4
+
     val leftPad = with(density) { 34.dp.toPx() }
     val bottomPad = with(density) { 22.dp.toPx() }
     val topPad = with(density) { 18.dp.toPx() }
+    // Labels are drawn centred-ish at `x - textSize`, so the rightmost one overhangs the plot by
+    // (its width − textSize). Reserve exactly that, or "1:30:00" is clipped off the canvas edge.
+    val rightPad = (
+        axisPaint.measureText(formatAxisValue(xMax, axis, useHours)) - axisPaint.textSize
+        ).coerceAtLeast(0f)
     val trend = fitQuadratic(points.mapNotNull { p -> p.cost?.let { p.x(axis) to it.toDouble() } })
 
     Canvas(modifier.fillMaxWidth().height(220.dp)) {
         val plotLeft = leftPad
-        val plotRight = size.width
+        val plotRight = size.width - rightPad
         val plotTop = topPad
         val plotBottom = size.height - bottomPad
         val plotW = plotRight - plotLeft
@@ -149,14 +146,15 @@ fun SpeedCostScatter(
                 currencySymbol + v.roundToInt(), 0f, y + axisPaint.textSize / 3f, axisPaint,
             )
         }
-        // X-axis labels: km/h, or a clock. Long routes get fewer ticks — "1:24:00" five times across
-        // a phone's width collides, and five is only worth having when the labels are short.
-        val xSteps = if (axis == ScatterAxis.DURATION && xMax >= MINUTES_PER_HOUR) 3 else 4
+        // X-axis labels: km/h, or a clock. The clock format is chosen once for the whole axis, from
+        // its widest value — picking per tick gives a 50–62 minute route "50:00 · 54:00 · 1:02:00",
+        // where the first two now read as hours beside their h:mm:ss sibling. Long routes also get
+        // fewer ticks: "1:24:00" five times across a phone's width collides.
         for (i in 0..xSteps) {
             val v = xMin + (xMax - xMin) * i / xSteps
             val x = sx(v)
             drawContext.canvas.nativeCanvas.drawText(
-                formatAxisValue(v, axis), x - axisPaint.textSize, size.height - 2f, axisPaint,
+                formatAxisValue(v, axis, useHours), x - axisPaint.textSize, size.height - 2f, axisPaint,
             )
         }
 
@@ -235,29 +233,62 @@ fun SpeedCostScatter(
 }
 
 /**
+ * The x domain for [axis]: the drives' own range, padded out to round steps — 10 km/h on the speed
+ * axis, 1 minute on the duration axis — and widened to a minimum window so two near-identical drives
+ * don't fill the plot.
+ *
+ * Extracted and tested because this arithmetic has been wrong three times in three different ways.
+ * The invariants it has to hold, all of them learned the hard way:
+ *  - **On the grid.** Both ends stay multiples of the step, because the ticks are drawn from this
+ *    range; an off-grid domain labels a duration axis 7:30 / 8:15 / 9:00.
+ *  - **Never negative.** A drive can't take less than no time, and a negative tick is nonsense.
+ *  - **Only ever widened.** Shrinking an end to satisfy the minimum window puts a real drive on the
+ *    plot edge, drawn half-clipped.
+ *  - **At least the minimum window**, after the zero clamp rather than before it — clamping second
+ *    left a single sub-minute drive with a 0..2 window against a minimum of 3.
+ */
+internal fun scatterXDomain(values: List<Double>, axis: ScatterAxis): Pair<Double, Double> {
+    val step = if (axis == ScatterAxis.SPEED) SPEED_STEP else DURATION_STEP
+    val minWindow = if (axis == ScatterAxis.SPEED) SPEED_MIN_WINDOW else DURATION_MIN_WINDOW
+    var min = floor(((values.minOrNull() ?: step * 4) - step / 2) / step) * step
+    var max = ceil(((values.maxOrNull() ?: step * 10) + step / 2) / step) * step
+    if (min < 0) min = 0.0
+    while (max - min < minWindow) {
+        if (min >= step) min -= step
+        if (max - min < minWindow) max += step
+    }
+    return min to max
+}
+
+private const val SPEED_STEP = 10.0
+private const val DURATION_STEP = 1.0
+private const val SPEED_MIN_WINDOW = 20.0
+private const val DURATION_MIN_WINDOW = 3.0
+
+/**
  * Axis tick label: whole km/h on the speed axis, a clock on the duration axis.
  *
  * The clock carries seconds below an hour, so a 2.4-minute drive doesn't read as "2", and hours
  * above it — an unbounded minutes field turned a 90-minute route's ticks into "84:00", which reads
- * as hours and minutes at a glance and means something else entirely.
+ * as hours and minutes at a glance and means something else entirely. [useHours] is decided once for
+ * the whole axis rather than per tick, so a route straddling the hour doesn't mix both formats.
  */
-private fun formatAxisValue(value: Double, axis: ScatterAxis): String = when (axis) {
+internal fun formatAxisValue(value: Double, axis: ScatterAxis, useHours: Boolean): String = when (axis) {
     ScatterAxis.SPEED -> value.roundToInt().toString()
     ScatterAxis.DURATION -> {
         val totalSeconds = (value * 60).roundToInt()
-        val hours = totalSeconds / 3600
         val minutes = (totalSeconds % 3600) / 60
         val seconds = totalSeconds % 60
-        if (hours > 0) {
-            String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+        if (useHours) {
+            String.format(Locale.US, "%d:%02d:%02d", totalSeconds / 3600, minutes, seconds)
         } else {
-            String.format(Locale.US, "%d:%02d", minutes, seconds)
+            String.format(Locale.US, "%d:%02d", totalSeconds / 60, seconds)
         }
     }
 }
 
 /** The duration axis works in minutes, so this is where its labels switch to h:mm:ss. */
-private const val MINUTES_PER_HOUR = 60.0
+internal const val MINUTES_PER_HOUR = 60.0
 
 /** Least-squares quadratic fit y = a·x² + b·x + c; null if fewer than 3 points, singular, or not a U. */
 private fun fitQuadratic(pts: List<Pair<Double, Double>>): Triple<Double, Double, Double>? {
