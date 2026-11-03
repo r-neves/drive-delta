@@ -86,4 +86,26 @@ class CompareAndMatchSegmentsTest {
         assertTrue("different" !in matches)
         assertTrue("inProgress" !in matches)
     }
+
+    @Test
+    fun `match puts same-place drives first, newest first, even with no shared segments`() = runTest {
+        fun placed(id: String, start: Long, origin: String, dest: String) =
+            trip(id, "H_$id").copy(startTime = start, startPlaceId = origin, endPlaceId = dest)
+        coEvery { repo.getTrip("target") } returns placed("target", 50, "home", "office")
+        coEvery { repo.getSegments("target") } returns listOf(seg("target", 0, "K1", 0))
+        every { repo.observeTrips() } returns flowOf(
+            listOf(
+                placed("older", 10, "home", "office"),
+                placed("newer", 90, "home", "office"),
+                placed("reverse", 60, "office", "home"),
+            ),
+        )
+        coEvery { repo.getSegments("older") } returns listOf(seg("older", 0, "Z1", 0))
+        coEvery { repo.getSegments("newer") } returns listOf(seg("newer", 0, "Z2", 0))
+        coEvery { repo.getSegments("reverse") } returns listOf(seg("reverse", 0, "Z3", 0))
+
+        val matches = MatchSegmentsUseCase(repo).invoke("target").map { it.id }
+
+        assertEquals(listOf("newer", "older"), matches)
+    }
 }

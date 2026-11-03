@@ -87,8 +87,13 @@ class TripDetailViewModel @Inject constructor(
     private fun load() {
         viewModelScope.launch {
             val detail = getTripDetail(tripId)
-            // The most recent other trip on this route → the "vs previous" baseline.
-            val previousTrip = matchSegments(tripId).firstOrNull()
+            // The run before this one on the same route → the "vs previous" baseline. Same-route
+            // matches come first; among them the latest that started *before* this drive (a newer
+            // drive isn't "previous"), falling back to the newest match for the oldest drive.
+            val matches = matchSegments(tripId)
+            val thisStart = detail?.trip?.startTime
+            val previousTrip = matches.firstOrNull { thisStart != null && it.startTime < thisStart }
+                ?: matches.firstOrNull()
             val previous = previousTrip
                 ?.let { tripRepository.getSegments(it.id).associate { s -> s.roadKey to s.durationMs } }
                 ?: emptyMap()

@@ -53,9 +53,11 @@ class RouteSummaryUseCaseTest {
 
     @Test
     fun `aggregates route, partitions segments and flags scatter points`() = runTest {
-        val t1 = trip("T1", start = 100, durationMs = 130_000)
-        val t2 = trip("T2", start = 200, durationMs = 90_000)  // fastest total (best other)
-        val t3 = trip("T3", start = 300, durationMs = 100_000, startPlace = "home", endPlace = "office", carId = "car1")
+        // Same origin→destination, but every drive with its own road-sequence hash — the real-world
+        // case: the hash never repeats, so grouping must come from the places.
+        val t1 = trip("T1", start = 100, durationMs = 130_000, hash = "H1", startPlace = "home", endPlace = "office")
+        val t2 = trip("T2", start = 200, durationMs = 90_000, hash = "H2", startPlace = "home", endPlace = "office")  // fastest total (best other)
+        val t3 = trip("T3", start = 300, durationMs = 100_000, hash = "H3", startPlace = "home", endPlace = "office", carId = "car1")
 
         coEvery { tripRepo.getTrip("T3") } returns t3
         every { tripRepo.observeTrips() } returns flowOf(listOf(t1, t2, t3))

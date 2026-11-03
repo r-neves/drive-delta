@@ -50,7 +50,7 @@ class GetTripCostChartUseCase @Inject constructor(
         val prices = energyPricesRepository.getPrices()
 
         val allEnded = tripRepository.observeTrips().first().filter { it.endTime != null }
-        val group = if (trip.routeHash.isNotBlank()) allEnded.filter { it.routeHash == trip.routeHash } else listOf(trip)
+        val group = trip.routeKey?.let { key -> allEnded.filter { it.routeKey == key } } ?: listOf(trip)
 
         // Real logged cost per drive (sum of its linked fuel logs).
         val costByTrip = fuelLogRepository.observeFuelLogs().first()

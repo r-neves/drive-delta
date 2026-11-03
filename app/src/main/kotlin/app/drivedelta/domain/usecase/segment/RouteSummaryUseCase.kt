@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 /**
  * Assembles the Route Summary payload for one drive [tripId]: every completed ride sharing the same
- * route (by `routeHash`) is gathered, then this drive is compared against the rest of that history.
+ * route (by [Trip.routeKey]) is gathered, then this drive is compared against the rest of that history.
  *
  * Reuses the segment-comparison logic: per-segment classification uses the same two baselines as the
  * Trip Detail splits — a segment is "purple" when this drive beats the all-time record for that road
@@ -32,13 +32,9 @@ class RouteSummaryUseCase @Inject constructor(
         val trip = tripRepository.getTrip(tripId) ?: return null
         if (trip.endTime == null) return null
 
-        // All completed rides on this route (same routeHash). Blank hash → this drive stands alone.
+        // All completed rides on this route (same Trip.routeKey). No route identity → it stands alone.
         val allEnded = tripRepository.observeTrips().first().filter { it.endTime != null }
-        val group = if (trip.routeHash.isNotBlank()) {
-            allEnded.filter { it.routeHash == trip.routeHash }
-        } else {
-            listOf(trip)
-        }
+        val group = trip.routeKey?.let { key -> allEnded.filter { it.routeKey == key } } ?: listOf(trip)
         val others = group.filter { it.id != trip.id }
 
         // Energy cost per ride = sum of its linked fuel logs (usually one).

@@ -31,10 +31,10 @@ import javax.inject.Inject
 /** Current-calendar-week totals (F13). */
 data class WeeklyStats(val distanceKm: Float, val driveMinutes: Int, val fuelCost: Float)
 
-/** A frequently-driven route keyed by routeHash, with its best total time (F13). [bestTripId] is the
+/** A frequently-driven route keyed by [Trip.routeKey], with its best total time (F13). [bestTripId] is the
  *  fastest ride on the route — the Route Summary entry point. */
 data class PersonalBest(
-    val routeHash: String,
+    val routeKey: String,
     val rideCount: Int,
     val bestDurationMs: Long,
     val distanceKm: Float,
@@ -100,9 +100,9 @@ class DashboardViewModel @Inject constructor(
     private fun recentItems(trips: List<Trip>, cars: List<Car>, places: List<Place>): List<DashboardRecentItem> {
         val carsById = cars.associateBy { it.id }
         val placesById = places.associateBy { it.id }
-        val byRoute = trips.filter { it.routeHash.isNotBlank() }.groupBy { it.routeHash }
+        val byRoute = trips.filter { it.routeKey != null }.groupBy { it.routeKey!! }
         return trips.sortedByDescending { it.startTime }.take(RECENT_LIMIT).map { t ->
-            val others = byRoute[t.routeHash]?.filter { it.id != t.id }
+            val others = t.routeKey?.let { byRoute[it] }?.filter { it.id != t.id }
             val bestOther = others?.minOfOrNull { it.durationMs }
             DashboardRecentItem(
                 tripId = t.id,
@@ -131,14 +131,14 @@ class DashboardViewModel @Inject constructor(
         )
     }
 
-    /** Groups trips by routeHash (routes driven at least twice), newest-usage first, top 3. */
+    /** Groups trips by [Trip.routeKey] (routes driven at least twice), newest-usage first, top 3. */
     private fun topRoutes(trips: List<Trip>): List<PersonalBest> =
-        trips.filter { it.routeHash.isNotBlank() }
-            .groupBy { it.routeHash }
-            .map { (hash, group) ->
+        trips.filter { it.routeKey != null }
+            .groupBy { it.routeKey!! }
+            .map { (key, group) ->
                 val best = group.minBy { it.durationMs }
                 PersonalBest(
-                    routeHash = hash,
+                    routeKey = key,
                     rideCount = group.size,
                     bestDurationMs = best.durationMs,
                     distanceKm = group.first().distanceMeters / 1000f,

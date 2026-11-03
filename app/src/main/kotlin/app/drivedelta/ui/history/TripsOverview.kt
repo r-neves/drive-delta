@@ -16,7 +16,7 @@ data class TripsStats(val drives: Int, val distanceKm: Float, val newPbs: Int)
 
 /**
  * One drive as the Recent list renders it. [deltaVsPrevMs] is this drive minus the previous drive on
- * the same route (null when it's the first, or the route has no hash); negative = quicker. [isNewPb]
+ * the same route (null when it's the first, or the drive has no route identity — see [Trip.routeKey]); negative = quicker. [isNewPb]
  * is true when this drive beat every earlier drive on the route — a personal-best event.
  */
 data class RecentTripItem(
@@ -56,7 +56,7 @@ data class RoutePairOption(
  * drives, a [series] of recent durations for the sparkline, and the overall [trend].
  */
 data class RouteItem(
-    val routeHash: String,
+    val routeKey: String,
     val originName: String?,
     val destName: String?,
     val driveCount: Int,
@@ -114,7 +114,7 @@ object TripsOverviewBuilder {
             .sortedWith(compareByDescending<RoutePairOption> { it.count }.thenBy { it.originName ?: "" })
 
         // Per-route history → delta vs previous drive, and PB-event flags.
-        val byRoute = vehicleFiltered.filter { it.routeHash.isNotBlank() }.groupBy { it.routeHash }
+        val byRoute = vehicleFiltered.filter { it.routeKey != null }.groupBy { it.routeKey!! }
         val deltaVsPrev = HashMap<String, Long?>()
         val pbEvent = HashMap<String, Boolean>()
         for ((_, group) in byRoute) {
@@ -168,7 +168,8 @@ object TripsOverviewBuilder {
 
         val routes = byRoute
             .filter { (_, group) -> selectedPair == null || matchesPair(group.maxByOrNull { it.startTime }!!) }
-            .map { (hash, group) ->
+            
+            .map { (key, group) ->
             val asc = group.sortedBy { it.startTime }
             val durations = asc.map { it.durationMs }
             val newest = asc.last()
@@ -180,7 +181,7 @@ object TripsOverviewBuilder {
                 else -> RouteTrend.SLOWER
             }
             RouteItem(
-                routeHash = hash,
+                routeKey = key,
                 originName = placeName(newest.startPlaceId),
                 destName = placeName(newest.endPlaceId),
                 driveCount = group.size,

@@ -2248,6 +2248,52 @@ over-corrected. All seven are fixed too.
 
 ---
 
+## Third-drive-batch fix list (CP37–CP40)
+
+Reported after a couple of months of daily use (2026-11-03). Root causes measured on the phone's own
+database before touching code. Riskiest first: CP37 changes what "the same route" means everywhere.
+
+| CP | Change | Risk |
+|---|---|---|
+| 37 | Drives between the same places group as one route | every route grouping |
+| 38 | Origin fills in when parked just outside a place's circle | pre-ride sheet |
+| 39 | Place dropdowns sorted by how often each place is used | pre-ride sheet |
+| 40 | Trip Detail map opens framed on the whole drive | one tab |
+
+### ✅ CHECKPOINT 37 — Same places, same route
+
+**Goal:** "I have several rides with the same start and end points but they don't appear under the
+same route."
+
+Every route grouping keyed on `routeHash` — the SHA-256 of the drive's exact sequence of segment
+`roadKey`s. One lane change near a boundary, one stretch the geocoder names differently, and the
+hash differs. Measured on the phone: **40 drives, 40 distinct hashes**, including four
+Home → Parents Home on the same roads. So By-route, personal bests, route insights, the cost chart
+and "vs previous" each saw every drive alone.
+
+- [x] `Trip.routeKey` — the origin→destination place pair when both are set (direction matters),
+      the road hash only as a fallback, null when neither. One definition used by every grouping:
+      `TripsOverviewBuilder`, `DashboardViewModel` (recent deltas + personal bests),
+      `RouteSummaryUseCase`, `GetTripCostChartUseCase`, `MatchSegmentsUseCase`.
+- [x] `MatchSegmentsUseCase` returns same-route drives first, newest first, then the ≥70 % roadKey
+      overlap matches. It used to return them in whatever order the DAO did and drop out entirely
+      when the drive had no segments.
+- [x] "vs previous" now means the latest same-route drive that started *before* this one — it took
+      the first match, which could be a newer drive.
+- [x] 3 new unit tests (same places / different hashes group; no-place fallback to hash; match
+      ordering). **60 tests green.**
+- [x] **Acceptance test:** ✅ On the Galaxy S25 against the real data. By route: Home → Parents Home
+      **4 drives**, Home → Little Big Apple **4 drives** (each was its own route before). Dashboard's
+      newest drive reads "▾ 0:54 vs best" where it had nothing to compare with. Route insights for
+      Home → Parents Home: vs best ▴0:58 (best 10:54), cost chart over **4 drives**.
+
+> **Still weak, not changed:** segment-level comparison. A segment's `roadKey` ends in the Google
+> feature ids it starts and ends on (CP20), which vary drive to drive, so route insights reported
+> 12 of 13 segments as new personal bests. Route-level time and cost comparison is what was asked
+> for and now works; segment matching across drives is its own piece of work.
+
+---
+
 ## Post-MVP Backlog (do not implement now)
 
 - Android Automotive OS (AAOS manifest, `automotiveApp` XML, rotary nav support, 76dp tap targets)

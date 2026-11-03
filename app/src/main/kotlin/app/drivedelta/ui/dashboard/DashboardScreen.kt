@@ -132,7 +132,7 @@ fun DashboardScreen(
 
             if (personalBests.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.dashboard_personal_bests_title)) }
-                items(personalBests, key = { it.routeHash }) { pb ->
+                items(personalBests, key = { it.routeKey }) { pb ->
                     PersonalBestCard(pb, onClick = { onOpenRouteSummary(pb.bestTripId) })
                 }
             }

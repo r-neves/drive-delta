@@ -78,17 +78,47 @@ class TripsOverviewBuilderTest {
             trip("b2", 2 * DAY, 200_000, "B", dest = "p_home"),
             trip("b3", 3 * DAY, 230_000, "B", dest = "p_home"),
         )
-        val routes = build(trips).routes.associateBy { it.routeHash }
+        val routes = build(trips).routes.associateBy { it.destName }
 
         assertEquals(2, routes.size)
-        assertEquals(280_000L, routes["A"]!!.bestMs)
-        assertEquals(RouteTrend.BEST, routes["A"]!!.trend)      // newest set the record
-        assertEquals(2, routes["A"]!!.driveCount)
+        assertEquals(280_000L, routes["Office"]!!.bestMs)
+        assertEquals(RouteTrend.BEST, routes["Office"]!!.trend)      // newest set the record
+        assertEquals(2, routes["Office"]!!.driveCount)
 
-        assertEquals(200_000L, routes["B"]!!.bestMs)
-        assertEquals(RouteTrend.SLOWER, routes["B"]!!.trend)    // newest slower than the window start
-        assertEquals("b3", routes["B"]!!.openTripId)           // opens the newest drive
-        assertEquals(listOf(200_000L, 200_000L, 230_000L), routes["B"]!!.series)
+        assertEquals(200_000L, routes["Home"]!!.bestMs)
+        assertEquals(RouteTrend.SLOWER, routes["Home"]!!.trend)    // newest slower than the window start
+        assertEquals("b3", routes["Home"]!!.openTripId)           // opens the newest drive
+        assertEquals(listOf(200_000L, 200_000L, 230_000L), routes["Home"]!!.series)
+    }
+
+    @Test
+    fun `drives between the same places form one route even when every road hash differs`() {
+        val trips = listOf(
+            trip("t1", 1 * DAY, 300_000, "H1"),
+            trip("t2", 2 * DAY, 280_000, "H2"),
+            trip("t3", 3 * DAY, 290_000, "H3"),
+            // The reverse direction is a different route.
+            trip("r1", 4 * DAY, 310_000, "H4", origin = "p_office", dest = "p_home"),
+        )
+        val o = build(trips)
+        assertEquals(2, o.routes.size)
+        val out = o.routes.single { it.destName == "Office" }
+        assertEquals(3, out.driveCount)
+        assertEquals(280_000L, out.bestMs)
+        val items = o.sections.flatMap { it.items }.associateBy { it.tripId }
+        assertEquals(10_000L, items["t3"]!!.deltaVsPrevMs)
+    }
+
+    @Test
+    fun `drives without both places fall back to the road hash`() {
+        val trips = listOf(
+            trip("a", 1 * DAY, 300_000, "SAME", origin = null, dest = null),
+            trip("b", 2 * DAY, 280_000, "SAME", origin = null, dest = null),
+            trip("c", 3 * DAY, 280_000, "", origin = null, dest = "p_office"), // no identity at all
+        )
+        val routes = build(trips).routes
+        assertEquals(listOf("hash:SAME"), routes.map { it.routeKey })
+        assertEquals(2, routes.single().driveCount)
     }
 
     @Test
@@ -130,7 +160,7 @@ class TripsOverviewBuilderTest {
         )
         assertEquals(2, filtered.stats.drives)
         assertEquals(setOf("t1", "t2"), filtered.sections.flatMap { it.items }.map { it.tripId }.toSet())
-        assertEquals(listOf("H"), filtered.routes.map { it.routeHash })
+        assertEquals(listOf("places:p_home>p_office"), filtered.routes.map { it.routeKey })
     }
 
     @Test
@@ -153,8 +183,9 @@ class TripsOverviewBuilderTest {
     }
 
     @Test
-    fun `blank-hash trips appear in recent but not by-route`() {
-        val trips = listOf(trip("t1", 1 * DAY, 300_000, hash = ""))
+    fun `trips with no route identity appear in recent but not by-route`() {
+        // No hash and only one end named → no Trip.routeKey.
+        val trips = listOf(trip("t1", 1 * DAY, 300_000, hash = "", dest = null))
         val o = build(trips)
         assertEquals(1, o.sections.flatMap { it.items }.size)
         assertNull(o.sections.single().items.single().deltaVsPrevMs)

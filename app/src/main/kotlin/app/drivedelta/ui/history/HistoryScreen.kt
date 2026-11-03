@@ -183,7 +183,7 @@ fun HistoryScreen(
                         modifier = Modifier.padding(vertical = tokens.spaceXs),
                     )
                 }
-                items(state.routes.size, key = { state.routes[it].routeHash }) { i ->
+                items(state.routes.size, key = { state.routes[it].routeKey }) { i ->
                     val route = state.routes[i]
                     RouteCard(route, onClick = { onOpenRouteSummary(route.openTripId) })
                 }

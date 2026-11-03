@@ -14,7 +14,15 @@
 
 ## Current status
 
-- **Active checkpoint:** **CP26–CP35 — second-drive fix batch** (2026-09-07). Ten items reported
+- **Active checkpoint:** **CP37–CP40 — third-drive fix batch** (2026-11-03). Four items reported after
+  daily use; list and reasoning in the "Third-drive-batch fix list" section of `CLAUDE.md`.
+  - **✅ CP37 — Drives between the same places now group as one route. Done, verified on the phone,
+    committed.** Grouping keyed on `routeHash`, and no two real drives ever shared one (40 drives,
+    40 hashes). New `Trip.routeKey` = origin→destination places, hash only as fallback.
+
+### Previous batch (CP26–CP36)
+
+- **Batch:** **CP26–CP35 — second-drive fix batch** (2026-09-07). Ten items reported
   after further real use, ordered by blast radius; the full list and the reasoning live in the
   "Second-drive-batch fix list" section of `CLAUDE.md`. One commit per item, each verified on the
   emulator before the next started.

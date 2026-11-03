@@ -2,7 +2,7 @@ package app.drivedelta.domain.model
 
 /**
  * Route-level analytics for one place-pair A→B, aggregating every ride the user has driven on that
- * route (grouped by [Trip.routeHash]). Assembled by
+ * route (grouped by [Trip.routeKey]). Assembled by
  * [app.drivedelta.domain.usecase.segment.RouteSummaryUseCase] for the Route Summary screen: it
  * centres on one drive ([tripId] — the ride just finished, or the one opened from the dashboard) and
  * compares it against the rest of the route's history.
