@@ -106,10 +106,30 @@ class PreRideViewModelTest {
         detectNearbyPlaceUseCase = detectNearby,
         locationProvider = locationProvider,
         startTripUseCase = startTrip,
+        tripRepository = mockk { every { observeTrips() } returns flowOf(emptyList()) },
     )
 
     private fun location(lat: Double, lng: Double): Location = mockk<Location>().also {
         every { it.latitude } returns lat
         every { it.longitude } returns lng
+    }
+
+    @Test
+    fun `place lists are ordered by use on their own end, then either end, then name`() {
+        val a = home.copy(id = "a", name = "Alpha")
+        val b = home.copy(id = "b", name = "Bravo")
+        val c = home.copy(id = "c", name = "Charlie")
+        val d = home.copy(id = "d", name = "Delta")
+        fun t(from: String?, to: String?) = app.drivedelta.domain.model.Trip(
+            id = "$from-$to", userId = "u", startTime = 0, endTime = 1,
+            startLat = 0.0, startLng = 0.0, endLat = 0.0, endLng = 0.0,
+            startPlaceId = from, endPlaceId = to, carId = null, distanceMeters = 0f, durationMs = 0,
+        )
+        // c: start ×3. b: start ×1, end ×2. a: end ×1. d: never.
+        val trips = listOf(t("c", "b"), t("c", "b"), t("c", "a"), t("b", null))
+        val places = listOf(d, c, b, a)
+
+        assertEquals(listOf("c", "b", "a", "d"), PreRideViewModel.sortByUse(places, trips) { it.startPlaceId }.map { it.id })
+        assertEquals(listOf("b", "a", "c", "d"), PreRideViewModel.sortByUse(places, trips) { it.endPlaceId }.map { it.id })
     }
 }

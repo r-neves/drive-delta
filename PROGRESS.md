@@ -22,6 +22,8 @@
   - **✅ CP38 — The origin fills in when parked outside a place's circle. Done, verified, committed.**
     The radius is the arrival geofence; return trips started 160–230 m from the pin. Origin now takes
     the closest place within radius + 250 m when none contains the fix.
+  - **✅ CP39 — Origin/destination dropdowns ordered by how often each place is used on that end.
+    Done, verified on the phone, committed.**
 
 ### Previous batch (CP26–CP36)
 

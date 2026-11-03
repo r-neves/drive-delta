@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import app.drivedelta.core.location.LocationProvider
 import app.drivedelta.domain.model.Car
 import app.drivedelta.domain.model.Place
+import app.drivedelta.domain.model.Trip
+import app.drivedelta.domain.repository.TripRepository
 import app.drivedelta.domain.usecase.car.GetCarsUseCase
 import app.drivedelta.domain.usecase.place.DetectNearbyPlaceUseCase
 import app.drivedelta.domain.usecase.place.GetPlacesUseCase
@@ -15,6 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,12 +36,22 @@ class PreRideViewModel @Inject constructor(
     private val detectNearbyPlaceUseCase: DetectNearbyPlaceUseCase,
     private val locationProvider: LocationProvider,
     private val startTripUseCase: StartTripUseCase,
+    tripRepository: TripRepository,
 ) : ViewModel() {
 
     val cars: StateFlow<List<Car>> = getCarsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val places: StateFlow<List<Place>> = getPlacesUseCase()
+    private val placesAndTrips = combine(getPlacesUseCase(), tripRepository.observeTrips()) { places, trips -> places to trips }
+
+    /** Origin choices, the places most often started from first. */
+    val originPlaces: StateFlow<List<Place>> = placesAndTrips
+        .map { (places, trips) -> sortByUse(places, trips) { it.startPlaceId } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Destination choices, the places most often driven to first. */
+    val destinationPlaces: StateFlow<List<Place>> = placesAndTrips
+        .map { (places, trips) -> sortByUse(places, trips) { it.endPlaceId } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _nearbyPlace = MutableStateFlow<Place?>(null)
@@ -124,6 +138,23 @@ class PreRideViewModel @Inject constructor(
             // On success it stays held until the host has navigated away, in onStartHandled.
             if (newTripId == null) starting = false
             _startedTripId.value = newTripId
+        }
+    }
+
+    companion object {
+        /**
+         * Orders [places] by how many [trips] used them on the end that [end] picks, then by use on
+         * either end (so a place only ever driven *to* still outranks one never used, in the origin
+         * list), then by name.
+         */
+        fun sortByUse(places: List<Place>, trips: List<Trip>, end: (Trip) -> String?): List<Place> {
+            val onThisEnd = trips.mapNotNull(end).groupingBy { it }.eachCount()
+            val onEither = trips.flatMap { listOfNotNull(it.startPlaceId, it.endPlaceId) }.groupingBy { it }.eachCount()
+            return places.sortedWith(
+                compareByDescending<Place> { onThisEnd[it.id] ?: 0 }
+                    .thenByDescending { onEither[it.id] ?: 0 }
+                    .thenBy { it.name.lowercase() },
+            )
         }
     }
 }

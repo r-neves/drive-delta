@@ -2313,6 +2313,21 @@ the car sleeps.
       Home (radius 50 m): the pre-ride sheet opens with Origin "🏠 Parents Home" and the
       "Filled in from where you are" caption.
 
+### ✅ CHECKPOINT 39 — Place dropdowns ordered by use
+
+**Goal:** "The start and end choosing of the place should be sorted by the amount of times I use that
+place (both for start and for end)."
+
+- [x] `PreRideViewModel` exposes `originPlaces` and `destinationPlaces` in place of `places`, each
+      ordered by how many drives used the place **on that end**, then by use on either end (so a
+      place only ever driven *to* still beats a never-used one in the origin list), then by name.
+      Live from `TripRepository.observeTrips()`, so it reorders itself as drives are recorded.
+- [x] 1 unit test pinning both orderings and both tie-breaks. **65 tests green.**
+- [x] **Acceptance test:** ✅ On the Galaxy S25 against the real data. Origin: Home → Parents Home →
+      Bubs Parents → Little Big Apple → Palito …; Destination: Home → Parents Home → Little Big Apple
+      → Bubs Parents → Palito → Lidl Alverca → Vasco da Gama → CUF Descobertas — matching the start
+      and end counts in Room. No ride was started.
+
 ---
 
 ## Post-MVP Backlog (do not implement now)

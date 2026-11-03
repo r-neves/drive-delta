@@ -63,7 +63,8 @@ fun PreRideSheet(
     viewModel: PreRideViewModel = hiltViewModel(),
 ) {
     val cars by viewModel.cars.collectAsStateWithLifecycle()
-    val places by viewModel.places.collectAsStateWithLifecycle()
+    val originPlaces by viewModel.originPlaces.collectAsStateWithLifecycle()
+    val destinationPlaces by viewModel.destinationPlaces.collectAsStateWithLifecycle()
     val nearbyPlace by viewModel.nearbyPlace.collectAsStateWithLifecycle()
     val startedTripId by viewModel.startedTripId.collectAsStateWithLifecycle()
 
@@ -126,7 +127,7 @@ fun PreRideSheet(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 PlaceDropdown(
                     label = stringResource(R.string.preride_origin),
-                    places = places,
+                    places = originPlaces,
                     selected = origin,
                     onSelect = { origin = it; originChosen = true },
                 )
@@ -140,7 +141,7 @@ fun PreRideSheet(
             }
             PlaceDropdown(
                 label = stringResource(R.string.preride_destination),
-                places = places,
+                places = destinationPlaces,
                 selected = destination,
                 onSelect = { destination = it },
             )
