@@ -271,6 +271,9 @@ fun TripDetailScreen(
 
 // --- Tab 1: Map (speed-coloured polyline) -------------------------------------------------------
 
+/** Room around the framed drive, so the start/finish pins (drawn above their point) aren't clipped. */
+private const val MAP_FRAME_PADDING_PX = 160
+
 @Composable
 private fun MapTab(detail: TripDetail, state: TripDetailUiState) {
     val points = detail.routePoints.map { LatLng(it.lat, it.lng) }
@@ -279,8 +282,13 @@ private fun MapTab(detail: TripDetail, state: TripDetailUiState) {
         return
     }
     val maxSpeed = detail.routePoints.maxOf { it.speedMps }.coerceAtLeast(0.1f)
+    // Open on the whole drive, start and finish both in view. It used to open on the middle route
+    // point at a fixed street-level zoom 15, which on a 20 km drive shows a few hundred metres of
+    // road and neither end. The bounds can only be applied once the map has been measured, so the
+    // initial position is the bounds' centre and the framing happens in onMapLoaded.
+    val bounds = remember(points) { LatLngBounds.builder().apply { points.forEach { include(it) } }.build() }
     val camera = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(points[points.size / 2], 15f)
+        position = CameraPosition.fromLatLngZoom(bounds.center, 12f)
     }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -289,6 +297,12 @@ private fun MapTab(detail: TripDetail, state: TripDetailUiState) {
         // speed colouring this tab exists to show.
         properties = MapProperties(mapStyleOptions = rememberDarkMapStyle()),
         uiSettings = MapUiSettings(zoomControlsEnabled = true),
+        onMapLoaded = {
+            // A drive that never moved has zero-size bounds, which would zoom to the maximum.
+            if (bounds.northeast != bounds.southwest) {
+                runCatching { camera.move(CameraUpdateFactory.newLatLngBounds(bounds, MAP_FRAME_PADDING_PX)) }
+            }
+        },
     ) {
         // Colour by speed relative to the trip max: green fast → red slow. One Polyline per *run* of
         // similar speed, not per hop: a hop-by-hop draw meant 5,162 Polyline objects on the 173 km

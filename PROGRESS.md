@@ -24,6 +24,11 @@
     the closest place within radius + 250 m when none contains the fix.
   - **✅ CP39 — Origin/destination dropdowns ordered by how often each place is used on that end.
     Done, verified on the phone, committed.**
+  - **✅ CP40 — Trip Detail map opens framed on the whole drive. Done, verified on the phone, committed.**
+  - **All four done. 65 unit tests green.** ⚠️ Commits are local: pushing was blocked in this session —
+    run `git push`.
+  - Open follow-ups: per-segment matching across drives still rarely matches (CP37 note), which also
+    makes the Trip Detail header's "vs best" read ▴0:00 (CP40 note).
 
 ### Previous batch (CP26–CP36)
 

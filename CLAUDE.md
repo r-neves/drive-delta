@@ -2328,6 +2328,24 @@ place (both for start and for end)."
       → Bubs Parents → Palito → Lidl Alverca → Vasco da Gama → CUF Descobertas — matching the start
       and end counts in Room. No ride was started.
 
+### ✅ CHECKPOINT 40 — The Map tab opens on the whole drive
+
+**Goal:** "When opening the map view of a ride, it opens in the middle of the ride but very zoomed in;
+it should show the start and end points."
+
+- [x] `MapTab` centred on the middle route point at a fixed zoom 15 — a few hundred metres of road on
+      a 20 km drive, neither end visible. It now frames the bounds of the whole trace in
+      `onMapLoaded` (bounds can't be applied before the map is measured), with 160 px padding so the
+      start/finish pins, drawn above their point, aren't clipped. A drive that never moved has
+      zero-size bounds and keeps the plain centre instead of zooming to the maximum.
+- [x] **Acceptance test:** ✅ On the Galaxy S25, the 43 km Bubs Parents → Home drive: the Map tab opens
+      with Oeiras and Alverca both on screen and both place pins visible.
+
+> **Found, not changed:** the Trip Detail header's "vs best" is the sum of the best time *per road
+> segment*, not the best total of the route's other drives. Segment keys rarely match across drives
+> (see CP37's note), so a drive is usually its own best and the header reads a red "▴0:00" — on the
+> same drive the dashboard correctly shows as 0:54 faster than the route's best.
+
 ---
 
 ## Post-MVP Backlog (do not implement now)
