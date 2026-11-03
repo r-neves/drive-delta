@@ -19,6 +19,9 @@
   - **✅ CP37 — Drives between the same places now group as one route. Done, verified on the phone,
     committed.** Grouping keyed on `routeHash`, and no two real drives ever shared one (40 drives,
     40 hashes). New `Trip.routeKey` = origin→destination places, hash only as fallback.
+  - **✅ CP38 — The origin fills in when parked outside a place's circle. Done, verified, committed.**
+    The radius is the arrival geofence; return trips started 160–230 m from the pin. Origin now takes
+    the closest place within radius + 250 m when none contains the fix.
 
 ### Previous batch (CP26–CP36)
 

@@ -2292,6 +2292,27 @@ and "vs previous" each saw every drive alone.
 > 12 of 13 segments as new personal bests. Route-level time and cost comparison is what was asked
 > for and now works; segment matching across drives is its own piece of work.
 
+### ✅ CHECKPOINT 38 — The origin fills in when you parked down the street
+
+**Goal:** "When starting a new (second) ride after one is finished, the start place is not filled
+automatically no matter how many times I close and open the start ride."
+
+Not really about the *second* ride: the second ride starts from the first one's destination, and
+that is where drivers park outside the circle. A place's radius is its *arrival* geofence, and
+`DetectNearbyPlaceUseCase` required the fix to be inside it. Measured on the phone: return trips
+started **160–230 m** from the pin against radii of 50–175 m (Parents Home 230 m / 50 m, Bubs
+Parents 206 m / 100 m, Vasco da Gama 184 m / 175 m). Home always worked because its pin is where
+the car sleeps.
+
+- [x] A place whose radius contains the fix still wins outright; failing that, the **closest** place
+      within radius + 250 m (`PARKING_SLACK_M`). Closest-first keeps neighbours apart — Home and
+      Auchan Alverca are 330 m apart, and standing near one never picks the other.
+- [x] Arrival detection is untouched: it still uses the exact radius.
+- [x] 4 unit tests on the phone's real coordinates. **64 tests green.**
+- [x] **Acceptance test:** ✅ On the emulator, GPS set to a real return-trip start 230 m from Parents
+      Home (radius 50 m): the pre-ride sheet opens with Origin "🏠 Parents Home" and the
+      "Filled in from where you are" caption.
+
 ---
 
 ## Post-MVP Backlog (do not implement now)
